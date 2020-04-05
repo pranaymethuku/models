@@ -1,55 +1,67 @@
+"""
+Created on Sun Apr 5 2020
+@author: pranaymethuku
+
+Class: CSE 5915 - Information Systems
+Section: 6pm TR, Spring 2020
+Prof: Prof. Jayanti
+
+A Python 3 script to perform the following tasks in order:
+    1) look at source directory, 
+    2) extract xml annotations
+    3) save its corresponding compilation into a csv file
+
+Assumptions:
+    Annotation files all correspond to .jpg images
+
+Usage:
+    python3 xml_to_csv.py --source=path/to/source --csv-file=path/to/csv/file
+
+Examples:
+    python3 auto_label.py -s=./tier1/test -cf=../tier1/test_labels.csv
+"""
+
 import os
-from os import path
 import glob
 import pandas as pd
 import xml.etree.ElementTree as ET
-import pathlib
-import shutil
+import argparse
 
-
-def xml_to_csv(path):
+def retrieve_df(directory_path):
+    """
+    helper function to take in a directory
+    and compile a DataFrame using them
+    """
     xml_list = []
-    print(path)
-    for xml_file in glob.glob(path + '/*.xml'):
+    # iterate through all the xml files in directory
+    for xml_file in glob.glob(directory_path + '/*.xml'):
         tree = ET.parse(xml_file)
         root = tree.getroot()
+        column_names = ['filename', 'width', 'height', 'class', 'xmin', 'ymin', 'xmax', 'ymax']
+        # get xml tags corresponding to column_names from file and create a row
         for member in root.findall('object'):
-            value = (root.find('filename').text,
-                     int(root.find('size')[0].text),
-                     int(root.find('size')[1].text),
-                     member[0].text,
-                     int(member[4][0].text),
-                     int(member[4][1].text),
-                     int(member[4][2].text),
-                     int(member[4][3].text)
+            value = (root.find('filename').text, # filename
+                     int(root.find('size')[0].text), # width
+                     int(root.find('size')[1].text), # height
+                     member[0].text, # class
+                     int(member[4][0].text), # xmin
+                     int(member[4][1].text), # ymin
+                     int(member[4][2].text), # xmax
+                     int(member[4][3].text) # ymax
                      )
             xml_list.append(value)
-    column_name = ['filename', 'width', 'height', 'class', 'xmin', 'ymin', 'xmax', 'ymax']
-    xml_df = pd.DataFrame(xml_list, columns=column_name)
+    return pd.DataFrame(xml_list, columns=column_names)
 
-    names = []
-    for i in xml_df['filename']:
-        extension = os.path.splitext(i)[1]
-        if extension == '.png' or extension == '.jpeg':
-            new_img = i.replace(extension, ".jpg")
-            print("New_Image: ", new_img)
-            i = new_img
-        names.append(i)
-    xml_df['filename'] = names
-    return xml_df
+if __name__ == "__main__":
 
+    # set up command line
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-s", "--source", type=str, default="train",
+                        help="Path to the source folder to look from, train folder by default")
+    parser.add_argument("-cf", "--csv-file", type=str, default="train_labels.csv",
+                        help="Path to a CSV file to output the annotations into")
+    args = parser.parse_args()
 
-def main():
-    for folder in ['train', 'test']:
-        #os.chdir("../images_subset/")
-        image_path = os.path.join(os.getcwd(), (folder))
-        xml_df = xml_to_csv(image_path)
-        csv_file = image_path + '_labels.csv'
-        file = pathlib.Path(csv_file)
-        file = open(csv_file, "w+")
-        xml_df.to_csv(csv_file, index=None)
-        print('Successfully converted xml to csv.')
-        file.close()
-
-
-main()
+    xml_df = retrieve_df(os.path.join(os.getcwd(), args.source))
+    xml_df.to_csv(args.csv_file, index=False)
+    print('Successfully converted the annotations in {} to a file {}.'.format(args.source, args.csv_file))
