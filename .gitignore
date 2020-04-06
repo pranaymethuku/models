@@ -1,3 +1,15 @@
+# temporarily ignore
+research/object_detection/faster_rcnn_resnet101_kitti_2018_01_28/
+research/object_detection/generate_tfrecord.py
+research/object_detection/image_detection.py
+research/object_detection/labelmaps/sedan_suv.pbtxt
+research/object_detection/sedan_suv/
+research/object_detection/test.record
+research/object_detection/tier2/
+research/object_detection/train.record
+research/object_detection/training/
+research/object_detection/video_detection.py
+
 # object detection protos
 research/object_detection/protos/
 
