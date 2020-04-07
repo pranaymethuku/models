@@ -3,8 +3,8 @@ This Python script was originally acquired from
 https://tensorflow-object-detection-api-tutorial.readthedocs.io/en/latest/training.html#converting-from-csv-to-record
 
 Updates:
-    Changed the input flag names to be consistent with other scripts we're using
-    Script now takes in a labelmap .pbtxt file as input
+    * Changed the input flag names to be consistent with other scripts we're using.
+    * Script now takes in a labelmap .pbtxt file as input.
 
 Usage:
     python generate_tfrecord.py --csv_input=path/to/csv  --record-output=path/to/record --image-dir=path/to/image/dir --labelmap=path/to/labelmap 
