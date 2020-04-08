@@ -55,7 +55,7 @@ def open():
         messagebox.showerror("Error","You must select a Tier and Model")
     else:
         if file_extension[1] == ".jpg":
-            image_detection_gui.main(root.filename, option.get())
+            image_detection_gui.main(root.filename, option.get(), option2.get())
             my_image = ImageTk.PhotoImage(Image.open("predicted.jpg"))
             my_image_label = tk.Label(image=my_image).pack()
 

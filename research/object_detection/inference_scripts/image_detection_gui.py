@@ -8,7 +8,7 @@ import imghdr
 from PIL import Image
 # import scipy.misc
 
-def main(filename, tier):
+def main(filename, tier, model):
     # This is needed since the notebook is stored in the object_detection folder.
     sys.path.append("..")
     print(tier)
@@ -18,6 +18,13 @@ def main(filename, tier):
     import matplotlib.pyplot as plt
 
     # Name of the directory containing the object detection module we're using
+    if tier == 'Tier X':
+        if model == "1":
+            print("1")
+        elif model == "2":
+            print("2")
+    # this will expand based on tier and model etc
+    
     MODEL_NAME = 'inference_graph' # use tier to get the appropriate model
     IMAGE_NAME = filename
     file_type = imghdr.what(IMAGE_NAME)
