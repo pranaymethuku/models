@@ -3,6 +3,14 @@ research/object_detection/protos/
 
 # IDE config
 .vscode
+# pretrained models
+research/object_detection/pretrained_models/
+
+# tor models
+research/object_detection/tor_models
+
+# object detection protos
+research/object_detection/protos/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
