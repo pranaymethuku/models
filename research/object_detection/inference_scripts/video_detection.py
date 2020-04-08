@@ -21,6 +21,10 @@ parser.add_argument("-s", "--source", type=str,
                     help="Path to the source folder to look from")
 parser.add_argument("-t", "--target", type=str,
                     help="Path to target folder to move to, creates/replaces folder named target by default")
+parser.add_argument("-f", "--frozen-inference-graph", type=str,
+                    help="Path to frozen detection graph .pb file, which contains the model that is used")
+parser.add_argument("-l", "--labelmap", type=str,
+                    help="Path to the labelmap")
 args = parser.parse_args()
 
 if args.source == None or args.target == None:
@@ -34,37 +38,17 @@ if args.source == args.target:
 # creating target directory (recursively) if it does not exist
 os.makedirs(args.target, exist_ok=True)
 
-# Name of the directory containing the object detection module we're using
-MODEL_NAME = 'inference_graph_030320/'
-# IMAGE_NAME = 'images_subset/test/detection/car.jpg'
-# file_type = imghdr.what(IMAGE_NAME)
-#'images_subset/test/5NPD84LF9LH508220-2.jpg'
-#'images_subset/test/7DUDXTWLXBRMFIOGAF4SGD55A4-600.jpg'
-
-# The path to the image in which the object has to be detected.
-
-# Grab path to current working directory
-CWD_PATH = os.getcwd()
-
-# Path to frozen detection graph .pb file, which contains the model that is used
-# for object detection.
-PATH_TO_CKPT = os.path.join(CWD_PATH, MODEL_NAME, 'frozen_inference_graph.pb')
-
-# Path to label map file
-PATH_TO_LABELS = os.path.join(CWD_PATH, 'training', 'labelmap.pbtxt')
-
 # Number of classes the object detector can identify
-NUM_CLASSES = 2
-
+num_classes = len(label_map_util.get_label_map_dict(args.labelmap))
 
 # Load the label map.
 # Label maps map indices to category names, so that when our convolution
 # network predicts `5`, we know that this corresponds to `king`.
 # Here we use internal utility functions, but anything that returns a
 # dictionary mapping integers to appropriate string labels would be fine
-label_map = label_map_util.load_labelmap(PATH_TO_LABELS)
+label_map = label_map_util.load_labelmap(args.labelmap)
 categories = label_map_util.convert_label_map_to_categories(
-    label_map, max_num_classes=NUM_CLASSES, use_display_name=True)
+    label_map, max_num_classes=num_classes, use_display_name=True)
 category_index = label_map_util.create_category_index(categories)
 
 
@@ -72,7 +56,7 @@ category_index = label_map_util.create_category_index(categories)
 detection_graph = tf.Graph()
 with detection_graph.as_default():
     od_graph_def = tf.compat.v1.GraphDef()
-    with tf.io.gfile.GFile(PATH_TO_CKPT, 'rb') as fid:
+    with tf.io.gfile.GFile(args.frozen_inference_graph, 'rb') as fid:
         serialized_graph = fid.read()
         od_graph_def.ParseFromString(serialized_graph)
         tf.import_graph_def(od_graph_def, name='')
@@ -98,13 +82,13 @@ num_detections = detection_graph.get_tensor_by_name('num_detections:0')
 
 for image_name in os.listdir(args.source):
     # Path to image
-    PATH_TO_IMAGE = os.path.join(args.source, image_name)
+    image_path = os.path.join(args.source, image_name)
 
     # Load image using OpenCV and
     # expand image dimensions to have shape: [1, None, None, 3]
     # i.e. a single-column array, where each item in the column has the pixel RGB value
     image = cv2.imread(PATH_TO_IMAGE)
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    image = cv2.cvtColor(image_path, cv2.COLOR_BGR2RGB)
     image_expanded = np.expand_dims(image, axis=0)
 
     # Perform the actual detection by running the model with the image as input
