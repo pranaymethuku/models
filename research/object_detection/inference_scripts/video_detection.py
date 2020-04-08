@@ -15,9 +15,6 @@ from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as vis_util
 import matplotlib.pyplot as plt
 
-# This is needed since the notebook is stored in the object_detection folder.
-sys.path.append("..")
-
 # set up command line
 parser = argparse.ArgumentParser()
 parser.add_argument("-s", "--source", type=str,

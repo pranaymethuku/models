@@ -1,77 +1,44 @@
-# Write Python3 code here
 import os
 import cv2
 import numpy as np
 import tensorflow as tf
-import sys
-import imghdr
+import argparse
 from PIL import Image
-import scipy.misc
-
-# This is needed since the notebook is stored in the object_detection folder.
-sys.path.append("..")
 
 # Import utilites
 from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as vis_util
-import matplotlib.pyplot as plt
 
-# Name of the directory containing the object detection module we're using
-MODEL_NAME = 'inference_graph_030320/'
-IMAGE_NAME = 'images_subset/test/detection/car.jpg'
-file_type = imghdr.what(IMAGE_NAME)
-print(file_type)
-
-# More examples
-#'images_subset/test/5NPD84LF9LH508220-2.jpg'
-#'images_subset/test/7DUDXTWLXBRMFIOGAF4SGD55A4-600.jpg'
-
-# The path to the image in which the object has to be detected.
-
-# Grab path to current working directory
-CWD_PATH = os.getcwd()
-print("CWD_PATH:", CWD_PATH)
-
-# Path to frozen detection graph .pb file, which contains the model that is used
-# for object detection.
-PATH_TO_CKPT = os.path.join(CWD_PATH, MODEL_NAME, 'frozen_inference_graph.pb')
-
-# Path to label map file
-PATH_TO_LABELS = os.path.join(CWD_PATH, 'training', 'labelmap.pbtxt')
-
-# Path to image
-PATH_TO_IMAGE = os.path.join(CWD_PATH, IMAGE_NAME)
+# set up command line
+parser = argparse.ArgumentParser()
+parser.add_argument("-f", "--frozen-inference-graph", type=str,
+                    help="Path to frozen detection graph .pb file, which contains the model that is used")
+parser.add_argument("-l", "--labelmap", type=str,
+                    help="Path to the labelmap")
+parser.add_argument("-i", "--image", type=str,
+                    help="Path to the image for detection")
+parser.add_argument("-o", "--output", type=str,
+                    help="Path to the output the annotated image")
+args = parser.parse_args()
 
 # Number of classes the object detector can identify
-NUM_CLASSES = 2
-
-print("MODELNAME ", MODEL_NAME)
-print("IMAGENAME ", IMAGE_NAME)
-print("CWDPATH ", CWD_PATH)
-print("PATH_TO_CKPT ", PATH_TO_CKPT)
-print("PATH_TO_LABELS ", PATH_TO_LABELS)
-print("PATH_TO_IMAGE ", PATH_TO_IMAGE)
+num_classes = len(label_map_util.get_label_map_dict(args.labelmap))
 
 # Load the label map.
 # Label maps map indices to category names, so that when our convolution
 # network predicts `5`, we know that this corresponds to `king`.
 # Here we use internal utility functions, but anything that returns a
 # dictionary mapping integers to appropriate string labels would be fine
-label_map = label_map_util.load_labelmap(PATH_TO_LABELS)
+label_map = label_map_util.load_labelmap(args.labelmap)
 categories = label_map_util.convert_label_map_to_categories(
-    label_map, max_num_classes=NUM_CLASSES, use_display_name=True)
+    label_map, max_num_classes=num_classes, use_display_name=True)
 category_index = label_map_util.create_category_index(categories)
-
-print("LABELMAP ", label_map)
-print("CATEGORIES ", categories)
-print("category_index ", category_index)
 
 # Load the Tensorflow model into memory.
 detection_graph = tf.Graph()
-print("DETECTION_GRAPH ", detection_graph)
 with detection_graph.as_default():
     od_graph_def = tf.compat.v1.GraphDef()
-    with tf.gfile.GFile(PATH_TO_CKPT, 'rb') as fid:
+    with tf.gfile.GFile(args.frozen_inference_graph, 'rb') as fid:
         serialized_graph = fid.read()
         od_graph_def.ParseFromString(serialized_graph)
         tf.import_graph_def(od_graph_def, name='')
@@ -98,21 +65,14 @@ num_detections = detection_graph.get_tensor_by_name('num_detections:0')
 # Load image using OpenCV and
 # expand image dimensions to have shape: [1, None, None, 3]
 # i.e. a single-column array, where each item in the column has the pixel RGB value
-image = cv2.imread(PATH_TO_IMAGE)
-print("TYPE OF IMAGE", type(image))
-print("IMAGE", image)
+image = cv2.imread(args.image)
 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 image_expanded = np.expand_dims(image, axis=0)
-print("IMAGEEXP", image_expanded)
 
 # Perform the actual detection by running the model with the image as input
 (boxes, scores, classes, num) = sess.run(
     [detection_boxes, detection_scores, detection_classes, num_detections],
     feed_dict={image_tensor: image_expanded})
-print("BOXES: ", boxes)
-print("SCORES: ", scores)
-print("CLASSES: ", classes)
-print("NUM: ", num)
 
 # Draw the results of the detection (aka 'visualize the results')
 vis_util.visualize_boxes_and_labels_on_image_array(
@@ -125,19 +85,5 @@ vis_util.visualize_boxes_and_labels_on_image_array(
     line_thickness=8,
     min_score_thresh=0.5)
 
-print(type(image))
-
-# # All the results have been drawn on the image. Now display the image.
-# cv2.imshow('Image', image)
-#
-# # Press any key to close the image
-# cv2.waitKey(0)
-#
-# # Clean up
-# cv2.destroyAllWindows()
-
-# im = Image.open(image)
-# im.show()
-
 img = Image.fromarray(image, 'RGB')
-img.show()
+img.save(args.output, "jpeg")

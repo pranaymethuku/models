@@ -1,8 +1,6 @@
-# temporary
-research/object_detection/protos/
-
 # IDE config
 .vscode
+
 # pretrained models
 research/object_detection/pretrained_models/
 
