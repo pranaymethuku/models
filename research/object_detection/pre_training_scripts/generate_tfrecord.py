@@ -1,5 +1,5 @@
 """
-This Python script was originally acquired from 
+NOTE: This Python script was originally acquired from 
 https://tensorflow-object-detection-api-tutorial.readthedocs.io/en/latest/training.html#converting-from-csv-to-record
 
 Updated on Sun Apr 5 2020

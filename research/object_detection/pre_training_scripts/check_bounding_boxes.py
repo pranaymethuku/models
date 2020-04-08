@@ -9,7 +9,7 @@ Section: 6pm TR, Spring 2020
 Prof: Prof. Jayanti
 
 Updates:
-    Incorporated argparse to be consistent with other scripts we're using
+    * Incorporated argparse to be consistent with other scripts we're using
 
 Usage:
     python3 check_bounding_boxes.py --source=path/to/source --csv-file=path/to/csv/file
