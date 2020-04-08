@@ -87,7 +87,7 @@ for image_name in os.listdir(args.source):
     # Load image using OpenCV and
     # expand image dimensions to have shape: [1, None, None, 3]
     # i.e. a single-column array, where each item in the column has the pixel RGB value
-    image = cv2.imread(PATH_TO_IMAGE)
+    image = cv2.imread(image_path)
     image = cv2.cvtColor(image_path, cv2.COLOR_BGR2RGB)
     image_expanded = np.expand_dims(image, axis=0)
 
