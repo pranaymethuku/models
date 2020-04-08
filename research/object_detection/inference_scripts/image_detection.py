@@ -101,6 +101,7 @@ num_detections = detection_graph.get_tensor_by_name('num_detections:0')
 image = cv2.imread(PATH_TO_IMAGE)
 print("TYPE OF IMAGE", type(image))
 print("IMAGE", image)
+image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 image_expanded = np.expand_dims(image, axis=0)
 print("IMAGEEXP", image_expanded)
 
