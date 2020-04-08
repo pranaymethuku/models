@@ -1,71 +1,88 @@
+"""
+NOTE: This Python script uses some code from Stack Overflow (I lost the original link)
+
+Updated on Tue Apr 8 2020
+@author: pranaymethuku
+
+Class: CSE 5915 - Information Systems
+Section: 6pm TR, Spring 2020
+Prof: Prof. Jayanti
+
+Updates:
+    Incorporated argparse to be consistent with other scripts we're using
+
+Usage:
+    python3 check_bounding_boxes.py --source=path/to/source --csv-file=path/to/csv/file
+
+Examples:
+    python3 check_bounding_boxes.py -s=./tier1/test -cf=../tier1/test_labels.csv
+"""
+
 import csv
 import cv2 
 import os
+import argparse
 import numpy as np
 
-FOLDER = 'train'
-CSV_FILE = 'train_labels.csv'
+if __name__ == "__main__":
 
-with open(CSV_FILE, 'r') as fid:
+    # set up command line
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-s", "--source", type=str, default="train",
+                        help="Path to the source folder to look from, train folder by default")
+    parser.add_argument("-cf", "--csv-file", type=str, default="train_labels.csv",
+                        help="Path to a CSV file to inspect")
+    args = parser.parse_args()
+
+    fid = open(args.csv_file, 'r')
     
-    print('Checking file:', CSV_FILE, 'in folder:', FOLDER)
-    
-    file = csv.reader(fid, delimiter=',')
+    csv_file = csv.reader(fid, delimiter=',')
     first = True
-    
-    cnt = 0
-    error_cnt = 0
+    count = 0
+    error_count = 0
     error = False
-    for row in file:
-        if error == True:
-            error_cnt += 1
-            error = False
-            
-        if first == True:
-            first = False
-            continue
-        
-        cnt += 1
-        
+    for row in csv_file:        
+        # extract features
         name, width, height, xmin, ymin, xmax, ymax = row[0], int(row[1]), int(row[2]), int(row[4]), int(row[5]), int(row[6]), int(row[7])
         
-        path = os.path.join(FOLDER, name)
-        img = cv2.imread(path)
-        
-        
+        # import actual image to compare
+        path = os.path.join(args.source, name)
+        img = cv2.imread(path)        
         if type(img) == type(None):
             error = True
             print('Could not read image at', path)
             continue
         
-        org_height, org_width = img.shape[:2]
+        og_height, og_width = img.shape[:2]
         
-        if org_width != width:
+        if og_width != width:
             error = True
-            print('Width mismatch for image: ', name, width, '!=', org_width)
+            print('Width mismatch for image: ', name, width, '!=', og_width)
         
-        if org_height != height:
+        if og_height != height:
             error = True
-            print('Height mismatch for image: ', name, height, '!=', org_height)
+            print('Height mismatch for image: ', name, height, '!=', og_height)
         
-        if xmin > org_width:
+        if xmin > og_width:
             error = True
-            print('XMIN > org_width for file', name)
+            print('XMIN > og_width for file', name)
             
-        if xmax > org_width:
+        if xmax > og_width:
             error = True
-            print('XMAX > org_width for file', name)
+            print('XMAX > og_width for file', name)
         
-        if ymin > org_height:
+        if ymin > og_height:
             error = True
-            print('YMIN > org_height for file', name)
+            print('YMIN > og_height for file', name)
         
-        if ymax > org_height:
+        if ymax > og_height:
             error = True
-            print('YMAX > org_height for file', name)
+            print('YMAX > og_height for file', name)
         
-        if error == True:
-            print('Error for file: %s' % name)
-            print()
-        
-    print('Checked %d files and realized %d errors' % (cnt, error_cnt))
+        if error:
+            print('Error for file: {}\n'.format(name))
+            error_count += 1
+            error = False
+        count += 1
+    fid.close()
+    print('Checked %d files and realized %d errors' % (count, error_count))
