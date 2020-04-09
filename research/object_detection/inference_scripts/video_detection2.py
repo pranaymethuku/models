@@ -4,9 +4,16 @@ import numpy as np
 import tensorflow as tf
 import sys
 import imageio
+import argparse
 
 from datetime import datetime
 from PIL import Image
+
+'''
+Example command to run:
+
+python video_detection2.py -s right_in_front_trimmed.mp4 -f ../tor_models/tier_2/tier_2_faster_rcnn_inception_v2_coco_2018_01_28/inference_graph/frozen_inference_graph.pb -l ../tor_models/tier_2/labelmap.pbtxt
+'''
 
 # This is needed since the notebook is stored in the object_detection folder.
 sys.path.append("..")
@@ -20,7 +27,7 @@ from object_detection.utils import ops as utils_ops
 parser = argparse.ArgumentParser()
 parser.add_argument("-s", "--source", type=str,
                     help="Path of the input video")
-parser.add_argument("-f", "--frozen-inference-graph", type=str,
+parser.add_argument("-f", "--frozen_inference_graph", type=str,
                     help="Path to frozen detection graph .pb file, which contains the model that is used")
 parser.add_argument("-l", "--labelmap", type=str,
                     help="Path to the labelmap")
@@ -35,7 +42,7 @@ CWD_PATH = os.getcwd()
 
 # Path to frozen detection graph .pb file, which contains the model that is used
 # for object detection.
-PATH_TO_CKPT = args.frozen-inference-graph
+PATH_TO_CKPT = args.frozen_inference_graph
 print(PATH_TO_CKPT)
 print(os.path.join(CWD_PATH,MODEL_NAME,'frozen_inference_graph.pb'))
 
