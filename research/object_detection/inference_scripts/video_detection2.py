@@ -1,18 +1,11 @@
 # Import packages
 import os
-import cv2
 import numpy as np
 import tensorflow as tf
 import sys
-import six.moves.urllib as urllib
-import tarfile
-import zipfile
 import imageio
 
 from datetime import datetime
-from collections import defaultdict
-from io import StringIO
-from matplotlib import pyplot as plt
 from PIL import Image
 
 # This is needed since the notebook is stored in the object_detection folder.
@@ -22,6 +15,17 @@ sys.path.append("..")
 from utils import label_map_util
 from utils import visualization_utils as vis_util
 from object_detection.utils import ops as utils_ops
+
+# set up command line
+parser = argparse.ArgumentParser()
+parser.add_argument("-s", "--source", type=str,
+                    help="Path of the input video")
+parser.add_argument("-f", "--frozen-inference-graph", type=str,
+                    help="Path to frozen detection graph .pb file, which contains the model that is used")
+parser.add_argument("-l", "--labelmap", type=str,
+                    help="Path to the labelmap")
+args = parser.parse_args()
+
 # Name of the directory containing the object detection module we're using
 MODEL_NAME = 'inference_graph'
 VIDEO_NAME = 'right_in_front.mp4'
@@ -31,16 +35,21 @@ CWD_PATH = os.getcwd()
 
 # Path to frozen detection graph .pb file, which contains the model that is used
 # for object detection.
-PATH_TO_CKPT = os.path.join(CWD_PATH,MODEL_NAME,'frozen_inference_graph.pb')
+PATH_TO_CKPT = args.frozen-inference-graph
+print(PATH_TO_CKPT)
+print(os.path.join(CWD_PATH,MODEL_NAME,'frozen_inference_graph.pb'))
 
 # Path to label map file
-PATH_TO_LABELS = os.path.join(CWD_PATH,'training','labelmap.pbtxt')
+PATH_TO_LABELS = args.labelmap
+print(PATH_TO_LABELS)
+print(os.path.join(CWD_PATH,'training','labelmap.pbtxt'))
 
 # Path to video
-PATH_TO_VIDEO = os.path.join(CWD_PATH,VIDEO_NAME)
+PATH_TO_VIDEO = args.source
+print(os.path.join(CWD_PATH,VIDEO_NAME))
 
 # Number of classes the object detector can identify
-NUM_CLASSES = 2
+NUM_CLASSES = len(label_map_util.get_label_map_dict(args.labelmap))
 
 # Load the label map.
 # Label maps map indices to category names, so that when our convolution
