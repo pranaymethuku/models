@@ -95,19 +95,19 @@ def detect_single_image(image_np, sess,
     return image_np
 
 def detect_image(frozen_inference_graph, labelmap, input_image, output_image):
-    sess, detection_graph = load_tensorflow_model(args.frozen_inference_graph)
-    category_index = load_labelmap(args.labelmap)
+    sess, detection_graph = load_tensorflow_model(frozen_inference_graph)
+    category_index = load_labelmap(labelmap)
     image_tensor, output_tensors = define_tensors(detection_graph)
 
     # Load image using OpenCV and
-    image = cv2.imread(args.input_image)
+    image = cv2.imread(input_image)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-    output_image = detect_single_image(
+    output_image_np = detect_single_image(
         image, sess, image_tensor, output_tensors, category_index)
 
-    img = Image.fromarray(output_image, 'RGB')
-    img.save(args.output_image, "jpeg")
+    img = Image.fromarray(output_image_np, 'RGB')
+    img.save(output_image, "jpeg")
 
 def detect_video(frozen_inference_graph, labelmap, input_video, output_video):
     pass
