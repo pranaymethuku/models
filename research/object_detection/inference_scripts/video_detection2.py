@@ -63,8 +63,11 @@ label_map = label_map_util.load_labelmap(PATH_TO_LABELS)
 categories = label_map_util.convert_label_map_to_categories(label_map, max_num_classes=NUM_CLASSES, use_display_name=True)
 category_index = label_map_util.create_category_index(categories)
 
+
+cap = cv2.VideoCapture('right_in_front_trimmed.mp4')
+
 out = cv2.VideoWriter('test.mp4', cv2.VideoWriter_fourcc(
-        'M', 'J', 'P', 'G'), 10, (int(1920), int(1080)))
+        'M', 'J', 'P', 'G'), 10.0, (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))))
 
 # Load the Tensorflow model into memory.
 detection_graph = tf.Graph()
@@ -97,55 +100,59 @@ with detection_graph.as_default():
         # Number of objects detected
         num_detections = detection_graph.get_tensor_by_name('num_detections:0')
 
-        cap = cv2.VideoCapture('right_in_front_trimmed.mp4')
+        frames_to_skip = int(cap.get(cv2.CAP_PROP_FPS) / 10.0)
+        print(frames_to_skip)
         num_frames = 0
+        # cap.set(cv2.CAP_PROP_POS_FRAMES, 515)
+        time = datetime.now()
         while(cap.isOpened()):
             ret, frame = cap.read()
-            
-            image_np_expanded = np.expand_dims(frame, axis=0)
 
-            print("a")
-            t = datetime.now()
-            # actual inference
-            (boxes, scores, classes, num) = sess.run(
-                    [detection_boxes, detection_scores,
-                        detection_classes, num_detections],
-                    feed_dict={image_tensor: image_np_expanded})
-            t1 = datetime.now()
-            print("b")
-            print("time from a to b is:", (t1-t).total_seconds())
+            if num_frames % frames_to_skip == 0 and num_frames != 0:
+                print("doing frame", repr(num_frames))
+                if frame is None:
+                    break
+                
+                color_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                image_np_expanded = np.expand_dims(color_frame, axis=0)
 
-            print("c")
-            t2 = datetime.now()
-            # drawing boxes n stuf
-            vis_util.visualize_boxes_and_labels_on_image_array(
-                    frame,
-                    np.squeeze(boxes),
-                    np.squeeze(classes).astype(np.int32),
-                    np.squeeze(scores),
-                    category_index,
-                    use_normalized_coordinates=True,
-                    line_thickness=8,
-                    min_score_thresh=.20)
+                # actual inference
+                (boxes, scores, classes, num) = sess.run(
+                        [detection_boxes, detection_scores,
+                            detection_classes, num_detections],
+                        feed_dict={image_tensor: image_np_expanded})
 
-            # show frame and save to new output vid
-            frame2 = cv2.resize(frame, (800, 600))
-            cv2.imshow('frame', frame2)
-            output_rgb = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-            out.write(output_rgb)
+                # drawing boxes n stuf
+                vis_util.visualize_boxes_and_labels_on_image_array(
+                        color_frame,
+                        np.squeeze(boxes),
+                        np.squeeze(classes).astype(np.int32),
+                        np.squeeze(scores),
+                        category_index,
+                        use_normalized_coordinates=True,
+                        line_thickness=8,
+                        min_score_thresh=.20)
+
+                # show frame and save to new output vid
+                frame2 = cv2.resize(color_frame, (800, 600))
+                cv2.imshow('frame', frame2)
+                output_rgb = cv2.cvtColor(color_frame, cv2.COLOR_RGB2BGR)
+                out.write(output_rgb)
+                # print(num_frames)
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+            else:
+                print("Skipped frame", repr(num_frames))
             num_frames += 1
-            t3 = datetime.now()
-            print("d")
-            print("time from c to d is:", (t3-t2).total_seconds())
 
-            # print(num_frames)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
+
+
 
         out.release()
         cap.release()
         cv2.destroyAllWindows()
-
+        finished = datetime.now()
+        print("Took", (finished-time).total_seconds())
         # input_video = 'right_in_front_trimmed'
         # video_reader = imageio.get_reader('%s.mp4'%input_video)
         # video_writer = imageio.get_writer('%s_annotated.mp4'% input_video, fps=10)
