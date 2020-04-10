@@ -20,7 +20,7 @@ def set_options(*args):
     """
     global option, option2, menu2
     a = ['model1', 'model2', 'model3']
-    b = ['model4', 'model5', 'model6']
+    b = ['Faster RCNN V2 Coco', 'Faster RCNN Resnet101 Kitti', 'RFCN Resnet101 Coco']
     c = ['model7', 'model8', 'model9']
     d = ['model10', 'model11', 'model12']
 
@@ -45,7 +45,6 @@ def set_options(*args):
     # add new options in
     for item in new_options:
         menu2['menu'].add_command(label=item, command=tk._setit(option2, item))
-
 
 def open():
     global my_image
