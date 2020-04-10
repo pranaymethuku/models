@@ -2,7 +2,7 @@
 .vscode
 
 # pretrained models
-research/object_detection/pretrained_models/
+research/object_detection/pre_trained_models/
 
 # tor models
 research/object_detection/tor_models
