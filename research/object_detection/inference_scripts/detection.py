@@ -127,6 +127,7 @@ if __name__ == "__main__":
                         help="Path to the input video to detect")
     parser.add_argument("-ov", "--output-video", type=str,
                         help="Path to the output the annotated video, only valid with --input-video")
+    # other potential input and output streams (like folders of images, webcam input, etc.)
     args = parser.parse_args()
 
 
@@ -139,4 +140,7 @@ if __name__ == "__main__":
               "but both input and output must be specified")
         sys.exit(1)
 
-    
+    if (args.input_image != None):
+        detect_image(args.frozen_inference_graph, args.labelmap, args.input_image, args.output_image)
+    else:
+        detect_video(args.frozen_inference_graph, args.labelmap, args.input_video, args.output_video)
