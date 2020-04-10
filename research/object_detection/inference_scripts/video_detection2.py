@@ -5,6 +5,7 @@ import tensorflow as tf
 import sys
 import imageio
 import argparse
+import cv2
 
 from datetime import datetime
 from PIL import Image
@@ -43,17 +44,12 @@ CWD_PATH = os.getcwd()
 # Path to frozen detection graph .pb file, which contains the model that is used
 # for object detection.
 PATH_TO_CKPT = args.frozen_inference_graph
-print(PATH_TO_CKPT)
-print(os.path.join(CWD_PATH,MODEL_NAME,'frozen_inference_graph.pb'))
 
 # Path to label map file
 PATH_TO_LABELS = args.labelmap
-print(PATH_TO_LABELS)
-print(os.path.join(CWD_PATH,'training','labelmap.pbtxt'))
 
 # Path to video
 PATH_TO_VIDEO = args.source
-print(os.path.join(CWD_PATH,VIDEO_NAME))
 
 # Number of classes the object detector can identify
 NUM_CLASSES = len(label_map_util.get_label_map_dict(args.labelmap))
@@ -66,6 +62,9 @@ NUM_CLASSES = len(label_map_util.get_label_map_dict(args.labelmap))
 label_map = label_map_util.load_labelmap(PATH_TO_LABELS)
 categories = label_map_util.convert_label_map_to_categories(label_map, max_num_classes=NUM_CLASSES, use_display_name=True)
 category_index = label_map_util.create_category_index(categories)
+
+out = cv2.VideoWriter('test.mp4', cv2.VideoWriter_fourcc(
+        'M', 'J', 'P', 'G'), 10, (int(1920), int(1080)))
 
 # Load the Tensorflow model into memory.
 detection_graph = tf.Graph()
@@ -82,6 +81,7 @@ with detection_graph.as_default():
 
 with detection_graph.as_default():
     with tf.Session(graph=detection_graph) as sess:
+
         # Input tensor is the image
         image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
         
@@ -97,36 +97,85 @@ with detection_graph.as_default():
         # Number of objects detected
         num_detections = detection_graph.get_tensor_by_name('num_detections:0')
 
-        input_video = 'right_in_front_trimmed'
-        video_reader = imageio.get_reader('%s.mp4'%input_video)
-        video_writer = imageio.get_writer('%s_annotated.mp4'% input_video, fps=10)
+        cap = cv2.VideoCapture('right_in_front_trimmed.mp4')
+        num_frames = 0
+        while(cap.isOpened()):
+            ret, frame = cap.read()
+            
+            image_np_expanded = np.expand_dims(frame, axis=0)
 
-        t0 = datetime.now()
-        n_frames = 0
-        
-        for frame in video_reader:
-            image_np = frame
-            n_frames += 1
+            print("a")
+            t = datetime.now()
+            # actual inference
+            (boxes, scores, classes, num) = sess.run(
+                    [detection_boxes, detection_scores,
+                        detection_classes, num_detections],
+                    feed_dict={image_tensor: image_np_expanded})
+            t1 = datetime.now()
+            print("b")
+            print("time from a to b is:", (t1-t).total_seconds())
 
-            image_np_expanded = np.expand_dims(image_np,axis=0)
-
-            (boxes,scores,classes,num)=sess.run(
-                [detection_boxes,detection_scores,detection_classes,num_detections],
-                feed_dict={image_tensor: image_np_expanded})
-
+            print("c")
+            t2 = datetime.now()
+            # drawing boxes n stuf
             vis_util.visualize_boxes_and_labels_on_image_array(
-                frame,
-                np.squeeze(boxes),
-                np.squeeze(classes).astype(np.int32),
-                np.squeeze(scores),
-                category_index,
-                use_normalized_coordinates=True,
-                line_thickness=8,
-                min_score_thresh=0.60)
+                    frame,
+                    np.squeeze(boxes),
+                    np.squeeze(classes).astype(np.int32),
+                    np.squeeze(scores),
+                    category_index,
+                    use_normalized_coordinates=True,
+                    line_thickness=8,
+                    min_score_thresh=.20)
 
-            video_writer.append_data(image_np)
-            print(n_frames)
-        fps=n_frames/(datetime.now()-t0).total_seconds()
-        print("Frames processed: %s,Speed:%s fps"%(n_frames,fps))
+            # show frame and save to new output vid
+            frame2 = cv2.resize(frame, (800, 600))
+            cv2.imshow('frame', frame2)
+            output_rgb = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+            out.write(output_rgb)
+            num_frames += 1
+            t3 = datetime.now()
+            print("d")
+            print("time from c to d is:", (t3-t2).total_seconds())
 
-        video_writer.close()
+            # print(num_frames)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+
+        out.release()
+        cap.release()
+        cv2.destroyAllWindows()
+
+        # input_video = 'right_in_front_trimmed'
+        # video_reader = imageio.get_reader('%s.mp4'%input_video)
+        # video_writer = imageio.get_writer('%s_annotated.mp4'% input_video, fps=10)
+
+        # t0 = datetime.now()
+        # n_frames = 0
+        
+        # for frame in video_reader:
+        #     image_np = frame
+        #     n_frames += 1
+
+        #     image_np_expanded = np.expand_dims(image_np,axis=0)
+
+        #     (boxes,scores,classes,num)=sess.run(
+        #         [detection_boxes,detection_scores,detection_classes,num_detections],
+        #         feed_dict={image_tensor: image_np_expanded})
+
+        #     vis_util.visualize_boxes_and_labels_on_image_array(
+        #         frame,
+        #         np.squeeze(boxes),
+        #         np.squeeze(classes).astype(np.int32),
+        #         np.squeeze(scores),
+        #         category_index,
+        #         use_normalized_coordinates=True,
+        #         line_thickness=8,
+        #         min_score_thresh=0.60)
+
+        #     video_writer.append_data(image_np)
+        #     print(n_frames)
+        # fps=n_frames/(datetime.now()-t0).total_seconds()
+        # print("Frames processed: %s,Speed:%s fps"%(n_frames,fps))
+
+        # video_writer.close()
