@@ -64,12 +64,13 @@ def define_tensors(detection_graph):
     num_detections = detection_graph.get_tensor_by_name('num_detections:0')
     return image_tensor, [detection_boxes, detection_scores, detection_classes, num_detections]
 
+
 def detect_single_image(image_np, sess,
-                 image_tensor,
-                 output_tensors,
-                 category_index,
-                 min_score_thresh=0.9,
-                 max_boxes_to_draw=20):
+                        image_tensor,
+                        output_tensors,
+                        category_index,
+                        min_score_thresh=0.9,
+                        max_boxes_to_draw=20):
     # expand image dimensions to have shape: [1, None, None, 3]
     image_expanded = np.expand_dims(image_np, axis=0)
 
@@ -94,12 +95,13 @@ def detect_single_image(image_np, sess,
     # print(scores)
     return image_np
 
+
 def detect_image(frozen_inference_graph, labelmap, input_image, output_image):
     sess, detection_graph = load_tensorflow_model(frozen_inference_graph)
     category_index = load_labelmap(labelmap)
     image_tensor, output_tensors = define_tensors(detection_graph)
 
-    # Load image using OpenCV and
+    # Load image using OpenCV and changing color space to RGB
     image = cv2.imread(input_image)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
@@ -109,9 +111,54 @@ def detect_image(frozen_inference_graph, labelmap, input_image, output_image):
     img = Image.fromarray(output_image_np, 'RGB')
     img.save(output_image, "jpeg")
 
-def detect_video(frozen_inference_graph, labelmap, input_video, output_video):
-    pass
 
+def detect_video(frozen_inference_graph, labelmap, input_video, output_video):
+    sess, detection_graph = load_tensorflow_model(frozen_inference_graph)
+    category_index = load_labelmap(labelmap)
+    image_tensor, output_tensors = define_tensors(detection_graph)
+
+    # Load video using OpenCV
+    cap = cv2.VideoCapture(input_video)
+    print("CONVERT_RGB: {}".format(cap.set(cv2.CAP_PROP_CONVERT_RGB, True)))
+    print("FPS changed: {}".format(cap.set(cv2.CAP_PROP_FPS, 10.0)))
+
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    out = cv2.VideoWriter(output_video, fourcc, 30.0, (int(
+        cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))))
+
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    frame_count = 0
+    while cap.isOpened():
+        _, frame = cap.read()
+        print("detecting frame {} of {}".format(frame_count, total_frames))
+        output_frame = detect_single_image(
+            frame, sess, image_tensor, output_tensors, category_index)
+
+        out.write(output_frame)
+        frame_count += 1
+    cap.release()
+    out.release()
+
+def detect_webcam(frozen_inference_graph, labelmap):
+    sess, detection_graph = load_tensorflow_model(frozen_inference_graph)
+    category_index = load_labelmap(labelmap)
+    image_tensor, output_tensors = define_tensors(detection_graph)
+
+    # Load video using OpenCV
+    cap = cv2.VideoCapture(0)
+    # print("CONVERT_RGB: {}".format(cap.set(cv2.CAP_PROP_CONVERT_RGB, True)))
+    # print("FPS changed: {}".format(cap.set(cv2.CAP_PROP_FPS, 10.0)))
+
+    while cap.isOpened():
+        _, frame = cap.read()
+        output_frame = detect_single_image(
+            frame, sess, image_tensor, output_tensors, category_index)
+
+        cv2.imshow('Video', output_frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+    cap.release()
+    
 if __name__ == "__main__":
     # set up command line
     parser = argparse.ArgumentParser()
@@ -127,20 +174,25 @@ if __name__ == "__main__":
                         help="Path to the input video to detect")
     parser.add_argument("-ov", "--output-video", type=str,
                         help="Path to the output the annotated video, only valid with --input-video")
+    parser.add_argument("-iw", "--input-webcam", action='store_true',
+                        help="Path to the input video to detect")                 
     # other potential input and output streams (like folders of images, webcam input, etc.)
     args = parser.parse_args()
 
-
     # parameter check, it's very ugly but I believe it covers all cases
-    if ((args.input_image == None) != (args.output_image == None)) \
-    or ((args.input_video == None) != (args.output_video == None)) \
-    or ((args.output_image == None) == (args.output_video == None)) \
-    or ((args.input_image == None) == (args.input_video == None)):
-        print("ERROR: only one of image parameters and video parameters can be specified, " +
-              "but both input and output must be specified")
-        sys.exit(1)
+    # if ((args.input_image == None) != (args.output_image == None)) \
+    #         or ((args.input_video == None) != (args.output_video == None)) \
+    #         or ((args.output_image == None) == (args.output_video == None)) \
+    #         or ((args.input_image == None) == (args.input_video == None)):
+    #     print("ERROR: only one of image parameters and video parameters can be specified, " +
+    #           "but both input and output must be specified")
+    #     sys.exit(1)
 
     if (args.input_image != None):
-        detect_image(args.frozen_inference_graph, args.labelmap, args.input_image, args.output_image)
+        detect_image(args.frozen_inference_graph, args.labelmap,
+                     args.input_image, args.output_image)
+    elif (args.input_webcam):
+        detect_webcam(args.frozen_inference_graph, args.labelmap)
     else:
-        detect_video(args.frozen_inference_graph, args.labelmap, args.input_video, args.output_video)
+        detect_video(args.frozen_inference_graph, args.labelmap,
+                     args.input_video, args.output_video)
