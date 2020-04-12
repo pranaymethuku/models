@@ -64,7 +64,7 @@ Ran 15 tests in 0.123sOK
 
 Now you have everything set up!
 
-## Project Structure and Pre-training
+## Project Structure
 
 The rest of the steps will be executed from within the `models/research/object_detection` directory. In this directory, we have augmented the framework by creating some new directories, namely:
 
@@ -113,6 +113,8 @@ Essentially, the directory structure under `object_detection/` would look someth
 │   └── ...
 └── ...
 ```
+
+## Pre-training
 
 For the purposes of this tutorial, we will train a **Tier 2** model. Furthermore, we will skip the data-collection/post-processing/labeling step and assume you have `train_data` and `test_data` directories already created with correspondingly labeled .xml files for your .jpgs, as well as an appropriately configured `labelmap.pbtxt` file, all in the `tor_models/tier_2` directory.
 
@@ -226,7 +228,7 @@ def main(unused_argv):
 Once that is done, we can run the training script from the `object_detection` directory using the earlier `faster_rcnn_inception_v2_coco.config` file and the `tier_2_faster_rcnn_inception_v2_coco_2018_01_28/training` directory we created as follows:
 
 ```bash
-python model_main.py model_dir=tor_models/tier_2/tier_2_faster_rcnn_inception_v2_coco_2018_01_28/training --pipeline_config_path=tor_models/tier_2/tier_2_faster_rcnn_inception_v2_coco_2018_01_28/faster_rcnn_inception_v2_coco.config --num_train_steps=200000
+python model_main.py --model_dir=tor_models/tier_2/tier_2_faster_rcnn_inception_v2_coco_2018_01_28/training --pipeline_config_path=tor_models/tier_2/tier_2_faster_rcnn_inception_v2_coco_2018_01_28/faster_rcnn_inception_v2_coco.config --num_train_steps=200000
 ```
 
 Based on the --num_train_steps parameter, the training will run for 200000 steps.
@@ -255,7 +257,7 @@ I0407 22:55:37.851746 139827692275520 basic_session_run_hooks.py:260] loss = 0.0
 INFO:tensorflow:global_step/sec: 2.32246
 ```
 
-You can view the progress of the training job by using TensorBoard. To do this, open a terminal and navigate to the object_detection directory, and run the following command:
+You can view the progress of the training job by using TensorBoard. To do this, open a terminal and navigate to the `object_detection` directory, and run the following command:
 
 ```bash
 tensorboard --logdir=tor_models/tier_2/tier_2_faster_rcnn_inception_v2_coco_2018_01_28/training
