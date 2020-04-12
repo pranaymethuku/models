@@ -118,7 +118,7 @@ For the purposes of this tutorial, we will train a **Tier 2** model. Furthermore
 
 In our case, the `labelmap.pbtxt` file looks something like this:
 
-```json
+```txt
 item {
   id: 1
   name: 'Sedan'
@@ -186,7 +186,7 @@ Next, we will modify the .config file.
 
 3\. Modify the absolute paths to the `input_path` and `label_map_path` attributes file under the `train_input_reader`, `eval_input_reader`, and `label_map_path` attributes, to point to the corresponding .tfrecord and .pbtxt files. In our case,
 
-```json
+```txt
 train_input_reader: {
   tf_record_input_reader {
     input_path: "/udrive/student/ksmith012007/models/research/object_detection/tor_models/tier_2/train.tfrecord"
@@ -197,7 +197,7 @@ train_input_reader: {
 
 and
 
-```json
+```txt
 eval_input_reader: {
   tf_record_input_reader {
     input_path: "/udrive/student/ksmith012007/models/research/object_detection/tor_models/tier_2/test.tfrecord"
