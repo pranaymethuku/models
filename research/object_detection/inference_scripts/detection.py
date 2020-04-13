@@ -113,6 +113,7 @@ def detect_image(frozen_inference_graph, labelmap, input_image, output_image):
 
 
 def detect_video(frozen_inference_graph, labelmap, input_video, output_video):
+    print(frozen_inference_graph)
     sess, detection_graph = load_tensorflow_model(frozen_inference_graph)
     category_index = load_labelmap(labelmap)
     image_tensor, output_tensors = define_tensors(detection_graph)
