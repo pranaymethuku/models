@@ -65,7 +65,7 @@ def define_tensors(detection_graph):
     return image_tensor, [detection_boxes, detection_scores, detection_classes, num_detections]
 
 
-def detect_single_image(image_np, sess,
+def detect_on_single_frame(image_np, sess,
                         image_tensor,
                         output_tensors,
                         category_index,
@@ -95,8 +95,7 @@ def detect_single_image(image_np, sess,
     # print(scores)
     return image_np
 
-
-def detect_image(frozen_inference_graph, labelmap, input_image, output_image):
+def image_detection(frozen_inference_graph, labelmap, input_image, output_image):
     sess, detection_graph = load_tensorflow_model(frozen_inference_graph)
     category_index = load_labelmap(labelmap)
     image_tensor, output_tensors = define_tensors(detection_graph)
@@ -105,14 +104,14 @@ def detect_image(frozen_inference_graph, labelmap, input_image, output_image):
     image = cv2.imread(input_image)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-    output_image_np = detect_single_image(
+    output_image_np = detect_on_single_frame(
         image, sess, image_tensor, output_tensors, category_index)
 
     img = Image.fromarray(output_image_np, 'RGB')
     img.save(output_image, "jpeg")
 
 
-def detect_video(frozen_inference_graph, labelmap, input_video, output_video):
+def video_detection(frozen_inference_graph, labelmap, input_video, output_video):
     print(frozen_inference_graph)
     sess, detection_graph = load_tensorflow_model(frozen_inference_graph)
     category_index = load_labelmap(labelmap)
@@ -142,7 +141,7 @@ def detect_video(frozen_inference_graph, labelmap, input_video, output_video):
                 break
 
             print("detecting frame {} of {}".format(frame_count, total_frames))
-            output_frame = detect_single_image(
+            output_frame = detect_on_single_frame(
                 frame, sess, image_tensor, output_tensors, category_index)
 
             out.write(output_frame)
@@ -151,7 +150,7 @@ def detect_video(frozen_inference_graph, labelmap, input_video, output_video):
     cap.release()
     out.release()
 
-def detect_webcam(frozen_inference_graph, labelmap):
+def webcam_detection(frozen_inference_graph, labelmap):
     sess, detection_graph = load_tensorflow_model(frozen_inference_graph)
     category_index = load_labelmap(labelmap)
     image_tensor, output_tensors = define_tensors(detection_graph)
@@ -163,7 +162,7 @@ def detect_webcam(frozen_inference_graph, labelmap):
 
     while cap.isOpened():
         _, frame = cap.read()
-        output_frame = detect_single_image(
+        output_frame = detect_on_single_frame(
             frame, sess, image_tensor, output_tensors, category_index)
 
         cv2.imshow('Video', output_frame)
@@ -201,10 +200,10 @@ if __name__ == "__main__":
     #     sys.exit(1)
 
     if (args.input_image != None):
-        detect_image(args.frozen_inference_graph, args.labelmap,
+        image_detection(args.frozen_inference_graph, args.labelmap,
                      args.input_image, args.output_image)
     elif (args.input_webcam):
-        detect_webcam(args.frozen_inference_graph, args.labelmap)
+        webcam_detection(args.frozen_inference_graph, args.labelmap)
     else:
-        detect_video(args.frozen_inference_graph, args.labelmap,
+        video_detection(args.frozen_inference_graph, args.labelmap,
                      args.input_video, args.output_video)
