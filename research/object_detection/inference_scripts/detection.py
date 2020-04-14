@@ -128,15 +128,26 @@ def detect_video(frozen_inference_graph, labelmap, input_video, output_video):
         cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))))
 
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+    # Inferencing at a rate of 10 FPS
+    frames_to_skip = int(cap.get(cv2.CAP_PROP_FPS) / 10.0)
     frame_count = 0
+
     while cap.isOpened():
         _, frame = cap.read()
-        print("detecting frame {} of {}".format(frame_count, total_frames))
-        output_frame = detect_single_image(
-            frame, sess, image_tensor, output_tensors, category_index)
 
-        out.write(output_frame)
+        # Skipping some frames to run inferencing at 10 fps
+        if frame_count % frames_to_skip == 0 and frame_count != 0:
+            if frame is None:
+                break
+
+            print("detecting frame {} of {}".format(frame_count, total_frames))
+            output_frame = detect_single_image(
+                frame, sess, image_tensor, output_tensors, category_index)
+
+            out.write(output_frame)
         frame_count += 1
+
     cap.release()
     out.release()
 

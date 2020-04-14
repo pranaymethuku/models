@@ -65,6 +65,14 @@ def open():
     global my_image
     root.filename = filedialog.askopenfilename(initialdir="", title="Select A File", filetypes=(("jpg files", "*.jpg"),("all files", "*.*")))
     file_extension = os.path.splitext(root.filename)
+    if variable.get() == "Done":
+        my_label = tk.Label(root)
+        my_label.pack()
+        video = imageio.get_reader(root.filename)
+        thread = threading.Thread(target=stream, args=(my_label, video))
+        thread.daemon = 1
+        thread.start()
+
     if option.get() == '(select)' or option2.get() == '(select)':
         messagebox.showerror("Error","You must select a Tier and Model")
     else:
@@ -108,6 +116,12 @@ option2.set('(select)')
 menu2 = tk.OptionMenu(root, option2, '(select)')
 menu2.pack()
 set_options()
+
+variable = tk.StringVar(root)
+variable.set("(select)") # default value
+
+w = tk.OptionMenu(root, variable, "Done")
+w.pack()
 
 my_btn = tk.Button(root, text="Open File", command=open).pack()
 
