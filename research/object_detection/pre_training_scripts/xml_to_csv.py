@@ -18,7 +18,7 @@ Usage:
     python3 xml_to_csv.py --source=path/to/source --csv-file=path/to/csv/file
 
 Examples:
-    python3 auto_label.py -s=./tier1/test -cf=../tier1/test_labels.csv
+    python3 auto_label.py -s=./tier1/test -c=../tier1/test_labels.csv
 """
 
 import os
@@ -58,7 +58,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-s", "--source", type=str, default="train",
                         help="Path to the source folder to look from, train folder by default")
-    parser.add_argument("-cf", "--csv-file", type=str, default="train_labels.csv",
+    parser.add_argument("-c", "--csv-file", type=str, default="train_labels.csv",
                         help="Path to a CSV file to output the annotations into")
     args = parser.parse_args()
 
