@@ -1,8 +1,8 @@
 import tensorflow as tf
 
 
-#model_file = "../tor_models/tier_2/tier_2_faster_rcnn_inception_v2_coco_2018_01_28/inference_graph/frozen_inference_graph.pb"
 model_file = "../tor_models/tier_2/tier_2_faster_rcnn_inception_v2_coco_2018_01_28/inference_graph/frozen_inference_graph.pb"
+# model_file = "../tor_models/tier_2/tier_2_ssd_inception_v2_coco_2018_01_28/inference_graph/frozen_inference_graph.pb"
 
 def load_graph(pbmodelFile):
     with tf.gfile.GFile(pbmodelFile, "rb") as f:
