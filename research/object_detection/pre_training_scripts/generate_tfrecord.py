@@ -14,7 +14,7 @@ Updates:
     * Script now takes in a labelmap .pbtxt file as input.
 
 Usage:
-    python generate_tfrecord.py [-h] -c CSV_INPUT -r RECORD_OUTPUT -i IMAGE_DIR -l LABELMAP 
+    python generate_tfrecord.py --csv-input=path/to/csv  --record-output=path/to/record --image-dir=path/to/image/dir --labelmap=path/to/labelmap 
 
 Examples
     python generate_tfrecord.py -c=tier_1/train/train_labels.csv -r=tier_1/train/train.tfrecord -i=tier_1/train -l=tier_1/labelmap.pbtxt
@@ -86,11 +86,11 @@ if __name__ == "__main__":
 
     # set up command line
     parser = argparse.ArgumentParser()
-    parser.add_argument("-c", "--csv_input", type=str, required=True,
+    parser.add_argument("-c", "--csv-input", type=str, required=True,
                         help="Path to the CSV file to look from")
-    parser.add_argument("-r", "--record_output", type=str, required=True,
+    parser.add_argument("-r", "--record-output", type=str, required=True,
                         help="Path to a .record file to output the annotations into")
-    parser.add_argument("-i", "--image_dir", type=str, required=True,
+    parser.add_argument("-i", "--image-dir", type=str, required=True,
                         help="The directory with the CSV file's corresponding images")
     parser.add_argument("-l", "--labelmap", type=str, required=True,
                         help="The labelmap corresponding to the classification")

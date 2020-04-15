@@ -12,10 +12,10 @@ Updates:
     * Incorporated argparse to be consistent with other scripts we're using
 
 Usage:
-    python3 check_bounding_boxes.py [-h] -s SOURCE -c CSV_FILE
+    python3 check_bounding_boxes.py --source=path/to/source --csv-file=path/to/csv/file
 
 Examples:
-    python3 check_bounding_boxes.py -s=./tier1/test -c=../tier1/test_labels.csv
+    python3 check_bounding_boxes.py -s=./tier1/test -cf=../tier1/test_labels.csv
 """
 
 import csv
@@ -28,9 +28,9 @@ if __name__ == "__main__":
 
     # set up command line
     parser = argparse.ArgumentParser()
-    parser.add_argument("-s", "--source", type=str, required=True,
-                        help="Path to the source folder to look from")
-    parser.add_argument("-c", "--csv_file", type=str, required=True,
+    parser.add_argument("-s", "--source", type=str, default="train",
+                        help="Path to the source folder to look from, train folder by default")
+    parser.add_argument("-cf", "--csv-file", type=str, default="train_labels.csv",
                         help="Path to a CSV file to inspect")
     args = parser.parse_args()
 

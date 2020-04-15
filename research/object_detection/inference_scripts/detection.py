@@ -85,12 +85,12 @@ def define_tensors(detection_graph):
     return image_tensor, [detection_boxes, detection_scores, detection_classes, num_detections]
 
 
-def detect_single_image(image_np, sess,
+def detect_on_single_frame(image_np, sess,
                         image_tensor,
                         output_tensors,
                         category_index,
                         min_score_thresh=0.9,
-                        max_boxes_to_draw=20):
+                        max_boxes_to_draw=1):
     # expand image dimensions to have shape: [1, None, None, 3]
     image_expanded = np.expand_dims(image_np, axis=0)
 
@@ -115,8 +115,24 @@ def detect_single_image(image_np, sess,
     # print(scores)
     return image_np
 
+def batch_detection(frozen_inference_graph, labelmap, input_folder, output_folder):
+    # walk through all directories 
+    for root, _, files in os.walk(input_folder, topdown=False):
+        # we only want to walk through the jpgs here, ignore anything else
+        img_files = [name for name in files if ".jpg" in name] 
+        # keep count of how many files we process - batch processing can be slow and 
+        # we don't want the user to wait without feedback
+        total_num_files = len(img_files)
+        file_num = 0
+        for name in img_files:
+            file_num += 1
+            original_image = os.path.join(input_folder, name)
+            annotated_image = os.path.join(output_folder, name)
+            image_detection(frozen_inference_graph, labelmap, original_image, annotated_image)
+            print("* Processed " + str(file_num) + "/" + str(total_num_files) 
+                + " images in folder \"" + str(root) + "\"")
 
-def detect_image(frozen_inference_graph, labelmap, input_image, output_image):
+def image_detection(frozen_inference_graph, labelmap, input_image, output_image):
     sess, detection_graph = load_tensorflow_model(frozen_inference_graph)
     category_index = load_labelmap(labelmap)
     image_tensor, output_tensors = define_tensors(detection_graph)
@@ -125,14 +141,14 @@ def detect_image(frozen_inference_graph, labelmap, input_image, output_image):
     image = cv2.imread(input_image)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-    output_image_np = detect_single_image(
+    output_image_np = detect_on_single_frame(
         image, sess, image_tensor, output_tensors, category_index)
 
     img = Image.fromarray(output_image_np, 'RGB')
     img.save(output_image, "jpeg")
 
 
-def detect_video(frozen_inference_graph, labelmap, input_video, output_video):
+def video_detection(frozen_inference_graph, labelmap, input_video, output_video):
     print(frozen_inference_graph)
     sess, detection_graph = load_tensorflow_model(frozen_inference_graph)
     category_index = load_labelmap(labelmap)
@@ -162,7 +178,7 @@ def detect_video(frozen_inference_graph, labelmap, input_video, output_video):
                 break
 
             print("detecting frame {} of {}".format(frame_count, total_frames))
-            output_frame = detect_single_image(
+            output_frame = detect_on_single_frame(
                 frame, sess, image_tensor, output_tensors, category_index)
 
             out.write(output_frame)
@@ -171,7 +187,7 @@ def detect_video(frozen_inference_graph, labelmap, input_video, output_video):
     cap.release()
     out.release()
 
-def detect_webcam(frozen_inference_graph, labelmap):
+def webcam_detection(frozen_inference_graph, labelmap):
     sess, detection_graph = load_tensorflow_model(frozen_inference_graph)
     category_index = load_labelmap(labelmap)
     image_tensor, output_tensors = define_tensors(detection_graph)
@@ -183,7 +199,7 @@ def detect_webcam(frozen_inference_graph, labelmap):
 
     while cap.isOpened():
         _, frame = cap.read()
-        output_frame = detect_single_image(
+        output_frame = detect_on_single_frame(
             frame, sess, image_tensor, output_tensors, category_index)
 
         cv2.imshow('Video', output_frame)
@@ -202,13 +218,17 @@ if __name__ == "__main__":
                         help="Path to the input image to detect")
     parser.add_argument("-oi", "--output_image", type=str,
                         help="Path to the output the annotated image, only valid with --input-image")
+    parser.add_argument("-if", "--input_folder", type=str,
+                        help="Path to the folder of input images to perform detection on")
+    parser.add_argument("-of", "--output_folder", type=str,
+                        help="Path to the output folder for annotated images, only valid with --input-folder")
     parser.add_argument("-iv", "--input_video", type=str,
                         help="Path to the input video to detect")
     parser.add_argument("-ov", "--output_video", type=str,
                         help="Path to the output the annotated video, only valid with --input-video")
     parser.add_argument("-iw", "--input_webcam", action='store_true',
                         help="Path to the input video to detect")                 
-    # other potential input and output streams (like folders of images, different webcam input, etc.)
+    # other potential input and output streams would be configured here
     args = parser.parse_args()
 
     # parameter check, it's very ugly but I believe it covers all cases
@@ -221,10 +241,12 @@ if __name__ == "__main__":
     #     sys.exit(1)
 
     if (args.input_image != None):
-        detect_image(args.frozen_inference_graph, args.labelmap,
+        image_detection(args.frozen_inference_graph, args.labelmap,
                      args.input_image, args.output_image)
+    elif (args.input_folder):
+        batch_detection(args.frozen_inference_graph, args.labelmap, args.input_folder, args.output_folder)
     elif (args.input_webcam):
-        detect_webcam(args.frozen_inference_graph, args.labelmap)
+        webcam_detection(args.frozen_inference_graph, args.labelmap)
     else:
-        detect_video(args.frozen_inference_graph, args.labelmap,
+        video_detection(args.frozen_inference_graph, args.labelmap,
                      args.input_video, args.output_video)

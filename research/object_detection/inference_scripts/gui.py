@@ -1,3 +1,5 @@
+#!/home/rkabealo/anaconda3/envs/tor/bin/python
+
 #givememyredline
 import tkinter as tk
 from tkinter import filedialog, messagebox
