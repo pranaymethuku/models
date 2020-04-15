@@ -1,4 +1,24 @@
-# Write Python3 code here
+"""
+Created on Thu Apr 9 2020
+@author: pranaymethuku
+
+Class: CSE 5915 - Information Systems
+Section: 6pm TR, Spring 2020
+Prof: Prof. Jayanti
+
+A Python 3 script to perform object detection on image, video, or webcam, and store/display output accordingly
+
+Usage:
+    python3 detection.py [-h] -f FROZEN_INFERENCE_GRAPH -l LABELMAP
+                    [-ii INPUT_IMAGE] [-oi OUTPUT_IMAGE] [-iv INPUT_VIDEO]
+                    [-ov OUTPUT_VIDEO] [-iw]
+
+Examples:
+    python3 detection.py -f=inference_graph/frozen_inference_graph.pb -ii=./car.jpg -oi=./car_annotated.jpg
+    python3 detection.py -f=inference_graph/frozen_inference_graph.pb -iv=./truck.mp4 -oi=./truck_annotated.mp4
+    python3 detection.py -f=inference_graph/frozen_inference_graph.pb -iw
+"""
+
 import os
 import cv2
 import numpy as np
@@ -190,24 +210,24 @@ def webcam_detection(frozen_inference_graph, labelmap):
 if __name__ == "__main__":
     # set up command line
     parser = argparse.ArgumentParser()
-    parser.add_argument("-f", "--frozen-inference-graph", type=str, required=True,
-                        help="Path to frozen detection graph (.pb file) which contains the model that is used")
+    parser.add_argument("-f", "--frozen_inference_graph", type=str, required=True,
+                        help="Path to frozen detection graph .pb file, which contains the model that is used")
     parser.add_argument("-l", "--labelmap", type=str, required=True,
                         help="Path to the labelmap")
-    parser.add_argument("-ii", "--input-image", type=str,
-                        help="Path to the input image to perform detection on")
-    parser.add_argument("-oi", "--output-image", type=str,
-                        help="Path to the output annotated image, only valid with --input-image")
-    parser.add_argument("-if", "--input-folder", type=str,
+    parser.add_argument("-ii", "--input_image", type=str,
+                        help="Path to the input image to detect")
+    parser.add_argument("-oi", "--output_image", type=str,
+                        help="Path to the output the annotated image, only valid with --input-image")
+    parser.add_argument("-if", "--input_folder", type=str,
                         help="Path to the folder of input images to perform detection on")
-    parser.add_argument("-of", "--output-folder", type=str,
+    parser.add_argument("-of", "--output_folder", type=str,
                         help="Path to the output folder for annotated images, only valid with --input-folder")
-    parser.add_argument("-iv", "--input-video", type=str,
-                        help="Path to the input video to perform detection on")
-    parser.add_argument("-ov", "--output-video", type=str,
-                        help="Path to the output annotated video, only valid with --input-video")
-    parser.add_argument("-iw", "--input-webcam", action='store_true',
-                        help="Path to the input stream to perform detection on")                 
+    parser.add_argument("-iv", "--input_video", type=str,
+                        help="Path to the input video to detect")
+    parser.add_argument("-ov", "--output_video", type=str,
+                        help="Path to the output the annotated video, only valid with --input-video")
+    parser.add_argument("-iw", "--input_webcam", action='store_true',
+                        help="Path to the input video to detect")                 
     # other potential input and output streams would be configured here
     args = parser.parse_args()
 
