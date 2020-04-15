@@ -205,8 +205,9 @@ def draw_bounding_box_on_image(image,
   draw.line([(left, top), (left, bottom), (right, bottom),
              (right, top), (left, top)], width=thickness, fill=color)
   try:
-    font = ImageFont.truetype('arial.ttf', 24)
-  except IOError:
+    font = ImageFont.truetype('UbuntuMono-R.ttf', 24)
+  except IOError as e:
+    print("ERROR:" + e)
     font = ImageFont.load_default()
 
   # If the total height of the display strings added to the top of the bounding

@@ -70,7 +70,7 @@ def detect_on_single_frame(image_np, sess,
                         output_tensors,
                         category_index,
                         min_score_thresh=0.9,
-                        max_boxes_to_draw=20):
+                        max_boxes_to_draw=1):
     # expand image dimensions to have shape: [1, None, None, 3]
     image_expanded = np.expand_dims(image_np, axis=0)
 
