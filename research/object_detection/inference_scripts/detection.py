@@ -95,6 +95,23 @@ def detect_on_single_frame(image_np, sess,
     # print(scores)
     return image_np
 
+def batch_detection(frozen_inference_graph, labelmap, input_folder, output_folder):
+    # walk through all directories 
+    for root, _, files in os.walk(input_folder, topdown=False):
+        # we only want to walk through the jpgs here, ignore anything else
+        img_files = [name for name in files if ".jpg" in name] 
+        # keep count of how many files we process - batch processing can be slow and 
+        # we don't want the user to wait without feedback
+        total_num_files = len(img_files)
+        file_num = 0
+        for name in img_files:
+            file_num += 1
+            original_image = os.path.join(input_folder, name)
+            annotated_image = os.path.join(output_folder, name)
+            image_detection(frozen_inference_graph, labelmap, original_image, annotated_image)
+            print("* Processed " + str(file_num) + "/" + str(total_num_files) 
+                + " images in folder \"" + str(root) + "\"")
+
 def image_detection(frozen_inference_graph, labelmap, input_image, output_image):
     sess, detection_graph = load_tensorflow_model(frozen_inference_graph)
     category_index = load_labelmap(labelmap)
@@ -174,20 +191,24 @@ if __name__ == "__main__":
     # set up command line
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", "--frozen-inference-graph", type=str, required=True,
-                        help="Path to frozen detection graph .pb file, which contains the model that is used")
+                        help="Path to frozen detection graph (.pb file) which contains the model that is used")
     parser.add_argument("-l", "--labelmap", type=str, required=True,
                         help="Path to the labelmap")
     parser.add_argument("-ii", "--input-image", type=str,
-                        help="Path to the input image to detect")
+                        help="Path to the input image to perform detection on")
     parser.add_argument("-oi", "--output-image", type=str,
-                        help="Path to the output the annotated image, only valid with --input-image")
+                        help="Path to the output annotated image, only valid with --input-image")
+    parser.add_argument("-if", "--input-folder", type=str,
+                        help="Path to the folder of input images to perform detection on")
+    parser.add_argument("-of", "--output-folder", type=str,
+                        help="Path to the output folder for annotated images, only valid with --input-folder")
     parser.add_argument("-iv", "--input-video", type=str,
-                        help="Path to the input video to detect")
+                        help="Path to the input video to perform detection on")
     parser.add_argument("-ov", "--output-video", type=str,
-                        help="Path to the output the annotated video, only valid with --input-video")
+                        help="Path to the output annotated video, only valid with --input-video")
     parser.add_argument("-iw", "--input-webcam", action='store_true',
-                        help="Path to the input video to detect")                 
-    # other potential input and output streams (like folders of images, webcam input, etc.)
+                        help="Path to the input stream to perform detection on")                 
+    # other potential input and output streams would be configured here
     args = parser.parse_args()
 
     # parameter check, it's very ugly but I believe it covers all cases
@@ -202,6 +223,8 @@ if __name__ == "__main__":
     if (args.input_image != None):
         image_detection(args.frozen_inference_graph, args.labelmap,
                      args.input_image, args.output_image)
+    elif (args.input_folder):
+        batch_detection(args.frozen_inference_graph, args.labelmap, args.input_folder, args.output_folder)
     elif (args.input_webcam):
         webcam_detection(args.frozen_inference_graph, args.labelmap)
     else:
