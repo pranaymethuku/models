@@ -1,8 +1,8 @@
 import tensorflow as tf
 
 
-# model_file = "../tor_models/tier_2/tier_2_faster_rcnn_inception_v2_coco_2018_01_28/inference_graph/frozen_inference_graph.pb"
-model_file = "../tor_models/tier_2/tier_2_ssd_inception_v2_coco_2018_01_28/inference_graph/frozen_inference_graph.pb"
+#model_file = "../tor_models/tier_2/tier_2_faster_rcnn_inception_v2_coco_2018_01_28/inference_graph/frozen_inference_graph.pb"
+model_file = "../tor_models/tier_2/tier_2_faster_rcnn_inception_v2_coco_2018_01_28/inference_graph/frozen_inference_graph.pb"
 
 def load_graph(pbmodelFile):
     with tf.gfile.GFile(pbmodelFile, "rb") as f:
@@ -22,5 +22,5 @@ graph, inputName, outputName = load_graph(model_file)
 input_x = graph.get_tensor_by_name(inputName)
 output_y = graph.get_tensor_by_name(outputName)
 
-print(tf.cast(input_x, tf.float32))
+print(input_x)
 print(output_y)
