@@ -1,6 +1,5 @@
 #!/home/rkabealo/anaconda3/envs/tor/bin/python
 
-#givememyredline
 import tkinter as tk
 from tkinter import filedialog, messagebox
 import threading
@@ -97,7 +96,7 @@ def open():
 
 def stream(label, video):
     for image in video.iter_data():
-        frame_image = ImageTk.PhotoImage(Image.fromarray(image))
+        frame_image = ImageTk.PhotoImage(Image.fromarray(image).resize((800,600), Image.ANTIALIAS))
         label.config(image=frame_image)
         label.image = frame_image
 
