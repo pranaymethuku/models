@@ -204,11 +204,8 @@ def draw_bounding_box_on_image(image,
     (left, right, top, bottom) = (xmin, xmax, ymin, ymax)
   draw.line([(left, top), (left, bottom), (right, bottom),
              (right, top), (left, top)], width=thickness, fill=color)
-  try:
-    font = ImageFont.truetype('UbuntuMono-R.ttf', 24)
-  except IOError as e:
-    print("ERROR:" + e)
-    font = ImageFont.load_default()
+
+  font = ImageFont.truetype('UbuntuMono-R.ttf', 100)
 
   # If the total height of the display strings added to the top of the bounding
   # box exceeds the top of the image, stack the strings below the bounding box
