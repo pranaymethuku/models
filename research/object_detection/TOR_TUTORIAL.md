@@ -146,14 +146,14 @@ item {
 Run the `xml_to_csv.py` script from the `pre_training_scripts` directory to generate labeled .csv files for `train_data` and `test_data`
 
 ```bash
-python xml_to_csv.py --source=<path_to_train> --csv-file=<path_to_train_labels.csv>
+python xml_to_csv.py --source=<path_to_train> --csv_file=<path_to_train_labels.csv>
 ```
 
 In this case,
 
 ```bash
-python pre_training_scripts/xml_to_csv.py --source=tor_models/tier_2/train_data --csv-file=tor_models/tier_2/train_labels.csv
-python pre_training_scripts/xml_to_csv.py --source=tor_models/tier_2/test_data --csv-file=tor_models/tier_2/test_labels.csv
+python pre_training_scripts/xml_to_csv.py --source=tor_models/tier_2/train_data --csv_file=tor_models/tier_2/train_labels.csv
+python pre_training_scripts/xml_to_csv.py --source=tor_models/tier_2/test_data --csv_file=tor_models/tier_2/test_labels.csv
 ```
 
 Next, run the `generate_tfrecord.py` script from the `pre_training_scripts` directory to generate .tfrecord files from the generated .csv files for `train_data/` and `test_data/`
