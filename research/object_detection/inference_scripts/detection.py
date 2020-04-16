@@ -20,6 +20,7 @@ Examples:
 """
 
 import os
+import math
 import cv2
 import numpy as np
 import tensorflow as tf
@@ -91,9 +92,13 @@ def detect_on_single_frame(image_np, sess,
                         category_index,
                         min_score_thresh=0.9,
                         max_boxes_to_draw=1):
+
+    height, width = image_np.shape[:2]
+
+    line_thickness_adjustment = math.ceil(max(height, width) / 400)
     # expand image dimensions to have shape: [1, None, None, 3]
     image_expanded = np.expand_dims(image_np, axis=0)
-
+    
     # Perform the actual detection by running the model with the image as input
     (boxes, scores, classes, _) = sess.run(
         output_tensors, feed_dict={image_tensor: image_expanded})
@@ -106,7 +111,7 @@ def detect_on_single_frame(image_np, sess,
         np.squeeze(scores),
         category_index,
         use_normalized_coordinates=True,
-        line_thickness=8,
+        line_thickness=4+line_thickness_adjustment,
         min_score_thresh=min_score_thresh,
         max_boxes_to_draw=max_boxes_to_draw)
 
