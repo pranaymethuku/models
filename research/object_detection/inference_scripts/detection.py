@@ -112,7 +112,7 @@ def detect_on_single_frame(image_np, sess,
         np.squeeze(scores),
         category_index,
         use_normalized_coordinates=True,
-        line_thickness=3+line_thickness_adjustment,
+        line_thickness=4+line_thickness_adjustment,
         min_score_thresh=min_score_thresh,
         max_boxes_to_draw=max_boxes_to_draw)
 
