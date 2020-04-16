@@ -207,6 +207,7 @@ def draw_bounding_box_on_image(image,
   draw.line([(left, top), (left, bottom), (right, bottom),
              (right, top), (left, top)], width=thickness, fill=color)
 	
+  # adjust the font size depending on the image size
   font_size_adjustment = math.ceil(max(im_width, im_height) / 100)
   font = ImageFont.truetype('./fonts/UbuntuMono-B.ttf', 10 + font_size_adjustment)
 
