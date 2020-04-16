@@ -30,6 +30,7 @@ import collections
 import matplotlib; matplotlib.use('Agg')  # pylint: disable=multiple-statements
 import matplotlib.pyplot as plt  # pylint: disable=g-import-not-at-top
 import numpy as np
+import math
 import PIL.Image as Image
 import PIL.ImageColor as ImageColor
 import PIL.ImageDraw as ImageDraw
@@ -206,7 +207,8 @@ def draw_bounding_box_on_image(image,
   draw.line([(left, top), (left, bottom), (right, bottom),
              (right, top), (left, top)], width=thickness, fill=color)
 	
-  font = ImageFont.truetype('./fonts/UbuntuMono-R.ttf', 30)
+  font_size_adjustment = math.ceil(max(im_width, im_height) / 100)
+  font = ImageFont.truetype('./fonts/UbuntuMono-B.ttf', 10 + font_size_adjustment)
 
   # If the total height of the display strings added to the top of the bounding
   # box exceeds the top of the image, stack the strings below the bounding box
