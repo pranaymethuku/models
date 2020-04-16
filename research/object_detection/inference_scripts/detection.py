@@ -92,10 +92,11 @@ def detect_on_single_frame(image_np, sess,
                         category_index,
                         min_score_thresh=0.9,
                         max_boxes_to_draw=1):
-
+    
+    # adjust the bounding box size depending on the image size
     height, width = image_np.shape[:2]
-
     line_thickness_adjustment = math.ceil(max(height, width) / 400)
+
     # expand image dimensions to have shape: [1, None, None, 3]
     image_expanded = np.expand_dims(image_np, axis=0)
     
@@ -111,7 +112,7 @@ def detect_on_single_frame(image_np, sess,
         np.squeeze(scores),
         category_index,
         use_normalized_coordinates=True,
-        line_thickness=4+line_thickness_adjustment,
+        line_thickness=3+line_thickness_adjustment,
         min_score_thresh=min_score_thresh,
         max_boxes_to_draw=max_boxes_to_draw)
 
