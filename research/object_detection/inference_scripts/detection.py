@@ -155,7 +155,6 @@ def image_detection(frozen_inference_graph, labelmap, input_image, output_image)
 
 
 def video_detection(frozen_inference_graph, labelmap, input_video, output_video):
-    print(frozen_inference_graph)
     sess, detection_graph = load_tensorflow_model(frozen_inference_graph)
     category_index = load_labelmap(labelmap)
     image_tensor, output_tensors = define_tensors(detection_graph)
@@ -174,7 +173,7 @@ def video_detection(frozen_inference_graph, labelmap, input_video, output_video)
     # Inferencing at a rate of 10 FPS
     frames_to_skip = int(cap.get(cv2.CAP_PROP_FPS) / 10.0)
     frame_count = 0
-
+    # cap.set(cv2.CAP_PROP_POS_FRAMES,40)
     while cap.isOpened():
         _, frame = cap.read()
 
