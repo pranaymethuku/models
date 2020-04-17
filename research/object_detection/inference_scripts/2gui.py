@@ -14,6 +14,7 @@ class Ui_MainWindow(QWidget):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(797, 552)
+        MainWindow.setWindowFlags(Qt.WindowCloseButtonHint | Qt.WindowMinimizeButtonHint)
 
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -97,24 +98,34 @@ class Ui_MainWindow(QWidget):
     def exit(self):
         sys.exit()
 
+    def clear_screen(self):
+        for i in reversed(range(self.media.count())): 
+            self.media.itemAt(i).widget().setParent(None)
+
     def display(self, media=None):
         # Show dialog if File->Open
         if media is False:
             media = QFileDialog.getOpenFileName(self, 'Open File')[0]
         
-        # Clearing media area
-        for i in reversed(range(self.media.count())): 
-            self.media.itemAt(i).widget().deleteLater()
         file_extension = os.path.splitext(media)
 
         if file_extension[1] == ".jpg":
-            # Disply image
+            # Remove all other media
+            self.clear_screen()
+
+            # Display image
             pixmap = QPixmap(media)
+            if pixmap.width() > 791 and pixmap.height() > 451:
+                pixmap = pixmap.scaledToWidth(960)
+                pixmap = pixmap.scaledToWidth(720)
             self.label.setPixmap(pixmap)
             self.resize(pixmap.width(), pixmap.height())
             self.media.addWidget(self.label)
             self.media.setAlignment(Qt.AlignCenter)
         else:
+            # Remove all other media
+            self.clear_screen()
+
             # Play video
             self.video = QVideoWidget()
             self.video.resize(300, 300)
@@ -135,7 +146,7 @@ class Ui_MainWindow(QWidget):
         # Get path of labelmap and frozen inference graph
         labelmap, frozen_graph = self.get_path()
 
-        if file_extension[1] == ".jpg":
+        if file_extension[1] == ".jpg" or file_extension[1] == ".jpeg":
             # Run inference on image and display
             detection.image_detection(frozen_graph, labelmap, name, "predicted.jpg")
             self.display("predicted.jpg")
