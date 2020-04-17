@@ -29,6 +29,7 @@ conda install matplotlib
 conda install pandas
 pip install opencv-python
 conda install imageio
+conda install ffmpeg
 conda install tensorflow=1.15
 # conda install tensorflow-gpu=1.15 if you want to use a gpu installation instead
 ```
