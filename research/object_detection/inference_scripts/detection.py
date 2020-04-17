@@ -198,7 +198,7 @@ def webcam_detection(frozen_inference_graph, labelmap):
     image_tensor, output_tensors = define_tensors(detection_graph)
 
     # Load video using OpenCV
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(-1)
     # print("CONVERT_RGB: {}".format(cap.set(cv2.CAP_PROP_CONVERT_RGB, True)))
     # print("FPS changed: {}".format(cap.set(cv2.CAP_PROP_FPS, 10.0)))
 
@@ -219,20 +219,24 @@ if __name__ == "__main__":
                         help="Path to frozen detection graph .pb file, which contains the model that is used")
     parser.add_argument("-l", "--labelmap", type=str, required=True,
                         help="Path to the labelmap")
+    # image detection
     parser.add_argument("-ii", "--input_image", type=str,
                         help="Path to the input image to detect")
     parser.add_argument("-oi", "--output_image", type=str,
                         help="Path to the output the annotated image, only valid with --input-image")
+    # batch image detection 
     parser.add_argument("-if", "--input_folder", type=str,
                         help="Path to the folder of input images to perform detection on")
     parser.add_argument("-of", "--output_folder", type=str,
                         help="Path to the output folder for annotated images, only valid with --input-folder")
+    # stored video detection 
     parser.add_argument("-iv", "--input_video", type=str,
                         help="Path to the input video to detect")
     parser.add_argument("-ov", "--output_video", type=str,
                         help="Path to the output the annotated video, only valid with --input-video")
+    # webcam detection
     parser.add_argument("-iw", "--input_webcam", action='store_true',
-                        help="Path to the input video to detect")                 
+                        help="Signals that webcam input is to be used")                 
     # other potential input and output streams would be configured here
     args = parser.parse_args()
 
@@ -252,6 +256,6 @@ if __name__ == "__main__":
         batch_detection(args.frozen_inference_graph, args.labelmap, args.input_folder, args.output_folder)
     elif (args.input_webcam):
         webcam_detection(args.frozen_inference_graph, args.labelmap)
-    else:
+    elif (args.input_video):
         video_detection(args.frozen_inference_graph, args.labelmap,
                      args.input_video, args.output_video)
