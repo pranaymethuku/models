@@ -20,6 +20,7 @@ Examples:
 """
 
 import os
+import math
 import cv2
 import numpy as np
 import tensorflow as tf
@@ -91,9 +92,14 @@ def detect_on_single_frame(image_np, sess,
                         category_index,
                         min_score_thresh=0.9,
                         max_boxes_to_draw=1):
+    
+    # adjust the bounding box size depending on the image size
+    height, width = image_np.shape[:2]
+    line_thickness_adjustment = math.ceil(max(height, width) / 400)
+
     # expand image dimensions to have shape: [1, None, None, 3]
     image_expanded = np.expand_dims(image_np, axis=0)
-
+    
     # Perform the actual detection by running the model with the image as input
     (boxes, scores, classes, _) = sess.run(
         output_tensors, feed_dict={image_tensor: image_expanded})
@@ -106,7 +112,7 @@ def detect_on_single_frame(image_np, sess,
         np.squeeze(scores),
         category_index,
         use_normalized_coordinates=True,
-        line_thickness=8,
+        line_thickness=4+line_thickness_adjustment,
         min_score_thresh=min_score_thresh,
         max_boxes_to_draw=max_boxes_to_draw)
 
@@ -149,7 +155,6 @@ def image_detection(frozen_inference_graph, labelmap, input_image, output_image)
 
 
 def video_detection(frozen_inference_graph, labelmap, input_video, output_video):
-    print(frozen_inference_graph)
     sess, detection_graph = load_tensorflow_model(frozen_inference_graph)
     category_index = load_labelmap(labelmap)
     image_tensor, output_tensors = define_tensors(detection_graph)
@@ -168,7 +173,7 @@ def video_detection(frozen_inference_graph, labelmap, input_video, output_video)
     # Inferencing at a rate of 10 FPS
     frames_to_skip = int(cap.get(cv2.CAP_PROP_FPS) / 10.0)
     frame_count = 0
-
+    # cap.set(cv2.CAP_PROP_POS_FRAMES,40)
     while cap.isOpened():
         _, frame = cap.read()
 
