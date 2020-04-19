@@ -45,32 +45,33 @@ from object_detection.utils import shape_utils
 
 _TITLE_LEFT_MARGIN = 10
 _TITLE_TOP_MARGIN = 10
-STANDARD_COLORS = [
-    'AliceBlue', 'Chartreuse', 'Aqua', 'Aquamarine', 'Azure', 'Beige', 'Bisque',
-    'BlanchedAlmond', 'BlueViolet', 'BurlyWood', 'CadetBlue', 'AntiqueWhite',
-    'Chocolate', 'Coral', 'CornflowerBlue', 'Cornsilk', 'Crimson', 'Cyan',
-    'DarkCyan', 'DarkGoldenRod', 'DarkGrey', 'DarkKhaki', 'DarkOrange',
-    'DarkOrchid', 'DarkSalmon', 'DarkSeaGreen', 'DarkTurquoise', 'DarkViolet',
-    'DeepPink', 'DeepSkyBlue', 'DodgerBlue', 'FireBrick', 'FloralWhite',
-    'ForestGreen', 'Fuchsia', 'Gainsboro', 'GhostWhite', 'Gold', 'GoldenRod',
-    'Salmon', 'Tan', 'HoneyDew', 'HotPink', 'IndianRed', 'Ivory', 'Khaki',
+# Bounding box colors are selected from this list based on the numerical label in the labelmap file
+# Because of this - this array was rearrainged to have desired colors first 
+STANDARD_COLORS = ['AliceBlue', 'Turquoise', 'Yellow', 'Red', 'LimeGreen', 'Violet', 
+    'Magenta', 'Olive', 'IndianRed', 'Chartreuse', 'Aqua', 'BlueViolet', 'BurlyWood', 'CadetBlue', 
+    'Coral', 'CornflowerBlue', 'DarkGoldenRod', 'DarkOrange',
+    'DarkOrchid', 'DarkSalmon', 'DarkSeaGreen', 'DeepPink', 'DeepSkyBlue', 
+    'DodgerBlue', 'FireBrick', 'ForestGreen', 'Fuchsia', 
+    'Gold', 'GoldenRod', 'Salmon', 'HotPink', 
     'Lavender', 'LavenderBlush', 'LawnGreen', 'LemonChiffon', 'LightBlue',
     'LightCoral', 'LightCyan', 'LightGoldenRodYellow', 'LightGray', 'LightGrey',
     'LightGreen', 'LightPink', 'LightSalmon', 'LightSeaGreen', 'LightSkyBlue',
     'LightSlateGray', 'LightSlateGrey', 'LightSteelBlue', 'LightYellow', 'Lime',
-    'LimeGreen', 'Linen', 'Magenta', 'MediumAquaMarine', 'MediumOrchid',
+    'Linen', 'MediumAquaMarine', 'MediumOrchid','DarkGrey', 'DarkKhaki', 
     'MediumPurple', 'MediumSeaGreen', 'MediumSlateBlue', 'MediumSpringGreen',
     'MediumTurquoise', 'MediumVioletRed', 'MintCream', 'MistyRose', 'Moccasin',
-    'NavajoWhite', 'OldLace', 'Olive', 'OliveDrab', 'Orange', 'OrangeRed',
+    'NavajoWhite', 'OldLace', 'OliveDrab', 'Orange', 'OrangeRed',
     'Orchid', 'PaleGoldenRod', 'PaleGreen', 'PaleTurquoise', 'PaleVioletRed',
     'PapayaWhip', 'PeachPuff', 'Peru', 'Pink', 'Plum', 'PowderBlue', 'Purple',
-    'Red', 'RosyBrown', 'RoyalBlue', 'SaddleBrown', 'Green', 'SandyBrown',
+    'RoyalBlue', 'SaddleBrown', 'Green', 'SandyBrown',
     'SeaGreen', 'SeaShell', 'Sienna', 'Silver', 'SkyBlue', 'SlateBlue',
     'SlateGray', 'SlateGrey', 'Snow', 'SpringGreen', 'SteelBlue', 'GreenYellow',
-    'Teal', 'Thistle', 'Tomato', 'Turquoise', 'Violet', 'Wheat', 'White',
-    'WhiteSmoke', 'Yellow', 'YellowGreen'
+    'Teal', 'Thistle', 'Wheat', 'White', 'WhiteSmoke',
+    'YellowGreen','RosyBrown', 'Tomato', 'Aquamarine', 'Azure', 'Beige', 'Bisque',
+    'BlanchedAlmond', 'AntiqueWhite','Cornsilk', 'Crimson', 'Cyan',
+    'DarkCyan', 'Chocolate', 'DarkTurquoise', 'DarkViolet','FloralWhite','Gainsboro', 
+    'Ivory', 'Khaki','GhostWhite', 'Tan', 'HoneyDew'
 ]
-
 
 def _get_multiplier_for_color_randomness():
   """Returns a multiplier to get semi-random colors from successive indices.
@@ -208,8 +209,11 @@ def draw_bounding_box_on_image(image,
              (right, top), (left, top)], width=thickness, fill=color)
 	
   # adjust the font size depending on the image size
-  font_size_adjustment = math.ceil(max(im_width, im_height) / 100)
-  font = ImageFont.truetype('./fonts/UbuntuMono-B.ttf', 10 + font_size_adjustment)
+  try:
+    font_size_adjustment = math.ceil(max(im_width, im_height) / 100)
+    font = ImageFont.truetype('./fonts/UbuntuMono-B.ttf', 10 + font_size_adjustment)
+  except OSError:
+    font = ImageFont.load_default()
 
   # If the total height of the display strings added to the top of the bounding
   # box exceeds the top of the image, stack the strings below the bounding box
