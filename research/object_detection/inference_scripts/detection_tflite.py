@@ -188,15 +188,15 @@ def video_detection(tflite_graph, labelmap, input_video, output_video, fps=10.0)
         _, frame = cap.read()
 
         # Skipping some frames to run inferencing at 10 fps
-        # if frame_count % frames_to_skip == 0 and frame_count != 0:
-        if frame is None:
-            break
+        if frame_count % frames_to_skip == 0 and frame_count != 0:
+            if frame is None:
+                break
 
-        print("detecting frame {} of {}".format(frame_count, total_frames))
-        output_frame = detect_on_single_frame(
-            frame, interpreter, image_tensor, output_tensors, image_shape, category_index, floating_model=floating_model)
+            print("detecting frame {} of {}".format(frame_count, total_frames))
+            output_frame = detect_on_single_frame(
+                frame, interpreter, image_tensor, output_tensors, image_shape, category_index, floating_model=floating_model)
 
-        out.write(output_frame)
+            out.write(output_frame)
         frame_count += 1
 
     cap.release()
@@ -257,3 +257,4 @@ if __name__ == "__main__":
     else:
         video_detection(args.tflite_graph, args.labelmap,
                         args.input_video, args.output_video)
+
