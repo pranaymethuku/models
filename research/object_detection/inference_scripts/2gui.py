@@ -7,7 +7,7 @@ from PyQt5.QtMultimediaWidgets import *
 import sys
 import os
 import detection
-import video
+# import video
 
 VIDEOS = [".mov", ".mp4", ".flv", ".avi", ".ogg", ".wmv"]
 
