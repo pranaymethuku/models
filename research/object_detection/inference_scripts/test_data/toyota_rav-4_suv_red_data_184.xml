@@ -1,0 +1,26 @@
+<annotation>
+	<folder>data</folder>
+	<filename>toyota_rav-4_suv_red_data_184.jpg</filename>
+	<path>C:\cygwin64\home\rkabealo\vehicle_data\suvs\Toyota_RAV-4\red\data\toyota_rav-4_suv_red_data_184.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>200</width>
+		<height>150</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>Toyota RAV-4</name>
+		<pose>Unspecified</pose>
+		<truncated>1</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>6</xmin>
+			<ymin>43</ymin>
+			<xmax>200</xmax>
+			<ymax>148</ymax>
+		</bndbox>
+	</object>
+</annotation>

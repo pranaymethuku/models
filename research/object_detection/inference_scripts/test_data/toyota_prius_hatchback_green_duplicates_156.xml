@@ -1,0 +1,26 @@
+<annotation>
+	<folder>duplicates</folder>
+	<filename>toyota_prius_hatchback_green_duplicates_156.jpg</filename>
+	<path>C:\cygwin64\home\rkabealo\vehicle_data_subset_for_3_and_4\Toyota_Prius_Hatchback\green\duplicates\toyota_prius_hatchback_green_duplicates_156.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>414</width>
+		<height>311</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>Toyota Prius</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>22</xmin>
+			<ymin>76</ymin>
+			<xmax>395</xmax>
+			<ymax>277</ymax>
+		</bndbox>
+	</object>
+</annotation>

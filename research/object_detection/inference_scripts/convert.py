@@ -2,7 +2,7 @@
 import tensorflow as tf
 
 # Path to the frozen graph file
-graph_def_file = '../tor_models/tier_2/tier_2_faster_rcnn_inception_v2_coco_2018_01_28/inference_graph/frozen_inference_graph.pb'
+graph_def_file = '../tor_models/tier_2/tier_2_ssd_inception_v2_coco_2018_01_28/tflite_ssd_graph/tflite_graph.pb'
 # graph_def_file = "../tor_models/tier_2/tier_2_ssd_inception_v2_coco_2018_01_28/inference_graph/saved_model"
 # A list of the names of the model's input tensors
 input_arrays = ['image_tensor']

@@ -1,0 +1,26 @@
+<annotation>
+	<folder>data</folder>
+	<filename>toyota_prius_hatchback_red_data_112.jpg</filename>
+	<path>C:\cygwin64\home\rkabealo\vehicle_data_subset_for_3_and_4\Toyota_Prius_Hatchback\red\data\toyota_prius_hatchback_red_data_112.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>638</width>
+		<height>520</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>Toyota Prius</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>26</xmin>
+			<ymin>94</ymin>
+			<xmax>625</xmax>
+			<ymax>457</ymax>
+		</bndbox>
+	</object>
+</annotation>

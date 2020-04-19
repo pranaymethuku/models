@@ -1,0 +1,26 @@
+<annotation>
+	<folder>data</folder>
+	<filename>mazda3_hatchback_blue_data_38.jpg</filename>
+	<path>/Users/abisen/Documents/Abi/OSU SP20/CSE 5915/vehicle_data/hatchbacks/Mazda3_Hatchback/blue/data/mazda3_hatchback_blue_data_38.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>408</width>
+		<height>306</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>Mazda3 Hatchback</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>15</xmin>
+			<ymin>98</ymin>
+			<xmax>393</xmax>
+			<ymax>273</ymax>
+		</bndbox>
+	</object>
+</annotation>

@@ -1,0 +1,26 @@
+<annotation>
+	<folder>data</folder>
+	<filename>toyota_prius_hatchback_brown_data_532.jpg</filename>
+	<path>/home/pranaymethuku/Desktop/capstone/vehicle_data/hatchbacks/Toyota_Prius_Hatchback/brown/data/toyota_prius_hatchback_brown_data_532.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>318</width>
+		<height>238</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>Toyota Prius</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>58</xmin>
+			<ymin>72</ymin>
+			<xmax>255</xmax>
+			<ymax>167</ymax>
+		</bndbox>
+	</object>
+</annotation>

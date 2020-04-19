@@ -1,0 +1,26 @@
+<annotation>
+	<folder>data</folder>
+	<filename>mazda3_hatchback_gray_data_98.jpg</filename>
+	<path>C:\cygwin64\home\Shah\vehicle_data\hatchbacks\Mazda3_Hatchback\gray\data\mazda3_hatchback_gray_data_98.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>600</width>
+		<height>400</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>Mazda3 Hatchback</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>15</xmin>
+			<ymin>20</ymin>
+			<xmax>582</xmax>
+			<ymax>363</ymax>
+		</bndbox>
+	</object>
+</annotation>
