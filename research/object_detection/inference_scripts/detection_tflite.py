@@ -1,3 +1,24 @@
+"""
+Created on Thu Apr 19 2020
+@author: pranaymethuku
+
+Class: CSE 5915 - Information Systems
+Section: 6pm TR, Spring 2020
+Prof: Prof. Jayanti
+
+A Python 3 script to perform object detection using Tensorflow Lite on image, video, or webcam, and store/display output accordingly
+
+Usage:
+    python3 detection_tflite.py [-h] -t TFLITE_GRAPH -l LABELMAP
+                    [-ii INPUT_IMAGE] [-oi OUTPUT_IMAGE] [-iv INPUT_VIDEO]
+                    [-ov OUTPUT_VIDEO] [-iw]
+
+Examples:
+    python3 detection_tflite.py -f=tflite_graph.tflite -ii=./car.jpg -oi=./car_annotated.jpg
+    python3 detection_tflite.py -f=tflite_graph.tflite -iv=./truck.mp4 -oi=./truck_annotated.mp4
+    python3 detection_tflite.py -f=tflite_graph.tflite -iw
+"""
+
 import os
 import math
 from cv2 import cv2
@@ -119,9 +140,10 @@ def detect_on_single_frame(image_np, interpreter,
         min_score_thresh=min_score_thresh,
         max_boxes_to_draw=max_boxes_to_draw)
 
-    # Here output the category as string and score to terminal
-    # print([category_index.get(i) for i in classes[0]])
-    # print(scores)
+    # Here output the best class
+    # best_class_id = int(classes[np.argmax(scores)])
+    # best_class_name = category_index.get(best_class_id)['name']
+    # print("best class: {}".format(best_class_name))
     return image_np
 
 
@@ -129,19 +151,24 @@ def batch_detection(tflite_graph, labelmap, input_folder, output_folder):
     # walk through all directories
     for root, _, files in os.walk(input_folder, topdown=False):
         # we only want to walk through the jpgs here, ignore anything else
-        img_files = [name for name in files if ".jpg" in name]
+        input_files = [
+            name for name in files if ".jpg" in name or '.mp4' in name]
         # keep count of how many files we process - batch processing can be slow and
         # we don't want the user to wait without feedback
-        total_num_files = len(img_files)
+        total_num_files = len(input_files)
         file_num = 0
-        for name in img_files:
+        for name in input_files:
             file_num += 1
-            original_image = os.path.join(input_folder, name)
-            annotated_image = os.path.join(output_folder, name)
-            image_detection(tflite_graph, labelmap,
-                            original_image, annotated_image)
-            print("* Processed " + str(file_num) + "/" + str(total_num_files)
-                  + " images in folder \"" + str(root) + "\"")
+            original_file = os.path.join(input_folder, name)
+            annotated_file = os.path.join(output_folder, name)
+            print("Processing {} ({}/{}) in {}".format(name,
+                                                       file_num, total_num_files, root))
+            if '.jpg' in name:
+                image_detection(tflite_graph, labelmap,
+                                original_file, annotated_file)
+            elif '.mp4' in name:
+                video_detection(tflite_graph, labelmap, original_file,
+                                annotated_file, print_progress=False)
 
 
 def image_detection(tflite_graph, labelmap, input_image, output_image):
@@ -162,7 +189,7 @@ def image_detection(tflite_graph, labelmap, input_image, output_image):
     img.save(output_image, "jpeg")
 
 
-def video_detection(tflite_graph, labelmap, input_video, output_video, fps=10.0):
+def video_detection(tflite_graph, labelmap, input_video, output_video, fps=10.0, print_progress=True):
     category_index = load_labelmap(args.labelmap)
     interpreter = load_tflite_interpreter(args.tflite_graph)
 
@@ -192,7 +219,9 @@ def video_detection(tflite_graph, labelmap, input_video, output_video, fps=10.0)
             if frame is None:
                 break
 
-            print("detecting frame {} of {}".format(frame_count, total_frames))
+            if print_progress:
+                print("detecting frame {} of {}".format(
+                    frame_count, total_frames))
             output_frame = detect_on_single_frame(
                 frame, interpreter, image_tensor, output_tensors, image_shape, category_index, floating_model=floating_model)
 
@@ -222,6 +251,7 @@ def webcam_detection(tflite_graph, labelmap):
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
     cap.release()
+
 
 if __name__ == "__main__":
     # Define and parse input arguments
@@ -257,4 +287,3 @@ if __name__ == "__main__":
     else:
         video_detection(args.tflite_graph, args.labelmap,
                         args.input_video, args.output_video)
-

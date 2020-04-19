@@ -163,16 +163,16 @@ class Ui_MainWindow(QWidget):
     def get_path(self):
         # Get path from the tier number
         tier = self.tier.currentText().split(" ")[1]
-        labelmap = "../tor_models/tier_" + tier + "/labelmap.pbtxt"
+        labelmap = "../tor_results/tier_" + tier + "/labelmap.pbtxt"
         frozen_graph = ""
         if self.model.currentText() == "Faster RCNN Inception V2 Coco":
-            frozen_graph = "../tor_models/tier_" + tier + "/tier_" + tier + "_faster_rcnn_inception_v2_coco_2018_01_28/inference_graph/frozen_inference_graph.pb"
+            frozen_graph = "../tor_results/tier_" + tier + "/faster_rcnn_inception_v2_coco_2018_01_28.pb"
         elif self.model.currentText() == "Faster RCNN Resnet101 Kitti":
-            frozen_graph = "../tor_models/tier_" + tier + "/tier_" + tier + "_faster_rcnn_resnet101_kitti_2018_01_28/inference_graph/frozen_inference_graph.pb"
+            frozen_graph = "../tor_results/tier_" + tier + "/_faster_rcnn_resnet101_kitti_2018_01_28.pb"
         elif self.model.currentText() == "RFCN Resnet101 Coco":
-            frozen_graph = "../tor_models/tier_" + tier + "/tier_" + tier + "_rfcn_resnet101_coco_2018_01_28/inference_graph/frozen_inference_graph.pb"
+            frozen_graph = "../tor_models/tier_" + tier + "/rfcn_resnet101_coco_2018_01_28.pb"
         elif self.model.currentText() == "Faster RCNN Resnet101 Kitti":
-            frozen_graph = "../tor_models/tier_" + tier + "/tier_" + tier + "_ssd_inception_v2_coco_2018_01_28/inference_graph/frozen_inference_graph.pb"
+            frozen_graph = "../tor_models/tier_" + tier + "/ssd_inception_v2_coco_2018_01_28.pb"
 
         return labelmap, frozen_graph
 

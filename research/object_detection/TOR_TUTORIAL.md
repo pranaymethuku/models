@@ -72,9 +72,15 @@ The rest of the steps will be executed from within the `models/research/object_d
 
 * `pre_trained_models` - where all pre-trained models from the [model zoo](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md) will be stored.
 
-* `tor_models` - which will hold all newly trained models within the following sub-directories:
-  * `tier_1/` - will hold models for Tier 1
-  * `tier_2/` - will hold models for Tier 2
+* `tor_models` - which will hold all training related files within the following sub-directories:
+  * `tier_1/` - will hold all data and models for Tier 1
+  * `tier_2/` - will hold all data and models for Tier 2
+  
+  ... and so on.
+
+* `tor_results` - which will hold all deployment related files within the following sub-directories:
+  * `tier_1/` - will hold all inference graphs and labelmaps for Tier 1
+  * `tier_2/` - will hold all inference graphs and labelmaps for Tier 2
   
   ... and so on.
 
@@ -93,6 +99,16 @@ Essentially, the directory structure under `object_detection/` would look someth
 │   │   │   └── ...
 │   │   ├── tier_1_ssd_inception_v2_coco_2018_01_28
 │   │   │   └── ...
+│   │   └── ...
+│   ├── tier_2
+│   │   └── ...
+│   └── ...
+├── tor_results
+│   ├── tier_1
+│   │   ├── labelmap.pbtxt
+│   │   ├── faster_rcnn_inception_v2_coco_2018_01_28.pb
+│   │   ├── ssd_inception_v2_coco_2018_01_28.pb
+│   │   ├── ssd_inception_v2_coco_2018_01_28.tflite
 │   │   └── ...
 │   ├── tier_2
 │   │   └── ...
@@ -267,7 +283,7 @@ tensorboard --logdir=tor_models/tier_2/tier_2_faster_rcnn_inception_v2_coco_2018
 
 ## Model Export
 
-Now that we have a trained model we need to generate an inference graph, which can be used to run the model. For doing so we need to first of find out the highest saved step number. For this, we need to examine the `tier_2_faster_rcnn_inception_v2_coco_2018_01_28/training` directory and look for the model.ckpt file with the biggest index. Let's call that index XXXX. Next, we need to run the `export_inference_graph.py` as follows:
+Now that we have a trained model we need to generate an inference graph, which can be used to run the model. For doing so we need to first find out the highest saved step number. For this, we need to examine the `tier_2_faster_rcnn_inception_v2_coco_2018_01_28/training` directory and look for the model.ckpt file with the biggest index. Let's call that index XXXX. Next, we need to run the `export_inference_graph.py` as follows:
 
 ```bash
 python export_inference_graph.py --input_type=image_tensor --pipeline_config_path=tor_models/tier_2/tier_2_faster_rcnn_inception_v2_coco_2018_01_28/faster_rcnn_inception_v2_coco.config --trained_checkpoint_prefix=tor_models/tier_2/tier_2_faster_rcnn_inception_v2_coco_2018_01_28/training/model.ckpt-XXXX --output_directory=tor_models/tier_2/tier_2_faster_rcnn_inception_v2_coco_2018_01_28/inference_graph
