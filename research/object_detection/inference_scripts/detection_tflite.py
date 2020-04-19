@@ -1,3 +1,24 @@
+"""
+Created on Thu Apr 19 2020
+@author: pranaymethuku
+
+Class: CSE 5915 - Information Systems
+Section: 6pm TR, Spring 2020
+Prof: Prof. Jayanti
+
+A Python 3 script to perform object detection using Tensorflow Lite on image, video, or webcam, and store/display output accordingly
+
+Usage:
+    python3 detection_tflite.py [-h] -t TFLITE_GRAPH -l LABELMAP
+                    [-ii INPUT_IMAGE] [-oi OUTPUT_IMAGE] [-iv INPUT_VIDEO]
+                    [-ov OUTPUT_VIDEO] [-iw]
+
+Examples:
+    python3 detection_tflite.py -f=tflite_graph.tflite -ii=./car.jpg -oi=./car_annotated.jpg
+    python3 detection_tflite.py -f=tflite_graph.tflite -iv=./truck.mp4 -oi=./truck_annotated.mp4
+    python3 detection_tflite.py -f=tflite_graph.tflite -iw
+"""
+
 import os
 import math
 from cv2 import cv2

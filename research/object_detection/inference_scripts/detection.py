@@ -6,7 +6,7 @@ Class: CSE 5915 - Information Systems
 Section: 6pm TR, Spring 2020
 Prof: Prof. Jayanti
 
-A Python 3 script to perform object detection on image, video, or webcam, and store/display output accordingly
+A Python 3 script to perform object detection using Tensorflow on image, video, or webcam, and store/display output accordingly
 
 Usage:
     python3 detection.py [-h] -f FROZEN_INFERENCE_GRAPH -l LABELMAP
