@@ -72,9 +72,15 @@ The rest of the steps will be executed from within the `models/research/object_d
 
 * `pre_trained_models` - where all pre-trained models from the [model zoo](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md) will be stored.
 
-* `tor_models` - which will hold all newly trained models within the following sub-directories:
-  * `tier_1/` - will hold models for Tier 1
-  * `tier_2/` - will hold models for Tier 2
+* `tor_models` - which will hold all training related files within the following sub-directories:
+  * `tier_1/` - will hold all data and models for Tier 1
+  * `tier_2/` - will hold all data and models for Tier 2
+  
+  ... and so on.
+
+* `tor_results` - which will hold all deployment related files within the following sub-directories:
+  * `tier_1/` - will hold all inference graphs and labelmaps for Tier 1
+  * `tier_2/` - will hold all inference graphs and labelmaps for Tier 2
   
   ... and so on.
 
@@ -93,6 +99,16 @@ Essentially, the directory structure under `object_detection/` would look someth
 │   │   │   └── ...
 │   │   ├── tier_1_ssd_inception_v2_coco_2018_01_28
 │   │   │   └── ...
+│   │   └── ...
+│   ├── tier_2
+│   │   └── ...
+│   └── ...
+├── tor_results
+│   ├── tier_1
+│   │   ├── labelmap.pbtxt
+│   │   ├── faster_rcnn_inception_v2_coco_2018_01_28.pb
+│   │   ├── ssd_inception_v2_coco_2018_01_28.pb
+│   │   ├── ssd_inception_v2_coco_2018_01_28.tflite
 │   │   └── ...
 │   ├── tier_2
 │   │   └── ...
