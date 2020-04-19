@@ -1,0 +1,26 @@
+<annotation>
+	<folder>data</folder>
+	<filename>toyota_rav-4_suv_black_data_373.jpg</filename>
+	<path>C:\cygwin64\home\rkabealo\vehicle_data\suvs\Toyota_RAV-4\black\data\toyota_rav-4_suv_black_data_373.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>414</width>
+		<height>311</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>Toyota RAV-4</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>8</xmin>
+			<ymin>51</ymin>
+			<xmax>405</xmax>
+			<ymax>263</ymax>
+		</bndbox>
+	</object>
+</annotation>

@@ -1,0 +1,26 @@
+<annotation>
+	<folder>data</folder>
+	<filename>ford_explorer_suv_blue_data_230.jpg</filename>
+	<path>C:\cygwin64\home\Shah\vehicle_data\suvs\Ford_Explorer\blue\data\ford_explorer_suv_blue_data_230.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>640</width>
+		<height>480</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>Ford Explorer</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>35</xmin>
+			<ymin>126</ymin>
+			<xmax>610</xmax>
+			<ymax>358</ymax>
+		</bndbox>
+	</object>
+</annotation>

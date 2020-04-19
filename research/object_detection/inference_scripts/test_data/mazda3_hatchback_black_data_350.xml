@@ -1,0 +1,26 @@
+<annotation>
+	<folder>data</folder>
+	<filename>mazda3_hatchback_black_data_350.jpg</filename>
+	<path>C:\cygwin64\home\rkabealo\vehicle_data_subset_for_3_and_4\Mazda3_Hatchback\black\data\mazda3_hatchback_black_data_350.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>480</width>
+		<height>360</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>Mazda3 Hatchback</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>62</xmin>
+			<ymin>127</ymin>
+			<xmax>436</xmax>
+			<ymax>309</ymax>
+		</bndbox>
+	</object>
+</annotation>

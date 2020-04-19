@@ -1,0 +1,26 @@
+<annotation>
+	<folder>duplicates</folder>
+	<filename>ford_explorer_suv_brown_duplicates_72.jpg</filename>
+	<path>C:\cygwin64\home\Shah\vehicle_data\suvs\Ford_Explorer\brown\duplicates\ford_explorer_suv_brown_duplicates_72.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>318</width>
+		<height>238</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>Ford Explorer</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>33</xmin>
+			<ymin>48</ymin>
+			<xmax>302</xmax>
+			<ymax>200</ymax>
+		</bndbox>
+	</object>
+</annotation>

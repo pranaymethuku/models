@@ -1,0 +1,26 @@
+<annotation>
+	<folder>data</folder>
+	<filename>mazda3_hatchback_green_data_357.jpg</filename>
+	<path>C:\cygwin64\home\Shah\vehicle_data\hatchbacks\Mazda3_Hatchback\green\data\mazda3_hatchback_green_data_357.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>1004</width>
+		<height>373</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>Mazda3 Hatchback</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>244</xmin>
+			<ymin>79</ymin>
+			<xmax>715</xmax>
+			<ymax>333</ymax>
+		</bndbox>
+	</object>
+</annotation>

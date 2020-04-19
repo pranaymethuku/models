@@ -1,0 +1,26 @@
+<annotation>
+	<folder>data</folder>
+	<filename>ford_explorer_suv_white_data_145.jpg</filename>
+	<path>/home/pranaymethuku/Desktop/capstone/vehicle_data/suvs/Ford_Explorer/white/data/ford_explorer_suv_white_data_145.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>533</width>
+		<height>400</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>Ford Explorer</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>75</xmin>
+			<ymin>18</ymin>
+			<xmax>458</xmax>
+			<ymax>355</ymax>
+		</bndbox>
+	</object>
+</annotation>
