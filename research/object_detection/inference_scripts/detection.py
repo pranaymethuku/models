@@ -21,7 +21,7 @@ Examples:
 
 import os
 import math
-import cv2
+from cv2 import cv2
 import numpy as np
 import tensorflow as tf
 import sys
@@ -197,7 +197,7 @@ def webcam_detection(frozen_inference_graph, labelmap):
     category_index = load_labelmap(labelmap)
     image_tensor, output_tensors = define_tensors(detection_graph)
 
-    # Load video using OpenCV
+    # Load webcam using OpenCV
     cap = cv2.VideoCapture(0)
     # print("CONVERT_RGB: {}".format(cap.set(cv2.CAP_PROP_CONVERT_RGB, True)))
     # print("FPS changed: {}".format(cap.set(cv2.CAP_PROP_FPS, 10.0)))
