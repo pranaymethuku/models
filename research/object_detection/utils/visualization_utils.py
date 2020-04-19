@@ -45,32 +45,33 @@ from object_detection.utils import shape_utils
 
 _TITLE_LEFT_MARGIN = 10
 _TITLE_TOP_MARGIN = 10
-STANDARD_COLORS = [
-    'AliceBlue', 'Chartreuse', 'Aqua', 'Aquamarine', 'Azure', 'Beige', 'Bisque',
-    'BlanchedAlmond', 'BlueViolet', 'BurlyWood', 'CadetBlue', 'AntiqueWhite',
-    'Chocolate', 'Coral', 'CornflowerBlue', 'Cornsilk', 'Crimson', 'Cyan',
-    'DarkCyan', 'DarkGoldenRod', 'DarkGrey', 'DarkKhaki', 'DarkOrange',
-    'DarkOrchid', 'DarkSalmon', 'DarkSeaGreen', 'DarkTurquoise', 'DarkViolet',
-    'DeepPink', 'DeepSkyBlue', 'DodgerBlue', 'FireBrick', 'FloralWhite',
-    'ForestGreen', 'Fuchsia', 'Gainsboro', 'GhostWhite', 'Gold', 'GoldenRod',
-    'Salmon', 'Tan', 'HoneyDew', 'HotPink', 'IndianRed', 'Ivory', 'Khaki',
+# Bounding box colors are selected from this list based on the numerical label in the labelmap file
+# Because of this - this array was rearrainged to have desired colors first 
+STANDARD_COLORS = ['AliceBlue', 'Turquoise', 'Yellow', 'Red', 'LimeGreen', 'Violet', 
+    'Magenta', 'Olive', 'IndianRed', 'Chartreuse', 'Aqua', 'BlueViolet', 'BurlyWood', 'CadetBlue', 
+    'Coral', 'CornflowerBlue', 'DarkGoldenRod', 'DarkOrange',
+    'DarkOrchid', 'DarkSalmon', 'DarkSeaGreen', 'DeepPink', 'DeepSkyBlue', 
+    'DodgerBlue', 'FireBrick', 'ForestGreen', 'Fuchsia', 
+    'Gold', 'GoldenRod', 'Salmon', 'HotPink', 
     'Lavender', 'LavenderBlush', 'LawnGreen', 'LemonChiffon', 'LightBlue',
     'LightCoral', 'LightCyan', 'LightGoldenRodYellow', 'LightGray', 'LightGrey',
     'LightGreen', 'LightPink', 'LightSalmon', 'LightSeaGreen', 'LightSkyBlue',
     'LightSlateGray', 'LightSlateGrey', 'LightSteelBlue', 'LightYellow', 'Lime',
-    'LimeGreen', 'Linen', 'Magenta', 'MediumAquaMarine', 'MediumOrchid',
+    'Linen', 'MediumAquaMarine', 'MediumOrchid','DarkGrey', 'DarkKhaki', 
     'MediumPurple', 'MediumSeaGreen', 'MediumSlateBlue', 'MediumSpringGreen',
     'MediumTurquoise', 'MediumVioletRed', 'MintCream', 'MistyRose', 'Moccasin',
-    'NavajoWhite', 'OldLace', 'Olive', 'OliveDrab', 'Orange', 'OrangeRed',
+    'NavajoWhite', 'OldLace', 'OliveDrab', 'Orange', 'OrangeRed',
     'Orchid', 'PaleGoldenRod', 'PaleGreen', 'PaleTurquoise', 'PaleVioletRed',
     'PapayaWhip', 'PeachPuff', 'Peru', 'Pink', 'Plum', 'PowderBlue', 'Purple',
-    'Red', 'RosyBrown', 'RoyalBlue', 'SaddleBrown', 'Green', 'SandyBrown',
+    'RoyalBlue', 'SaddleBrown', 'Green', 'SandyBrown',
     'SeaGreen', 'SeaShell', 'Sienna', 'Silver', 'SkyBlue', 'SlateBlue',
     'SlateGray', 'SlateGrey', 'Snow', 'SpringGreen', 'SteelBlue', 'GreenYellow',
-    'Teal', 'Thistle', 'Tomato', 'Turquoise', 'Violet', 'Wheat', 'White',
-    'WhiteSmoke', 'Yellow', 'YellowGreen'
+    'Teal', 'Thistle', 'Wheat', 'White', 'WhiteSmoke',
+    'YellowGreen','RosyBrown', 'Tomato', 'Aquamarine', 'Azure', 'Beige', 'Bisque',
+    'BlanchedAlmond', 'AntiqueWhite','Cornsilk', 'Crimson', 'Cyan',
+    'DarkCyan', 'Chocolate', 'DarkTurquoise', 'DarkViolet','FloralWhite','Gainsboro', 
+    'Ivory', 'Khaki','GhostWhite', 'Tan', 'HoneyDew'
 ]
-
 
 def _get_multiplier_for_color_randomness():
   """Returns a multiplier to get semi-random colors from successive indices.
