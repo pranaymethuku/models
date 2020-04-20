@@ -207,15 +207,8 @@ def webcam_detection(frozen_inference_graph, labelmap):
     category_index = load_labelmap(labelmap)
     image_tensor, output_tensors = define_tensors(detection_graph)
 
-<<<<<<< HEAD
-    # Load video using OpenCV
-    cap = cv2.VideoCapture(-1)
-    # print("CONVERT_RGB: {}".format(cap.set(cv2.CAP_PROP_CONVERT_RGB, True)))
-    # print("FPS changed: {}".format(cap.set(cv2.CAP_PROP_FPS, 10.0)))
-=======
     # Load webcam using OpenCV
     cap = cv2.VideoCapture(0)
->>>>>>> 59329e26e50dd7c8127c5b65c9dc0ce2a076afca
 
     while cap.isOpened():
         _, frame = cap.read()
