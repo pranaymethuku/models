@@ -6,7 +6,7 @@ Class: CSE 5915 - Information Systems
 Section: 6pm TR, Spring 2020
 Prof: Prof. Jayanti
 
-A Python 3 script to perform object detection on image, video, or webcam, and store/display output accordingly
+A Python 3 script to perform object detection using Tensorflow on image, video, or webcam, and store/display output accordingly
 
 Usage:
     python3 detection.py [-h] -f FROZEN_INFERENCE_GRAPH -l LABELMAP
@@ -21,7 +21,7 @@ Examples:
 
 import os
 import math
-import cv2
+from cv2 import cv2
 import numpy as np
 import tensorflow as tf
 import sys
@@ -87,19 +87,19 @@ def define_tensors(detection_graph):
 
 
 def detect_on_single_frame(image_np, sess,
-                        image_tensor,
-                        output_tensors,
-                        category_index,
-                        min_score_thresh=0.9,
-                        max_boxes_to_draw=1):
-    
+                           image_tensor,
+                           output_tensors,
+                           category_index,
+                           min_score_thresh=0.9,
+                           max_boxes_to_draw=1):
+
     # adjust the bounding box size depending on the image size
     height, width = image_np.shape[:2]
     line_thickness_adjustment = math.ceil(max(height, width) / 400)
 
     # expand image dimensions to have shape: [1, None, None, 3]
     image_expanded = np.expand_dims(image_np, axis=0)
-    
+
     # Perform the actual detection by running the model with the image as input
     (boxes, scores, classes, _) = sess.run(
         output_tensors, feed_dict={image_tensor: image_expanded})
@@ -116,27 +116,36 @@ def detect_on_single_frame(image_np, sess,
         min_score_thresh=min_score_thresh,
         max_boxes_to_draw=max_boxes_to_draw)
 
-    # Here output the category as string and score to terminal
-    # print([category_index.get(i) for i in classes[0]])
-    # print(scores)
+    # # Here output the best class
+    # best_class_id = int(classes[np.argmax(scores)])
+    # best_class_name = category_index.get(best_class_id)['name']
+    # print("best class: {}".format(best_class_name))
     return image_np
 
+
 def batch_detection(frozen_inference_graph, labelmap, input_folder, output_folder):
-    # walk through all directories 
+    # walk through all directories
     for root, _, files in os.walk(input_folder, topdown=False):
         # we only want to walk through the jpgs here, ignore anything else
-        img_files = [name for name in files if ".jpg" in name] 
-        # keep count of how many files we process - batch processing can be slow and 
+        input_files = [
+            name for name in files if ".jpg" in name or '.mp4' in name]
+        # keep count of how many files we process - batch processing can be slow and
         # we don't want the user to wait without feedback
-        total_num_files = len(img_files)
+        total_num_files = len(input_files)
         file_num = 0
-        for name in img_files:
+        for name in input_files:
             file_num += 1
-            original_image = os.path.join(input_folder, name)
-            annotated_image = os.path.join(output_folder, name)
-            image_detection(frozen_inference_graph, labelmap, original_image, annotated_image)
-            print("* Processed " + str(file_num) + "/" + str(total_num_files) 
-                + " images in folder \"" + str(root) + "\"")
+            original_file = os.path.join(input_folder, name)
+            annotated_file = os.path.join(output_folder, name)
+            print("Processing {} ({}/{}) in {}".format(name,
+                                                       file_num, total_num_files, root))
+            if '.jpg' in name:
+                image_detection(frozen_inference_graph, labelmap,
+                                original_file, annotated_file)
+            elif '.mp4' in name:
+                video_detection(frozen_inference_graph, labelmap,
+                                original_file, annotated_file, print_progress=False)
+
 
 def image_detection(frozen_inference_graph, labelmap, input_image, output_image):
     sess, detection_graph = load_tensorflow_model(frozen_inference_graph)
@@ -154,15 +163,13 @@ def image_detection(frozen_inference_graph, labelmap, input_image, output_image)
     img.save(output_image, "jpeg")
 
 
-def video_detection(frozen_inference_graph, labelmap, input_video, output_video):
+def video_detection(frozen_inference_graph, labelmap, input_video, output_video, print_progress=True):
     sess, detection_graph = load_tensorflow_model(frozen_inference_graph)
     category_index = load_labelmap(labelmap)
     image_tensor, output_tensors = define_tensors(detection_graph)
 
     # Load video using OpenCV
     cap = cv2.VideoCapture(input_video)
-    print("CONVERT_RGB: {}".format(cap.set(cv2.CAP_PROP_CONVERT_RGB, True)))
-    print("FPS changed: {}".format(cap.set(cv2.CAP_PROP_FPS, 10.0)))
 
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     out = cv2.VideoWriter(output_video, fourcc, 30.0, (int(
@@ -182,7 +189,9 @@ def video_detection(frozen_inference_graph, labelmap, input_video, output_video)
             if frame is None:
                 break
 
-            print("detecting frame {} of {}".format(frame_count, total_frames))
+            if print_progress:
+                print("detecting frame {} of {}".format(
+                    frame_count, total_frames))
             output_frame = detect_on_single_frame(
                 frame, sess, image_tensor, output_tensors, category_index)
 
@@ -192,15 +201,21 @@ def video_detection(frozen_inference_graph, labelmap, input_video, output_video)
     cap.release()
     out.release()
 
+
 def webcam_detection(frozen_inference_graph, labelmap):
     sess, detection_graph = load_tensorflow_model(frozen_inference_graph)
     category_index = load_labelmap(labelmap)
     image_tensor, output_tensors = define_tensors(detection_graph)
 
+<<<<<<< HEAD
     # Load video using OpenCV
     cap = cv2.VideoCapture(-1)
     # print("CONVERT_RGB: {}".format(cap.set(cv2.CAP_PROP_CONVERT_RGB, True)))
     # print("FPS changed: {}".format(cap.set(cv2.CAP_PROP_FPS, 10.0)))
+=======
+    # Load webcam using OpenCV
+    cap = cv2.VideoCapture(0)
+>>>>>>> 59329e26e50dd7c8127c5b65c9dc0ce2a076afca
 
     while cap.isOpened():
         _, frame = cap.read()
@@ -211,7 +226,8 @@ def webcam_detection(frozen_inference_graph, labelmap):
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
     cap.release()
-    
+
+
 if __name__ == "__main__":
     # set up command line
     parser = argparse.ArgumentParser()
@@ -236,26 +252,18 @@ if __name__ == "__main__":
                         help="Path to the output the annotated video, only valid with --input-video")
     # webcam detection
     parser.add_argument("-iw", "--input_webcam", action='store_true',
-                        help="Signals that webcam input is to be used")                 
+                        help="Signals that webcam input is to be used")
     # other potential input and output streams would be configured here
     args = parser.parse_args()
 
-    # parameter check, it's very ugly but I believe it covers all cases
-    # if ((args.input_image == None) != (args.output_image == None)) \
-    #         or ((args.input_video == None) != (args.output_video == None)) \
-    #         or ((args.output_image == None) == (args.output_video == None)) \
-    #         or ((args.input_image == None) == (args.input_video == None)):
-    #     print("ERROR: only one of image parameters and video parameters can be specified, " +
-    #           "but both input and output must be specified")
-    #     sys.exit(1)
-
-    if (args.input_image != None):
+    if (args.input_image):
         image_detection(args.frozen_inference_graph, args.labelmap,
-                     args.input_image, args.output_image)
+                        args.input_image, args.output_image)
     elif (args.input_folder):
-        batch_detection(args.frozen_inference_graph, args.labelmap, args.input_folder, args.output_folder)
+        batch_detection(args.frozen_inference_graph, args.labelmap,
+                        args.input_folder, args.output_folder)
     elif (args.input_webcam):
         webcam_detection(args.frozen_inference_graph, args.labelmap)
     elif (args.input_video):
         video_detection(args.frozen_inference_graph, args.labelmap,
-                     args.input_video, args.output_video)
+                        args.input_video, args.output_video)

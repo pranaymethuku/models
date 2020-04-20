@@ -1,0 +1,19 @@
+item {
+  id: 1
+  name: 'Sedan'
+}
+
+item {
+  id: 2
+  name: 'Hatchback'
+}
+
+item {
+  id: 3
+  name: 'SUV'
+}
+
+item {
+  id: 4
+  name: 'Truck'
+}

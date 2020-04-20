@@ -209,8 +209,11 @@ def draw_bounding_box_on_image(image,
              (right, top), (left, top)], width=thickness, fill=color)
 	
   # adjust the font size depending on the image size
-  font_size_adjustment = math.ceil(max(im_width, im_height) / 100)
-  font = ImageFont.truetype('./fonts/UbuntuMono-B.ttf', 10 + font_size_adjustment)
+  try:
+    font_size_adjustment = math.ceil(max(im_width, im_height) / 100)
+    font = ImageFont.truetype('./fonts/UbuntuMono-B.ttf', 10 + font_size_adjustment)
+  except OSError:
+    font = ImageFont.load_default()
 
   # If the total height of the display strings added to the top of the bounding
   # box exceeds the top of the image, stack the strings below the bounding box
