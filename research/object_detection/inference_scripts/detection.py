@@ -85,7 +85,6 @@ def define_tensors(detection_graph):
     num_detections = detection_graph.get_tensor_by_name('num_detections:0')
     return image_tensor, [detection_boxes, detection_scores, detection_classes, num_detections]
 
-
 def detect_on_single_frame(image_np, sess,
                            image_tensor,
                            output_tensors,
@@ -144,7 +143,7 @@ def batch_detection(frozen_inference_graph, labelmap, input_folder, output_folde
                                 original_file, annotated_file)
             elif '.mp4' in name:
                 video_detection(frozen_inference_graph, labelmap,
-                                original_file, annotated_file, print_progress=False)
+                                original_file, annotated_file)
 
 
 def image_detection(frozen_inference_graph, labelmap, input_image, output_image):
@@ -176,26 +175,27 @@ def video_detection(frozen_inference_graph, labelmap, input_video, output_video,
         cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))))
 
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-
+    
     # Inferencing at a rate of 10 FPS
-    frames_to_skip = int(cap.get(cv2.CAP_PROP_FPS) / 10.0)
+    #frames_to_skip = int(cap.get(cv2.CAP_PROP_FPS) / 10.0)
     frame_count = 0
-    # cap.set(cv2.CAP_PROP_POS_FRAMES,40)
+    #cap.set(cv2.CAP_PROP_POS_FRAMES,40)
     while cap.isOpened():
         _, frame = cap.read()
 
-        # Skipping some frames to run inferencing at 10 fps
-        if frame_count % frames_to_skip == 0 and frame_count != 0:
-            if frame is None:
-                break
-
+        ## Skipping some frames to run inferencing at 10 fps
+        #if frame_count % frames_to_skip == 0 and frame_count != 0:
+        if frame is None:
+            return
+        else: 
             if print_progress:
-                print("detecting frame {} of {}".format(
+                print("Detecting on frame {} of {}".format(
                     frame_count, total_frames))
+            
             output_frame = detect_on_single_frame(
                 frame, sess, image_tensor, output_tensors, category_index)
-
             out.write(output_frame)
+        
         frame_count += 1
 
     cap.release()
