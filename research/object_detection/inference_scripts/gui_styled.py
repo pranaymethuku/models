@@ -57,6 +57,8 @@ class Ui_MainWindow(QWidget):
         # Creates and styles step 1 title
         self.step1Label = QtWidgets.QLabel(self.formLayoutWidget)
         font = QtGui.QFont()
+        font.setFamily("Times New Roman")
+        font.setPointSize(12)
         font.setUnderline(True)
         self.step1Label.setFont(font)
         self.step1Label.setObjectName("step1Label")
@@ -65,6 +67,7 @@ class Ui_MainWindow(QWidget):
         # Creates the drop-down menu for the tiers
         self.step1ChooseTierComboBox = QtWidgets.QComboBox(self.formLayoutWidget)
         font = QtGui.QFont()
+        font.setFamily("Times New Roman")
         font.setPointSize(12)
         self.step1ChooseTierComboBox.setFont(font)
         self.step1ChooseTierComboBox.setObjectName("step1ChooseTierComboBox")
@@ -84,6 +87,8 @@ class Ui_MainWindow(QWidget):
         # Creates and styles the step 2 title
         self.step2Label = QtWidgets.QLabel(self.formLayoutWidget)
         font = QtGui.QFont()
+        font.setFamily("Times New Roman")
+        font.setPointSize(12)
         font.setUnderline(True)
         self.step2Label.setFont(font)
         self.step2Label.setObjectName("step2Label")
@@ -92,6 +97,7 @@ class Ui_MainWindow(QWidget):
         # Creates the drop-down menu for the models
         self.step2ChooseModelComboBox = QtWidgets.QComboBox(self.formLayoutWidget)
         font = QtGui.QFont()
+        font.setFamily("Times New Roman")
         font.setPointSize(12)
         self.step2ChooseModelComboBox.setFont(font)
         self.step2ChooseModelComboBox.setObjectName("step2ChooseModelComboBox")
@@ -107,6 +113,8 @@ class Ui_MainWindow(QWidget):
         # Creates and styles the step 3 title
         self.step3UploadImageOrVideoLabel = QtWidgets.QLabel(self.formLayoutWidget)
         font = QtGui.QFont()
+        font.setFamily("Times New Roman")
+        font.setPointSize(12)
         font.setUnderline(True)
         self.step3UploadImageOrVideoLabel.setFont(font)
         self.step3UploadImageOrVideoLabel.setObjectName("step3UploadImageOrVideoLabel")
