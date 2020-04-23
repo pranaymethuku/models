@@ -283,7 +283,7 @@ tensorboard --logdir=tor_models/tier_2/tier_2_faster_rcnn_inception_v2_coco_2018
 
 ## Model Export
 
-Now that we have a trained model we need to generate an inference graph, which can be used to run the model. For doing so we need to first of find out the highest saved step number. For this, we need to examine the `tier_2_faster_rcnn_inception_v2_coco_2018_01_28/training` directory and look for the model.ckpt file with the biggest index. Let's call that index XXXX. Next, we need to run the `export_inference_graph.py` as follows:
+Now that we have a trained model we need to generate an inference graph, which can be used to run the model. For doing so we need to first find out the highest saved step number. For this, we need to examine the `tier_2_faster_rcnn_inception_v2_coco_2018_01_28/training` directory and look for the model.ckpt file with the biggest index. Let's call that index XXXX. Next, we need to run the `export_inference_graph.py` as follows:
 
 ```bash
 python export_inference_graph.py --input_type=image_tensor --pipeline_config_path=tor_models/tier_2/tier_2_faster_rcnn_inception_v2_coco_2018_01_28/faster_rcnn_inception_v2_coco.config --trained_checkpoint_prefix=tor_models/tier_2/tier_2_faster_rcnn_inception_v2_coco_2018_01_28/training/model.ckpt-XXXX --output_directory=tor_models/tier_2/tier_2_faster_rcnn_inception_v2_coco_2018_01_28/inference_graph
