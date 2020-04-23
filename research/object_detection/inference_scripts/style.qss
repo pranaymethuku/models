@@ -1,0 +1,17 @@
+QMainWindow{
+    background: #CCCCCC;
+    font:12px bold;
+    font-weight:bold;
+            border-radius: 1px;
+            height: 11px;
+}
+
+QLabel#title{
+    font-size:14px;
+    background: purple;
+}
+
+
+QWidget#horizontalLayoutWidget{
+    background: navy-blue;
+}
