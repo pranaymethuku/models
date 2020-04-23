@@ -162,10 +162,11 @@ class Ui_MainWindow(QWidget):
         self.media_label = QLabel(self)
         MainWindow.setCentralWidget(self.centralwidget)
 
+        # Adds logo to GUI
         self.label_2 = QtWidgets.QLabel(self.centralwidget)
         self.label_2.setGeometry(QtCore.QRect(20, 640, 151, 31))
         self.label_2.setText("")
-        self.label_2.setPixmap(QtGui.QPixmap("zel_tech_logo.png"))
+        self.label_2.setPixmap(QtGui.QPixmap("images/zel_tech_logo.png"))
         self.label_2.setScaledContents(True)
         self.label_2.setObjectName("label_2")
         MainWindow.setCentralWidget(self.centralwidget)
