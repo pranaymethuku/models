@@ -202,6 +202,24 @@ def video_detection(frozen_inference_graph, labelmap, input_video, output_video,
     out.release()
 
 
+def webcam_detection_2(frozen_inference_graph, labelmap, input_image, output_image):
+    sess, detection_graph = load_tensorflow_model(frozen_inference_graph)
+    category_index = load_labelmap(labelmap)
+    image_tensor, output_tensors = define_tensors(detection_graph)
+
+    # Load image using OpenCV and changing color space to RGB
+    print(type(input_image))
+    image = cv2.imread(input_image)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+    output_image_np = detect_on_single_frame(
+        image, sess, image_tensor, output_tensors, category_index)
+
+    img = Image.fromarray(output_image_np, 'RGB')
+    #img.save(output_image, "jpeg")
+    return output_image
+
+
 def webcam_detection(frozen_inference_graph, labelmap):
     sess, detection_graph = load_tensorflow_model(frozen_inference_graph)
     category_index = load_labelmap(labelmap)

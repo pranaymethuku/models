@@ -17,6 +17,8 @@ from PyQt5.QtMultimediaWidgets import *
 import sys
 import os
 import detection
+import cv2
+from PIL import Image
 
 VIDEOS = [".mov", ".mp4", ".flv", ".avi", ".ogg", ".wmv"]
 
@@ -127,6 +129,7 @@ class Ui_MainWindow(QWidget):
         self.pushButton_3.setFont(font)
         self.pushButton_3.setObjectName("pushButton_3")
         self.horizontalLayout.addWidget(self.pushButton_3)
+        self.pushButton_3.clicked.connect(self.capture_media)
 
         # font = QtGui.QFont()
         # font.setPointSize(14)
@@ -254,6 +257,41 @@ class Ui_MainWindow(QWidget):
 
             self.media.addWidget(self.video)
             self.player.play()
+
+    def capture_media(self):
+        # Get path of labelmap and frozen inference graph
+        labelmap, frozen_graph = self.get_path()
+
+        cv2.namedWindow("Capture Media")
+        vc = cv2.VideoCapture(0)
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        vid = cv2.VideoWriter('webcam_initial_footage.mp4', fourcc, 20.0, (640, 480))
+
+        if not vc.isOpened():
+            raise IOError("Cannot Open Webcam")
+
+        while True:
+            self.clear_screen()
+            rval, frame = vc.read()
+
+            if rval:
+                cv2.imwrite("frame.jpg", frame)
+
+                pixmap = QPixmap("frame.jpg")
+                if pixmap.width() > 791 and pixmap.height() > 451:
+                     pixmap = pixmap.scaledToWidth(960)
+                     pixmap = pixmap.scaledToWidth(720)
+                self.media_label.setPixmap(pixmap)
+                self.resize(pixmap.width(), pixmap.height())
+                self.media.addWidget(self.media_label)
+                self.media.setAlignment(Qt.AlignCenter)
+
+            key = cv2.waitKey(20)
+            if key == 27:  # exit on ESC
+                break
+        vc.release()
+        vid.release()
+        cv2.destroyAllWindows()
 
     def on_tier_currentIndexChanged(self, index):
         # Change the models to show based on tier selected
