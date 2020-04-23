@@ -29,7 +29,7 @@ class Ui_MainWindow(QWidget):
         MainWindow.resize(978, 748)
         MainWindow.setWindowFlags(Qt.WindowCloseButtonHint | Qt.WindowMinimizeButtonHint)
         font = QtGui.QFont()
-        font.setFamily("Futura")
+        font.setFamily("Times New Roman")
         font.setPointSize(24)
         MainWindow.setFont(font)
 
@@ -134,6 +134,9 @@ class Ui_MainWindow(QWidget):
 
         # Creates the Capture button
         self.pushButton_3 = QtWidgets.QPushButton(self.formLayoutWidget)
+        font = QtGui.QFont()
+        font.setFamily("Times New Roman")
+        font.setPointSize(12)
         self.pushButton_3.setFont(font)
         self.pushButton_3.setObjectName("pushButton_3")
         self.horizontalLayout.addWidget(self.pushButton_3)
@@ -160,6 +163,10 @@ class Ui_MainWindow(QWidget):
         self.media_layout.setStyleSheet("border: 2px solid black")
 
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
+        font = QtGui.QFont()
+        font.setFamily("Times New Roman")
+        font.setPointSize(12)
+        self.pushButton.setFont(font)
         self.pushButton.setGeometry(QtCore.QRect(860, 640, 113, 32))
         self.pushButton.setObjectName("pushButton")
         MainWindow.setCentralWidget(self.centralwidget)
