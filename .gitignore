@@ -116,3 +116,4 @@ tutorials/embedding/questions-words.txt
 samples/outreach/blogs/segmentation_blogpost/carvana-image-masking-challenge/
 research/object_detection/inference_scripts/frozen_inference_graph.pb
 research/object_detection/inference_scripts/labelmap.pbtxt
+research/object_detection/inference_scripts/predicted.mp4

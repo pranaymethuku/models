@@ -33,6 +33,9 @@ class Ui_MainWindow(QWidget):
         font.setFamily("Times New Roman")
         font.setPointSize(24)
         MainWindow.setFont(font)
+
+        # sets icon 
+        MainWindow.setWindowIcon(QtGui.QIcon("images/tor_logo.svg"))
         
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -218,8 +221,8 @@ class Ui_MainWindow(QWidget):
                 self.media.itemAt(i).widget().deleteLater()
 
             # Run inference on video and display
-            detection.video_detection(frozen_graph, labelmap, name, (os.get_cwd() + os.path.sep + "predicted.mp4"))
-            self.display(os.get_cwd() + os.path.sep + "predicted.mp4")
+            detection.video_detection(frozen_graph, labelmap, name, (os.getcwd() + os.path.sep + "predicted.mp4"))
+            self.display(os.getcwd() + os.path.sep + "predicted.mp4")
 
     def get_path(self):
         # Get path from the tier number
