@@ -1,5 +1,3 @@
-#!/home/rkabealo/anaconda3/envs/tor/bin/python
-
 # -*- coding: utf-8 -*-
 
 # Form implementation generated from reading ui file
@@ -7,6 +5,7 @@
 # Created by: PyQt5 UI code generator 5.14.2
 #
 # WARNING! All changes made in this file will be lost!
+
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import *
@@ -19,6 +18,11 @@ import sys
 import os
 import detection
 import cv2
+import numpy as np
+import tensorflow as tf
+from object_detection.utils import label_map_util
+
+from object_detection.utils import visualization_utils as vis_util
 from PIL import Image
 
 VIDEOS = [".mov", ".mp4", ".flv", ".avi", ".ogg", ".wmv"]
@@ -34,9 +38,6 @@ class Ui_MainWindow(QWidget):
         font.setPointSize(24)
         MainWindow.setFont(font)
 
-        # sets icon 
-        MainWindow.setWindowIcon(QtGui.QIcon("images/tor_logo.svg"))
-        
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.label = QtWidgets.QLabel(self.centralwidget)
@@ -221,8 +222,8 @@ class Ui_MainWindow(QWidget):
                 self.media.itemAt(i).widget().deleteLater()
 
             # Run inference on video and display
-            detection.video_detection(frozen_graph, labelmap, name, (os.getcwd() + os.path.sep + "predicted.mp4"))
-            self.display(os.getcwd() + os.path.sep + "predicted.mp4")
+            detection.video_detection(frozen_graph, labelmap, name, "predicted.mp4")
+            self.display("predicted.mp4")
 
     def get_path(self):
         # Get path from the tier number
@@ -234,9 +235,9 @@ class Ui_MainWindow(QWidget):
         elif self.step2ChooseModelComboBox.currentText() == "Faster RCNN Resnet101 Kitti":
             frozen_graph = "../tor_results/tier_" + tier + "/_faster_rcnn_resnet101_kitti_2018_01_28.pb"
         elif self.step2ChooseModelComboBox.currentText() == "RFCN Resnet101 Coco":
-            frozen_graph = "../tor_models/tier_" + tier + "/rfcn_resnet101_coco_2018_01_28.pb"
-        elif self.step2ChooseModelComboBox.currentText() == "Faster RCNN Resnet101 Kitti":
-            frozen_graph = "../tor_models/tier_" + tier + "/ssd_inception_v2_coco_2018_01_28.pb"
+            frozen_graph = "../tor_results/tier_" + tier + "/rfcn_resnet101_coco_2018_01_28.pb"
+        elif self.step2ChooseModelComboBox.currentText() == "SSD Inception V2 Coco":
+            frozen_graph = "../tor_results/tier_" + tier + "/ssd_inception_v2_coco_2018_01_28.tflite"
 
         return labelmap, frozen_graph
 
@@ -279,38 +280,116 @@ class Ui_MainWindow(QWidget):
 
     def capture_media(self):
         # Get path of labelmap and frozen inference graph
-        labelmap, frozen_graph = self.get_path()
+        self.labelmap, self.frozen_graph = self.get_path()
+        self.capture=cv2.VideoCapture(0)
+        self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT,480)
+        self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 
-        cv2.namedWindow("Capture Media")
-        vc = cv2.VideoCapture(0)
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        vid = cv2.VideoWriter('webcam_initial_footage.mp4', fourcc, 20.0, (640, 480))
+        self.detection_graph = tf.Graph()
+        with self.detection_graph.as_default():
+            self.od_graph_def = tf.GraphDef()
+            with tf.gfile.GFile(self.frozen_graph, 'rb') as fid:
+                self.serialized_graph = fid.read()
+                self.od_graph_def.ParseFromString(self.serialized_graph)
+                tf.import_graph_def(self.od_graph_def, name='')
 
-        if not vc.isOpened():
-            raise IOError("Cannot Open Webcam")
+        NUM_CLASSES = len(label_map_util.get_label_map_dict(self.labelmap))
 
-        while True:
-            self.clear_screen()
-            rval, frame = vc.read()
+        self.label_map = label_map_util.load_labelmap(self.labelmap)
+        self.categories = label_map_util.convert_label_map_to_categories(self.label_map, max_num_classes=NUM_CLASSES, use_display_name=True)
+        self.category_index = label_map_util.create_category_index(self.categories)
 
-            if rval:
-                cv2.imwrite("frame.jpg", frame)
+        self.timer=QTimer(self)
+        self.timer.timeout.connect(self.update_frame)
+        self.timer.start(5)
 
-                pixmap = QPixmap("frame.jpg")
-                if pixmap.width() > 791 and pixmap.height() > 451:
-                     pixmap = pixmap.scaledToWidth(960)
-                     pixmap = pixmap.scaledToWidth(720)
-                self.media_label.setPixmap(pixmap)
-                self.resize(pixmap.width(), pixmap.height())
-                self.media.addWidget(self.media_label)
-                self.media.setAlignment(Qt.AlignCenter)
+    def update_frame(self):
+        ret,self.image=self.capture.read()
+        self.image=cv2.flip(self.image,1)
 
-            key = cv2.waitKey(20)
-            if key == 27:  # exit on ESC
-                break
-        vc.release()
-        vid.release()
-        cv2.destroyAllWindows()
+        self.detected_image=self.detect(self.image)
+        self.displayImage(self.detected_image)
+
+    def detect(self, image_np):
+        with self.detection_graph.as_default():
+            with tf.Session(graph=self.detection_graph) as sess:
+                # Expand dimensions since the model expects images to have shape: [1, None, None, 3]
+                image_np_expanded = np.expand_dims(image_np, axis=0)
+                image_tensor = self.detection_graph.get_tensor_by_name('image_tensor:0')
+                # Each box represents a part of the image where a particular object was detected.
+                boxes = self.detection_graph.get_tensor_by_name('detection_boxes:0')
+                # Each score represent how level of confidence for each of the objects.
+                # Score is shown on the result image, together with the class label.
+                scores = self.detection_graph.get_tensor_by_name('detection_scores:0')
+                classes = self.detection_graph.get_tensor_by_name('detection_classes:0')
+                num_detections = self.detection_graph.get_tensor_by_name('num_detections:0')
+                # Actual detection.
+                (boxes, scores, classes, num_detections) = sess.run(
+                    [boxes, scores, classes, num_detections],
+                    feed_dict={image_tensor: image_np_expanded})
+                # Visualization of the results of a detection.
+                vis_util.visualize_boxes_and_labels_on_image_array(
+                    image_np,
+                    np.squeeze(boxes),
+                    np.squeeze(classes).astype(np.int32),
+                    np.squeeze(scores),
+                    self.category_index,
+                    use_normalized_coordinates=True,
+                    line_thickness=8)
+
+        return image_np
+    def displayImage(self,img):
+        qformat=QImage.Format_Indexed8
+        if len(img.shape)==3:
+            if img.shape[2]==4:
+                qformat=QImage.Format_RGBA8888
+            else:
+                qformat=QImage.Format_RGB888
+
+        outImage=QImage(img,img.shape[1],img.shape[0],img.strides[0],qformat)
+        #BGR>>RGB
+        outImage=outImage.rgbSwapped()
+
+        pixmap = QPixmap.fromImage(outImage)
+        self.media_label.setPixmap(pixmap)
+        self.media_label.setScaledContents(True)
+        self.resize(pixmap.width(), pixmap.height())
+        self.media.addWidget(self.media_label)
+        self.media.setAlignment(Qt.AlignCenter)
+
+        # detected_image=self.detect_face(self.image)
+        # self.displayImage(detected_image,2)
+
+        # cv2.namedWindow("Capture Media")
+        # vc = cv2.VideoCapture(0)
+        # fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        # vid = cv2.VideoWriter('webcam_initial_footage.mp4', fourcc, 20.0, (640, 480))
+
+        # if not vc.isOpened():
+        #     raise IOError("Cannot Open Webcam")
+
+        # while True:
+        #     self.clear_screen()
+        #     rval, frame = vc.read()
+
+        #     if rval:
+        #         cv2.imwrite("frame.jpg", frame)
+
+        #         pixmap = QPixmap("frame.jpg")
+        #         if pixmap.width() > 791 and pixmap.height() > 451:
+        #              pixmap = pixmap.scaledToWidth(960)
+        #              pixmap = pixmap.scaledToWidth(720)
+        #         self.media_label.setPixmap(pixmap)
+        #         self.resize(pixmap.width(), pixmap.height())
+        #         self.media.addWidget(self.media_label)
+        #         self.media.setAlignment(Qt.AlignCenter)
+
+        #     key = cv2.waitKey(20)
+        #     if key == 27:  # exit on ESC
+        #         break
+        # vc.release()
+        # vid.release()
+        # cv2.destroyAllWindows()
 
     def on_tier_currentIndexChanged(self, index):
         # Change the models to show based on tier selected
