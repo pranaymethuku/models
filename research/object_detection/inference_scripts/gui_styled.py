@@ -1,3 +1,5 @@
+#!/home/rkabealo/anaconda3/envs/tor/bin/python
+
 # -*- coding: utf-8 -*-
 
 # Form implementation generated from reading ui file
@@ -5,7 +7,6 @@
 # Created by: PyQt5 UI code generator 5.14.2
 #
 # WARNING! All changes made in this file will be lost!
-
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import *
@@ -217,8 +218,8 @@ class Ui_MainWindow(QWidget):
                 self.media.itemAt(i).widget().deleteLater()
 
             # Run inference on video and display
-            detection.video_detection(frozen_graph, labelmap, name, "predicted.mp4")
-            self.display("predicted.mp4")
+            detection.video_detection(frozen_graph, labelmap, name, (os.get_cwd() + os.path.sep + "predicted.mp4"))
+            self.display(os.get_cwd() + os.path.sep + "predicted.mp4")
 
     def get_path(self):
         # Get path from the tier number
