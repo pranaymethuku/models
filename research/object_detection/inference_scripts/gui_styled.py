@@ -37,6 +37,7 @@ class Ui_MainWindow(QWidget):
         font.setFamily("Times New Roman")
         font.setPointSize(24)
         MainWindow.setFont(font)
+        MainWindow.setWindowIcon(QtGui.QIcon("images/tor_logo.svg"))
 
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
