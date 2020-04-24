@@ -34,6 +34,12 @@ class Ui_MainWindow(QWidget):
         font.setPointSize(24)
         MainWindow.setFont(font)
 
+        # Set icon (shitty patchwork solution to get this to work with .desktop files)
+        if os.path.basename(os.path.normpath(os.getcwd())) != "inference_scripts": 
+            MainWindow.setWindowIcon(QtGui.QIcon(os.getcwd() + "/models/research/object_detection/inference_scripts/images/tor_logo.svg"))
+        else: 
+            MainWindow.setWindowIcon(QtGui.QIcon("images/tor_logo.svg"))
+        
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.label = QtWidgets.QLabel(self.centralwidget)
