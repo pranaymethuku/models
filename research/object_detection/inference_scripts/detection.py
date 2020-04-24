@@ -9,14 +9,14 @@ Prof: Prof. Jayanti
 A Python 3 script to perform object detection using Tensorflow on image, video, or webcam, and store/display output accordingly
 
 Usage:
-    python3 detection.py [-h] -f FROZEN_INFERENCE_GRAPH -l LABELMAP
+    python3 detection.py [-h] -ig INFERENCE_GRAPH -l LABELMAP
                     [-ii INPUT_IMAGE] [-oi OUTPUT_IMAGE] [-iv INPUT_VIDEO]
                     [-ov OUTPUT_VIDEO] [-iw]
 
 Examples:
-    python3 detection.py -f=inference_graph/frozen_inference_graph.pb -ii=./car.jpg -oi=./car_annotated.jpg
-    python3 detection.py -f=inference_graph/frozen_inference_graph.pb -iv=./truck.mp4 -oi=./truck_annotated.mp4
-    python3 detection.py -f=inference_graph/frozen_inference_graph.pb -iw
+    python3 detection.py -ig=inference_graph/inference_graph.pb -ii=./car.jpg -oi=./car_annotated.jpg
+    python3 detection.py -ig=inference_graph/inference_graph.tflite -iv=./truck.mp4 -oi=./truck_annotated.mp4
+    python3 detection.py -ig=inference_graph/inference_graph.pb -iw
 """
 
 import os
@@ -24,6 +24,7 @@ import math
 from cv2 import cv2
 import numpy as np
 import tensorflow as tf
+from tensorflow.lite.python.interpreter import Interpreter
 import sys
 import argparse
 from PIL import Image
@@ -33,7 +34,19 @@ from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as vis_util
 
 
-def load_tensorflow_model(frozen_inference_graph_path):
+def load_detection_model(inference_graph_path, tflite=True):
+    if tflite:
+        interpreter = load_tflite_interpreter(inference_graph_path)
+        image_tensor, output_tensors = define_tflite_tensors(interpreter)
+        image_shape, floating_model = get_tflite_input_metadeta(interpreter)
+        return interpreter, image_tensor, output_tensors, image_shape, floating_model
+    else:
+        sess, detection_graph = load_tf_model(inference_graph_path)
+        image_tensor, output_tensors = define_tf_tensors(detection_graph)
+        return sess, image_tensor, output_tensors
+
+
+def load_tf_model(frozen_inference_graph_path):
     """
     Load the Tensorflow model into memory
     """
@@ -46,6 +59,65 @@ def load_tensorflow_model(frozen_inference_graph_path):
             tf.import_graph_def(od_graph_def, name='')
         sess = tf.compat.v1.Session(graph=detection_graph)
     return sess, detection_graph
+
+
+def define_tf_tensors(detection_graph):
+    """
+    Define input and output tensors (i.e. data) for the object detection classifier
+    """
+    # Input tensor is the image
+    image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
+    # Output tensors are the detection boxes, scores, and classes
+    # Each box represents a part of the image where a particular object was detected
+    detection_boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
+    # Each score represents level of confidence for each of the objects.
+    # The score is shown on the result image, together with the class label.
+    detection_scores = detection_graph.get_tensor_by_name('detection_scores:0')
+    detection_classes = detection_graph.get_tensor_by_name(
+        'detection_classes:0')
+
+    # Number of objects detected
+    num_detections = detection_graph.get_tensor_by_name('num_detections:0')
+    return image_tensor, [detection_boxes, detection_scores, detection_classes, num_detections]
+
+
+def load_tflite_interpreter(tflite_graph_path):
+    """
+    Load the Tensorflow Lite interpreter into memory
+    """
+    interpreter = Interpreter(model_path=tflite_graph_path)
+    interpreter.allocate_tensors()
+    return interpreter
+
+
+def define_tflite_tensors(interpreter):
+    """
+    Define input and output tensors (i.e. data) for the object detection classifier
+    """
+    input_details = interpreter.get_input_details()
+    output_details = interpreter.get_output_details()
+    # Input tensor is the image
+    image_tensor = input_details[0]['index']
+    # Output tensors are the detection boxes, scores, and classes
+    # Each box represents a part of the image where a particular object was detected
+    detection_boxes = output_details[0]['index']
+    # Each score represents level of confidence for each of the objects.
+    # The score is shown on the result image, together with the class label.
+    detection_classes = output_details[1]['index']
+    detection_scores = output_details[2]['index']
+    return image_tensor, [detection_boxes, detection_classes, detection_scores]
+
+
+def get_tflite_input_metadeta(interpreter):
+    input_details = interpreter.get_input_details()
+    height = input_details[0]['shape'][1]
+    width = input_details[0]['shape'][2]
+
+    # shape of the image to resize later
+    image_shape = (width, height)
+    # whether image is a floating model
+    floating_model = (input_details[0]['dtype'] == np.float32)
+    return image_shape, floating_model
 
 
 def load_labelmap(labelmap_path):
@@ -64,33 +136,23 @@ def load_labelmap(labelmap_path):
     return category_index
 
 
-def define_tensors(detection_graph):
-    """
-    Define input and output tensors (i.e. data) for the object detection classifier
-    """
-    # Input tensor is the image
-    image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
-
-    # Output tensors are the detection boxes, scores, and classes
-    # Each box represents a part of the image where a particular object was detected
-    detection_boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
-
-    # Each score represents level of confidence for each of the objects.
-    # The score is shown on the result image, together with the class label.
-    detection_scores = detection_graph.get_tensor_by_name('detection_scores:0')
-    detection_classes = detection_graph.get_tensor_by_name(
-        'detection_classes:0')
-
-    # Number of objects detected
-    num_detections = detection_graph.get_tensor_by_name('num_detections:0')
-    return image_tensor, [detection_boxes, detection_scores, detection_classes, num_detections]
-
-def detect_on_single_frame(image_np, sess,
-                           image_tensor,
-                           output_tensors,
-                           category_index,
-                           min_score_thresh=0.9,
+def detect_on_single_frame(image_np, category_index, detection_model, tflite=True, min_score_thresh=0.9,
                            max_boxes_to_draw=1):
+    if tflite:
+        output_frame = detect_on_single_frame_tflite(
+            image_np, category_index, *detection_model, min_score_thresh=min_score_thresh, max_boxes_to_draw=max_boxes_to_draw)
+    else:
+        output_frame = detect_on_single_frame_tf(
+            image_np, category_index, *detection_model, min_score_thresh=min_score_thresh, max_boxes_to_draw=max_boxes_to_draw)
+    return output_frame
+
+
+def detect_on_single_frame_tf(image_np, category_index,
+                              sess,
+                              image_tensor,
+                              output_tensors,
+                              min_score_thresh=0.9,
+                              max_boxes_to_draw=1):
 
     # adjust the bounding box size depending on the image size
     height, width = image_np.shape[:2]
@@ -122,7 +184,64 @@ def detect_on_single_frame(image_np, sess,
     return image_np
 
 
-def batch_detection(frozen_inference_graph, labelmap, input_folder, output_folder):
+def detect_on_single_frame_tflite(image_np,
+                                  category_index,
+                                  interpreter,
+                                  image_tensor,
+                                  output_tensors,
+                                  image_shape,
+                                  floating_model=False,
+                                  min_score_thresh=0.9,
+                                  max_boxes_to_draw=1,
+                                  input_mean=127.5,
+                                  input_std=127.5):
+
+    # adjust the bounding box size depending on the image size
+    height, width = image_np.shape[:2]
+    line_thickness_adjustment = math.ceil(max(height, width) / 400)
+
+    # expand image dimensions to have shape: [1, None, None, 3]
+    image_resized = cv2.resize(image_np, image_shape)
+    image_expanded = np.expand_dims(image_resized, axis=0)
+
+    # Normalize pixel values if using a floating model (i.e. if model is non-quantized)
+    if floating_model:
+        image_expanded = (np.float32(image_expanded) - input_mean) / input_std
+
+    # Perform the actual detection by running the model with the image as input
+    interpreter.set_tensor(image_tensor, image_expanded)
+    interpreter.invoke()
+
+    # Retrieve detection results
+    detection_boxes, detection_classes, detection_scores = output_tensors
+
+    # Bounding box coordinates of detected objects
+    boxes = interpreter.get_tensor(detection_boxes)[0]
+    classes = interpreter.get_tensor(detection_classes)[
+        0]  # Class index of detected objects
+    scores = interpreter.get_tensor(detection_scores)[
+        0]  # Confidence of detected objects
+
+    # Draw the results of the detection (aka 'visualize the results')
+    vis_util.visualize_boxes_and_labels_on_image_array(
+        image_np,
+        np.squeeze(boxes),
+        np.squeeze(classes).astype(np.int32),
+        np.squeeze(scores),
+        category_index,
+        use_normalized_coordinates=True,
+        line_thickness=4+line_thickness_adjustment,
+        min_score_thresh=min_score_thresh,
+        max_boxes_to_draw=max_boxes_to_draw)
+
+    # Here output the best class
+    # best_class_id = int(classes[np.argmax(scores)])
+    # best_class_name = category_index.get(best_class_id)['name']
+    # print("best class: {}".format(best_class_name))
+    return image_np
+
+
+def batch_detection(inference_graph, labelmap, input_folder, output_folder):
     # walk through all directories
     for root, _, files in os.walk(input_folder, topdown=False):
         # we only want to walk through the jpgs here, ignore anything else
@@ -139,33 +258,33 @@ def batch_detection(frozen_inference_graph, labelmap, input_folder, output_folde
             print("Processing {} ({}/{}) in {}".format(name,
                                                        file_num, total_num_files, root))
             if '.jpg' in name:
-                image_detection(frozen_inference_graph, labelmap,
+                image_detection(inference_graph, labelmap,
                                 original_file, annotated_file)
             elif '.mp4' in name:
-                video_detection(frozen_inference_graph, labelmap,
+                video_detection(inference_graph, labelmap,
                                 original_file, annotated_file)
 
 
-def image_detection(frozen_inference_graph, labelmap, input_image, output_image):
-    sess, detection_graph = load_tensorflow_model(frozen_inference_graph)
+def image_detection(inference_graph, labelmap, input_image, output_image):
+    tflite = '.tflite' in inference_graph
+    detection_model = load_detection_model(inference_graph, tflite=tflite)
     category_index = load_labelmap(labelmap)
-    image_tensor, output_tensors = define_tensors(detection_graph)
 
     # Load image using OpenCV and changing color space to RGB
     image = cv2.imread(input_image)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-    output_image_np = detect_on_single_frame(
-        image, sess, image_tensor, output_tensors, category_index)
+    output_frame = detect_on_single_frame(
+        image, category_index, detection_model, tflite=tflite)
 
-    img = Image.fromarray(output_image_np, 'RGB')
+    img = Image.fromarray(output_frame, 'RGB')
     img.save(output_image, "jpeg")
 
 
-def video_detection(frozen_inference_graph, labelmap, input_video, output_video, print_progress=True):
-    sess, detection_graph = load_tensorflow_model(frozen_inference_graph)
+def video_detection(inference_graph, labelmap, input_video, output_video, print_progress=True):
+    tflite = '.tflite' in inference_graph
+    detection_model = load_detection_model(inference_graph, tflite=tflite)
     category_index = load_labelmap(labelmap)
-    image_tensor, output_tensors = define_tensors(detection_graph)
 
     # Load video using OpenCV
     cap = cv2.VideoCapture(input_video)
@@ -175,37 +294,30 @@ def video_detection(frozen_inference_graph, labelmap, input_video, output_video,
         cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))))
 
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    
-    # Inferencing at a rate of 10 FPS
-    #frames_to_skip = int(cap.get(cv2.CAP_PROP_FPS) / 10.0)
+
     frame_count = 0
-    #cap.set(cv2.CAP_PROP_POS_FRAMES,40)
     while cap.isOpened():
         _, frame = cap.read()
 
-        ## Skipping some frames to run inferencing at 10 fps
-        #if frame_count % frames_to_skip == 0 and frame_count != 0:
         if frame is None:
-            return
-        else: 
+            out.release()
+            cap.release()
+        else:
             if print_progress:
                 print("Detecting on frame {} of {}".format(
                     frame_count, total_frames))
-            
+
             output_frame = detect_on_single_frame(
-                frame, sess, image_tensor, output_tensors, category_index)
+                frame, category_index, detection_model, tflite=tflite)
             out.write(output_frame)
-        
+
         frame_count += 1
 
-    cap.release()
-    out.release()
 
-
-def webcam_detection(frozen_inference_graph, labelmap):
-    sess, detection_graph = load_tensorflow_model(frozen_inference_graph)
+def webcam_detection(inference_graph, labelmap):
+    tflite = '.tflite' in inference_graph
+    detection_model = load_detection_model(inference_graph, tflite=tflite)
     category_index = load_labelmap(labelmap)
-    image_tensor, output_tensors = define_tensors(detection_graph)
 
     # Load webcam using OpenCV
     cap = cv2.VideoCapture(0)
@@ -213,7 +325,7 @@ def webcam_detection(frozen_inference_graph, labelmap):
     while cap.isOpened():
         _, frame = cap.read()
         output_frame = detect_on_single_frame(
-            frame, sess, image_tensor, output_tensors, category_index)
+            frame, category_index, detection_model, tflite=tflite)
 
         cv2.imshow('Video', output_frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -224,7 +336,7 @@ def webcam_detection(frozen_inference_graph, labelmap):
 if __name__ == "__main__":
     # set up command line
     parser = argparse.ArgumentParser()
-    parser.add_argument("-f", "--frozen_inference_graph", type=str, required=True,
+    parser.add_argument("-ig", "--inference_graph", type=str, required=True,
                         help="Path to frozen detection graph .pb file, which contains the model that is used")
     parser.add_argument("-l", "--labelmap", type=str, required=True,
                         help="Path to the labelmap")
@@ -233,12 +345,12 @@ if __name__ == "__main__":
                         help="Path to the input image to detect")
     parser.add_argument("-oi", "--output_image", type=str,
                         help="Path to the output the annotated image, only valid with --input-image")
-    # batch image detection 
+    # batch image detection
     parser.add_argument("-if", "--input_folder", type=str,
                         help="Path to the folder of input images to perform detection on")
     parser.add_argument("-of", "--output_folder", type=str,
                         help="Path to the output folder for annotated images, only valid with --input-folder")
-    # stored video detection 
+    # stored video detection
     parser.add_argument("-iv", "--input_video", type=str,
                         help="Path to the input video to detect")
     parser.add_argument("-ov", "--output_video", type=str,
@@ -250,13 +362,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if (args.input_image):
-        image_detection(args.frozen_inference_graph, args.labelmap,
+        image_detection(args.inference_graph, args.labelmap,
                         args.input_image, args.output_image)
     elif (args.input_folder):
-        batch_detection(args.frozen_inference_graph, args.labelmap,
+        batch_detection(args.inference_graph, args.labelmap,
                         args.input_folder, args.output_folder)
     elif (args.input_webcam):
-        webcam_detection(args.frozen_inference_graph, args.labelmap)
+        webcam_detection(args.inference_graph, args.labelmap)
     elif (args.input_video):
-        video_detection(args.frozen_inference_graph, args.labelmap,
+        video_detection(args.inference_graph, args.labelmap,
                         args.input_video, args.output_video)
