@@ -241,7 +241,7 @@ def detect_on_single_frame_tflite(image_np,
     return image_np
 
 
-def batch_detection(inference_graph, labelmap, input_folder, output_folder, tflite=True):
+def batch_detection(inference_graph, labelmap, input_folder, output_folder):
     # walk through all directories
     for root, _, files in os.walk(input_folder, topdown=False):
         # we only want to walk through the jpgs here, ignore anything else
@@ -259,13 +259,14 @@ def batch_detection(inference_graph, labelmap, input_folder, output_folder, tfli
                                                        file_num, total_num_files, root))
             if '.jpg' in name:
                 image_detection(inference_graph, labelmap,
-                                original_file, annotated_file, tflite=tflite)
+                                original_file, annotated_file)
             elif '.mp4' in name:
                 video_detection(inference_graph, labelmap,
-                                original_file, annotated_file, tflite=tflite)
+                                original_file, annotated_file)
 
 
-def image_detection(inference_graph, labelmap, input_image, output_image, tflite=True):
+def image_detection(inference_graph, labelmap, input_image, output_image):
+    tflite = '.tflite' in inference_graph
     detection_model = load_detection_model(inference_graph, tflite=tflite)
     category_index = load_labelmap(labelmap)
 
@@ -280,7 +281,8 @@ def image_detection(inference_graph, labelmap, input_image, output_image, tflite
     img.save(output_image, "jpeg")
 
 
-def video_detection(inference_graph, labelmap, input_video, output_video, print_progress=True, tflite=True):
+def video_detection(inference_graph, labelmap, input_video, output_video, print_progress=True):
+    tflite = '.tflite' in inference_graph
     detection_model = load_detection_model(inference_graph, tflite=tflite)
     category_index = load_labelmap(labelmap)
 
@@ -312,7 +314,8 @@ def video_detection(inference_graph, labelmap, input_video, output_video, print_
         frame_count += 1
 
 
-def webcam_detection(inference_graph, labelmap, tflite=True):
+def webcam_detection(inference_graph, labelmap):
+    tflite = '.tflite' in inference_graph
     detection_model = load_detection_model(inference_graph, tflite=tflite)
     category_index = load_labelmap(labelmap)
 
@@ -358,16 +361,14 @@ if __name__ == "__main__":
     # other potential input and output streams would be configured here
     args = parser.parse_args()
 
-    tflite = '.tflite' in args.inference_graph
-
     if (args.input_image):
         image_detection(args.inference_graph, args.labelmap,
-                        args.input_image, args.output_image, tflite=tflite)
+                        args.input_image, args.output_image)
     elif (args.input_folder):
         batch_detection(args.inference_graph, args.labelmap,
-                        args.input_folder, args.output_folder, tflite=tflite)
+                        args.input_folder, args.output_folder)
     elif (args.input_webcam):
-        webcam_detection(args.inference_graph, args.labelmap, tflite=tflite)
+        webcam_detection(args.inference_graph, args.labelmap)
     elif (args.input_video):
         video_detection(args.inference_graph, args.labelmap,
-                        args.input_video, args.output_video, tflite=tflite)
+                        args.input_video, args.output_video)
