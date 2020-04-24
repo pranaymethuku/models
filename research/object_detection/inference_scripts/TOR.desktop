@@ -1,0 +1,8 @@
+[Desktop Entry]
+Version=1.0
+Name=TOR
+Exec=/home/rkabealo/models/research/object_detection/inference_scripts/gui_styled.py
+Icon = /home/rkabealo/models/research/object_detection/inference_scripts/images/tor_logo.svg
+Terminal=false
+StartupNotify=true
+Type=Application
