@@ -1,0 +1,112 @@
+item {
+    id: 1
+    name: 'Green Ford Explorer'
+}
+item {
+    id: 2
+    name: 'Gray Ford Explorer'
+}
+item {
+    id: 3
+    name: 'White Ford Explorer'
+}
+item {
+    id: 4
+    name: 'Brown Ford Explorer'
+}
+item {
+    id: 5
+    name: 'Black Ford Explorer'
+}
+item {
+    id: 6
+    name: 'Blue Ford Explorer'
+}
+item {
+    id: 7
+    name: 'Red Ford Explorer'
+}
+item {
+    id: 8
+    name: 'Green Toyota RAV-4'
+}
+item {
+    id: 9
+    name: 'Gray Toyota RAV-4'
+}
+item {
+    id: 10
+    name: 'White Toyota RAV-4'
+}
+item {
+    id: 11
+    name: 'Brown Toyota RAV-4'
+}
+item {
+    id: 12
+    name: 'Black Toyota RAV-4'
+}
+item {
+    id: 13
+    name: 'Blue Toyota RAV-4'
+}
+item {
+    id: 14
+    name: 'Red Toyota RAV-4'
+}
+item {
+    id: 15
+    name: 'Green Mazda3 Hatchback'
+}
+item {
+    id: 16
+    name: 'Gray Mazda3 Hatchback'
+}
+item {
+    id: 17
+    name: 'White Mazda3 Hatchback'
+}
+item {
+    id: 18
+    name: 'Brown Mazda3 Hatchback'
+}
+item {
+    id: 19
+    name: 'Black Mazda3 Hatchback'
+}
+item {
+    id: 20
+    name: 'Blue Mazda3 Hatchback'
+}
+item {
+    id: 21
+    name: 'Red Mazda3 Hatchback'
+}
+item {
+    id: 22
+    name: 'Green Toyota Prius'
+}
+item {
+    id: 23
+    name: 'Gray Toyota Prius'
+}
+item {
+    id: 24
+    name: 'White Toyota Prius'
+}
+item {
+    id: 25
+    name: 'Brown Toyota Prius'
+}
+item {
+    id: 26
+    name: 'Black Toyota Prius'
+}
+item {
+    id: 27
+    name: 'Blue Toyota Prius'
+}
+item {
+    id: 28
+    name: 'Red Toyota Prius'
+}
