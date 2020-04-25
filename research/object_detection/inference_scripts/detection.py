@@ -119,7 +119,6 @@ def get_tflite_input_metadeta(interpreter):
     floating_model = (input_details[0]['dtype'] == np.float32)
     return image_shape, floating_model
 
-
 def load_labelmap(labelmap_path):
     # Number of classes the object detector can identify
     num_classes = len(label_map_util.get_label_map_dict(labelmap_path))
@@ -222,6 +221,10 @@ def detect_on_single_frame_tflite(image_np,
     scores = interpreter.get_tensor(detection_scores)[
         0]  # Confidence of detected objects
 
+    # Reindex lables to start at 1 (because TFLite is stupid)
+    classes = [c + 1 for c in classes]
+    print(classes)
+
     # Draw the results of the detection (aka 'visualize the results')
     vis_util.visualize_boxes_and_labels_on_image_array(
         image_np,
@@ -296,6 +299,7 @@ def video_detection(inference_graph, labelmap, input_video, output_video, print_
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
     frame_count = 0
+    cap.set(cv2.CAP_PROP_POS_FRAMES, 420)
     while cap.isOpened():
         _, frame = cap.read()
 
