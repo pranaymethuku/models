@@ -27,13 +27,14 @@ class Ui_MainWindow(QWidget):
     def setupUi(self, MainWindow):
         # Initial setup of the GUI
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(978, 748)
+        #MainWindow.resize(978, 748)
         MainWindow.setWindowFlags(Qt.WindowCloseButtonHint | Qt.WindowMinimizeButtonHint)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
         font.setPointSize(24)
         MainWindow.setFont(font)
         MainWindow.setWindowIcon(QtGui.QIcon("images/tor_logo.svg"))
+        MainWindow.setStyleSheet("background-color: #8abaae")
 
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -67,7 +68,7 @@ class Ui_MainWindow(QWidget):
         self.step1Label = QtWidgets.QLabel(self.formLayoutWidget)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
-        font.setPointSize(12)
+        font.setPointSize(14)
         font.setUnderline(True)
         self.step1Label.setFont(font)
         self.step1Label.setObjectName("step1Label")
@@ -81,6 +82,7 @@ class Ui_MainWindow(QWidget):
         self.step1ChooseTierComboBox.setFont(font)
         self.step1ChooseTierComboBox.setObjectName("step1ChooseTierComboBox")
         self.step1ChooseTierComboBox.addItems(["Tier 1", "Tier 2", "Tier 3", "Tier 4"])
+        self.step1ChooseTierComboBox.setStyleSheet("background-color: #e8e9eb; font: black")
         self.horizontalLayout.addWidget(self.step1ChooseTierComboBox)
 
         # Based on what tier is selected, models will be placed
@@ -94,7 +96,7 @@ class Ui_MainWindow(QWidget):
         self.step2Label = QtWidgets.QLabel(self.formLayoutWidget)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
-        font.setPointSize(12)
+        font.setPointSize(14)
         font.setUnderline(True)
         self.step2Label.setFont(font)
         self.step2Label.setObjectName("step2Label")
@@ -108,6 +110,7 @@ class Ui_MainWindow(QWidget):
         self.step2ChooseModelComboBox.setFont(font)
         self.step2ChooseModelComboBox.setObjectName("step2ChooseModelComboBox")
         self.step2ChooseModelComboBox.addItems(['Faster RCNN Inception V2 Coco', 'SSD Inception V2 Coco'])
+        self.step2ChooseModelComboBox.setStyleSheet("border: 1px solid black; background-color: #e8e9eb")
         self.horizontalLayout.addWidget(self.step2ChooseModelComboBox)
 
         spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
@@ -117,7 +120,7 @@ class Ui_MainWindow(QWidget):
         self.step3UploadImageOrVideoLabel = QtWidgets.QLabel(self.formLayoutWidget)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
-        font.setPointSize(12)
+        font.setPointSize(14)
         font.setUnderline(True)
         self.step3UploadImageOrVideoLabel.setFont(font)
         self.step3UploadImageOrVideoLabel.setObjectName("step3UploadImageOrVideoLabel")
@@ -130,6 +133,7 @@ class Ui_MainWindow(QWidget):
         font.setPointSize(12)
         self.upload_button.setFont(font)
         self.upload_button.setObjectName("upload_button")
+        self.upload_button.setStyleSheet("border: 1px solid black; background-color: #e8e9eb")
         self.horizontalLayout.addWidget(self.upload_button)
         #self.pushButton = QtWidgets.QPushButton(self.centralwidget)
         #self.pushButton.setGeometry(QtCore.QRect(870, 110, 101, 51))
@@ -142,6 +146,7 @@ class Ui_MainWindow(QWidget):
         font.setPointSize(12)
         self.capture_button.setFont(font)
         self.capture_button.setObjectName("capture_button")
+        self.capture_button.setStyleSheet("border: 1px solid black; background-color: #e8e9eb")
         self.horizontalLayout.addWidget(self.capture_button)
         self.capture_button.clicked.connect(self.capture_media)
 
@@ -163,7 +168,7 @@ class Ui_MainWindow(QWidget):
         self.media_layout = QWidget(self.centralwidget)
         self.media_layout.setGeometry(QtCore.QRect(10, 140, 961, 491))
         self.media_layout.setObjectName("graphicsView")
-        self.media_layout.setStyleSheet("border: 2px solid black")
+        self.media_layout.setStyleSheet("border: 2px solid black; background-color: #e8e9eb")
 
         self.stop = QtWidgets.QPushButton(self.centralwidget)
         font = QtGui.QFont()
@@ -179,10 +184,11 @@ class Ui_MainWindow(QWidget):
         self.exit_button = QtWidgets.QPushButton(self.centralwidget)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
-        font.setPointSize(12)
+        font.setPointSize(14)
         self.exit_button.setFont(font)
         self.exit_button.setGeometry(QtCore.QRect(860, 640, 113, 32))
         self.exit_button.setObjectName("exit_button")
+        self.exit_button.setStyleSheet("border: 1px solid black; background-color: #e8e9eb")
         MainWindow.setCentralWidget(self.centralwidget)
         self.exit_button.clicked.connect(self.exit)
 
