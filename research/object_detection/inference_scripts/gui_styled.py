@@ -18,11 +18,7 @@ import sys
 import os
 import detection
 import cv2
-import numpy as np
-import tensorflow as tf
-from object_detection.utils import label_map_util
 
-from object_detection.utils import visualization_utils as vis_util
 from PIL import Image
 
 VIDEOS = [".mov", ".mp4", ".flv", ".avi", ".ogg", ".wmv"]
