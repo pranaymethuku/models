@@ -314,35 +314,28 @@ def video_detection(inference_graph, labelmap, input_video, output_video, print_
         frame_count += 1
 
 
-def webcam_detection(inference_graph, labelmap):
+def webcam_detection(inference_graph, labelmap, gui=False, frame=None):
     tflite = '.tflite' in inference_graph
     detection_model = load_detection_model(inference_graph, tflite=tflite)
     category_index = load_labelmap(labelmap)
 
-    # Load webcam using OpenCV
-    cap = cv2.VideoCapture(0)
+    if not gui:
+        # Load webcam using OpenCV
+        cap = cv2.VideoCapture(0)
 
-    while cap.isOpened():
-        _, frame = cap.read()
-        output_frame = detect_on_single_frame(
+        while cap.isOpened():
+            _, frame = cap.read()
+            output_frame = detect_on_single_frame(
+                frame, category_index, detection_model, tflite=tflite)
+
+            cv2.imshow('Video', output_frame)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+        cap.release()
+
+    else:
+        return detect_on_single_frame(
             frame, category_index, detection_model, tflite=tflite)
-
-        cv2.imshow('Video', output_frame)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-    cap.release()
-
-
-def gui_webcam(inference_graph, labelmap, frame):
-    tflite = '.tflite' in inference_graph
-    detection_model = load_detection_model(inference_graph, tflite=tflite)
-    category_index = load_labelmap(labelmap)
-
-    output_frame = detect_on_single_frame(
-        frame, category_index, detection_model, tflite=tflite)
-
-    return output_frame
-
 
 if __name__ == "__main__":
     # set up command line

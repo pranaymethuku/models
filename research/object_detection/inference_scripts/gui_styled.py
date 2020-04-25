@@ -322,7 +322,7 @@ class Ui_MainWindow(QWidget):
         self.image = cv2.flip(self.image, 1)
 
         # Run inference on frame and display to screen
-        self.detected_image = detection.gui_webcam(self.frozen_graph, self.labelmap, self.image)
+        self.detected_image = detection.webcam_detection(self.frozen_graph, self.labelmap, True, self.image)
         self.display_frame(self.detected_image)
 
     def display_frame(self, frame):
