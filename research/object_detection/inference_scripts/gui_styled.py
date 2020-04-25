@@ -223,8 +223,8 @@ class Ui_MainWindow(QWidget):
                 self.media.itemAt(i).widget().deleteLater()
 
             # Run inference on video and display
-            detection.video_detection(frozen_graph, labelmap, name, "predicted.mp4")
-            self.display("predicted.mp4")
+            detection.video_detection(frozen_graph, labelmap, name, os.getcwd() + os.path.sep + "predicted.mp4")
+            self.display(os.getcwd() + os.path.sep + "predicted.mp4")
 
     def get_path(self):
         # Get path from the tier number
