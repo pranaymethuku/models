@@ -119,7 +119,7 @@ def get_tflite_input_metadeta(interpreter):
     floating_model = (input_details[0]['dtype'] == np.float32)
     return image_shape, floating_model
 
-def load_labelmap(labelmap_path):
+def load_labelmap(labelmap_path, tflite):
     # Number of classes the object detector can identify
     num_classes = len(label_map_util.get_label_map_dict(labelmap_path))
 
@@ -221,9 +221,8 @@ def detect_on_single_frame_tflite(image_np,
     scores = interpreter.get_tensor(detection_scores)[
         0]  # Confidence of detected objects
 
-    # Reindex lables to start at 1 (because TFLite is stupid)
+    # Reindex labels to start at 1 (because TFLite starts indexing at 0)
     classes = [c + 1 for c in classes]
-    print(classes)
 
     # Draw the results of the detection (aka 'visualize the results')
     vis_util.visualize_boxes_and_labels_on_image_array(
@@ -271,7 +270,7 @@ def batch_detection(inference_graph, labelmap, input_folder, output_folder):
 def image_detection(inference_graph, labelmap, input_image, output_image):
     tflite = '.tflite' in inference_graph
     detection_model = load_detection_model(inference_graph, tflite=tflite)
-    category_index = load_labelmap(labelmap)
+    category_index = load_labelmap(labelmap, tflite=tflite)
 
     # Load image using OpenCV and changing color space to RGB
     image = cv2.imread(input_image)
