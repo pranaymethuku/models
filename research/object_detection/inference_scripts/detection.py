@@ -332,6 +332,7 @@ def webcam_detection(inference_graph, labelmap):
             break
     cap.release()
 
+
 def gui_webcam(inference_graph, labelmap, frame):
     tflite = '.tflite' in inference_graph
     detection_model = load_detection_model(inference_graph, tflite=tflite)
@@ -341,6 +342,8 @@ def gui_webcam(inference_graph, labelmap, frame):
         frame, category_index, detection_model, tflite=tflite)
 
     return output_frame
+
+
 if __name__ == "__main__":
     # set up command line
     parser = argparse.ArgumentParser()
