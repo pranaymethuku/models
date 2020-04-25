@@ -296,10 +296,13 @@ class Ui_MainWindow(QWidget):
     def capture_media(self):
         # Get path of labelmap and frozen inference graph
         self.labelmap, self.frozen_graph = self.get_path()
+
+        # Start webcam
         self.capture=cv2.VideoCapture(0)
         self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT,480)
         self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 
+        # Show stop button
         self.stop.setVisible(True)
 
         self.timer=QTimer(self)
@@ -307,25 +310,27 @@ class Ui_MainWindow(QWidget):
         self.timer.start(5)
 
     def update_frame(self):
-        ret,self.image=self.capture.read()
-        self.image=cv2.flip(self.image,1)
+        # Get frame
+        _, self.image=self.capture.read()
+        self.image = cv2.flip(self.image, 1)
 
+        # Run inference on frame and display to screen
         self.detected_image = detection.gui_webcam(self.frozen_graph, self.labelmap, self.image)
-        self.displayImage(self.detected_image)
+        self.display_frame(self.detected_image)
 
-    def displayImage(self,img):
-        qformat=QImage.Format_Indexed8
-        if len(img.shape)==3:
-            if img.shape[2]==4:
-                qformat=QImage.Format_RGBA8888
+    def display_frame(self, frame):
+        qformat = QImage.Format_Indexed8
+
+        if len(frame.shape) == 3:
+            if frame.shape[2] == 4:
+                qformat = QImage.Format_RGBA8888
             else:
-                qformat=QImage.Format_RGB888
+                qformat = QImage.Format_RGB888
 
-        outImage=QImage(img,img.shape[1],img.shape[0],img.strides[0],qformat)
-
+        outImage = QImage(frame, frame.shape[1], frame.shape[0], frame.strides[0], qformat)
 
         #BGR>>RGB
-        outImage=outImage.rgbSwapped()
+        outImage = outImage.rgbSwapped()
 
         pixmap = QPixmap.fromImage(outImage)
         self.media_label.setPixmap(pixmap)
