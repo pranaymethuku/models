@@ -168,6 +168,17 @@ class Ui_MainWindow(QWidget):
         self.media_layout.setObjectName("graphicsView")
         self.media_layout.setStyleSheet("border: 2px solid black")
 
+        self.stop = QtWidgets.QPushButton(self.centralwidget)
+        font = QtGui.QFont()
+        font.setFamily("Times New Roman")
+        font.setPointSize(12)
+        self.stop.setFont(font)
+        self.stop.setGeometry(QtCore.QRect(740, 640, 113, 32))
+        self.stop.setObjectName("stop")
+        MainWindow.setCentralWidget(self.centralwidget)
+        self.stop.clicked.connect(self.stop_webcam)
+        self.stop.setVisible(False)
+
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
@@ -197,6 +208,14 @@ class Ui_MainWindow(QWidget):
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+
+    def stop_webcam(self):
+        self.timer.stop()
+        self.stop.setVisible(False)
+        self.clear_screen()
+        self.capture.release()
+        cv2.destroyAllWindows()
 
     def exit(self):
         sys.exit()
@@ -239,7 +258,8 @@ class Ui_MainWindow(QWidget):
             frozen_graph = "../tor_results/tier_" + tier + "/rfcn_resnet101_coco_2018_01_28.pb"
         elif self.step2ChooseModelComboBox.currentText() == "SSD Inception V2 Coco":
             frozen_graph = "../tor_results/tier_" + tier + "/ssd_inception_v2_coco_2018_01_28.tflite"
-
+        elif self.step2ChooseModelComboBox.currentText() == "SSD V2 Coco":
+            frozen_graph = "../tor_results/tier_" + tier + "/ssd_v2_coco_2018_01_28.tflite"
         return labelmap, frozen_graph
 
     def display(self, media=None):
@@ -285,6 +305,8 @@ class Ui_MainWindow(QWidget):
         self.capture=cv2.VideoCapture(0)
         self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT,480)
         self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+
+        self.stop.setVisible(True)
 
         self.detection_graph = tf.Graph()
         with self.detection_graph.as_default():
@@ -358,40 +380,6 @@ class Ui_MainWindow(QWidget):
         self.media.addWidget(self.media_label)
         self.media.setAlignment(Qt.AlignCenter)
 
-        # detected_image=self.detect_face(self.image)
-        # self.displayImage(detected_image,2)
-
-        # cv2.namedWindow("Capture Media")
-        # vc = cv2.VideoCapture(0)
-        # fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        # vid = cv2.VideoWriter('webcam_initial_footage.mp4', fourcc, 20.0, (640, 480))
-
-        # if not vc.isOpened():
-        #     raise IOError("Cannot Open Webcam")
-
-        # while True:
-        #     self.clear_screen()
-        #     rval, frame = vc.read()
-
-        #     if rval:
-        #         cv2.imwrite("frame.jpg", frame)
-
-        #         pixmap = QPixmap("frame.jpg")
-        #         if pixmap.width() > 791 and pixmap.height() > 451:
-        #              pixmap = pixmap.scaledToWidth(960)
-        #              pixmap = pixmap.scaledToWidth(720)
-        #         self.media_label.setPixmap(pixmap)
-        #         self.resize(pixmap.width(), pixmap.height())
-        #         self.media.addWidget(self.media_label)
-        #         self.media.setAlignment(Qt.AlignCenter)
-
-        #     key = cv2.waitKey(20)
-        #     if key == 27:  # exit on ESC
-        #         break
-        # vc.release()
-        # vid.release()
-        # cv2.destroyAllWindows()
-
     def on_tier_currentIndexChanged(self, index):
         # Change the models to show based on tier selected
         self.step2ChooseModelComboBox.clear()
@@ -401,9 +389,9 @@ class Ui_MainWindow(QWidget):
             self.step2ChooseModelComboBox.addItems(['Faster RCNN Inception V2 Coco', 'Faster RCNN Resnet101 Kitti',
             'RFCN Resnet101 Coco', 'SSD Inception V2 Coco'])
         elif str(self.step1ChooseTierComboBox.currentText()) == 'Tier 3':
-            self.step2ChooseModelComboBox.addItems(['3 Model 1', '3 Model 2'])
+            self.step2ChooseModelComboBox.addItems(['Faster RCNN Inception V2 Coco', 'SSD V2 Coco'])
         else:
-            self.step2ChooseModelComboBox.addItems(['4 Model 1', '4 Model 2'])
+            self.step2ChooseModelComboBox.addItems(['SSD V2 Coco'])
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -425,6 +413,7 @@ class Ui_MainWindow(QWidget):
         self.pushButton_3.setText(_translate("MainWindow", "Capture"))
         #self.pushButton.setText(_translate("MainWindow", "Submit"))
         self.pushButton.setText(_translate("MainWindow", "Exit"))
+        self.stop.setText(_translate("MainWindow", "Stop"))
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
