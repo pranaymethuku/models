@@ -302,20 +302,6 @@ class Ui_MainWindow(QWidget):
 
         self.stop.setVisible(True)
 
-        self.detection_graph = tf.Graph()
-        with self.detection_graph.as_default():
-            self.od_graph_def = tf.GraphDef()
-            with tf.gfile.GFile(self.frozen_graph, 'rb') as fid:
-                self.serialized_graph = fid.read()
-                self.od_graph_def.ParseFromString(self.serialized_graph)
-                tf.import_graph_def(self.od_graph_def, name='')
-
-        NUM_CLASSES = len(label_map_util.get_label_map_dict(self.labelmap))
-
-        self.label_map = label_map_util.load_labelmap(self.labelmap)
-        self.categories = label_map_util.convert_label_map_to_categories(self.label_map, max_num_classes=NUM_CLASSES, use_display_name=True)
-        self.category_index = label_map_util.create_category_index(self.categories)
-
         self.timer=QTimer(self)
         self.timer.timeout.connect(self.update_frame)
         self.timer.start(5)
@@ -324,37 +310,9 @@ class Ui_MainWindow(QWidget):
         ret,self.image=self.capture.read()
         self.image=cv2.flip(self.image,1)
 
-        self.detected_image=self.detect(self.image)
+        self.detected_image = detection.gui_webcam(self.frozen_graph, self.labelmap, self.image)
         self.displayImage(self.detected_image)
 
-    def detect(self, image_np):
-        with self.detection_graph.as_default():
-            with tf.Session(graph=self.detection_graph) as sess:
-                # Expand dimensions since the model expects images to have shape: [1, None, None, 3]
-                image_np_expanded = np.expand_dims(image_np, axis=0)
-                image_tensor = self.detection_graph.get_tensor_by_name('image_tensor:0')
-                # Each box represents a part of the image where a particular object was detected.
-                boxes = self.detection_graph.get_tensor_by_name('detection_boxes:0')
-                # Each score represent how level of confidence for each of the objects.
-                # Score is shown on the result image, together with the class label.
-                scores = self.detection_graph.get_tensor_by_name('detection_scores:0')
-                classes = self.detection_graph.get_tensor_by_name('detection_classes:0')
-                num_detections = self.detection_graph.get_tensor_by_name('num_detections:0')
-                # Actual detection.
-                (boxes, scores, classes, num_detections) = sess.run(
-                    [boxes, scores, classes, num_detections],
-                    feed_dict={image_tensor: image_np_expanded})
-                # Visualization of the results of a detection.
-                vis_util.visualize_boxes_and_labels_on_image_array(
-                    image_np,
-                    np.squeeze(boxes),
-                    np.squeeze(classes).astype(np.int32),
-                    np.squeeze(scores),
-                    self.category_index,
-                    use_normalized_coordinates=True,
-                    line_thickness=8)
-
-        return image_np
     def displayImage(self,img):
         qformat=QImage.Format_Indexed8
         if len(img.shape)==3:
@@ -364,6 +322,8 @@ class Ui_MainWindow(QWidget):
                 qformat=QImage.Format_RGB888
 
         outImage=QImage(img,img.shape[1],img.shape[0],img.strides[0],qformat)
+
+
         #BGR>>RGB
         outImage=outImage.rgbSwapped()
 
