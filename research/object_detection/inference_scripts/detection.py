@@ -119,7 +119,7 @@ def get_tflite_input_metadeta(interpreter):
     floating_model = (input_details[0]['dtype'] == np.float32)
     return image_shape, floating_model
 
-def load_labelmap(labelmap_path, tflite):
+def load_labelmap(labelmap_path):
     # Number of classes the object detector can identify
     num_classes = len(label_map_util.get_label_map_dict(labelmap_path))
 
@@ -270,7 +270,7 @@ def batch_detection(inference_graph, labelmap, input_folder, output_folder):
 def image_detection(inference_graph, labelmap, input_image, output_image):
     tflite = '.tflite' in inference_graph
     detection_model = load_detection_model(inference_graph, tflite=tflite)
-    category_index = load_labelmap(labelmap, tflite=tflite)
+    category_index = load_labelmap(labelmap)
 
     # Load image using OpenCV and changing color space to RGB
     image = cv2.imread(input_image)
