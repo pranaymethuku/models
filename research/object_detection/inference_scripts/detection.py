@@ -221,8 +221,13 @@ def detect_on_single_frame_tflite(image_np,
     scores = interpreter.get_tensor(detection_scores)[
         0]  # Confidence of detected objects
 
+<<<<<<< HEAD
+    # Reindex lables to start at 1 (because TFLite is stupid)
+    classes = classes + 1
+=======
     # Reindex labels to start at 1 (because TFLite starts indexing at 0)
     classes = [c + 1 for c in classes]
+>>>>>>> 34872746720f1f43609fcf65ac42e764b40c0a7c
 
     # Draw the results of the detection (aka 'visualize the results')
     vis_util.visualize_boxes_and_labels_on_image_array(
@@ -298,7 +303,7 @@ def video_detection(inference_graph, labelmap, input_video, output_video, print_
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
     frame_count = 0
-    cap.set(cv2.CAP_PROP_POS_FRAMES, 420)
+    # cap.set(cv2.CAP_PROP_POS_FRAMES, 420)
     while cap.isOpened():
         _, frame = cap.read()
 
