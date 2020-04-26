@@ -21,7 +21,7 @@ Examples:
 
 import os
 import math
-from cv2 import cv2
+import cv2
 import numpy as np
 import tensorflow as tf
 from tensorflow.lite.python.interpreter import Interpreter
@@ -33,9 +33,6 @@ import collections
 # Import utilites
 from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as vis_util
-
-# Declare a NamedTuple to hold an image, its predicted classes, and the scores associated with each of those classes
-Classification = collections.namedtuple("Classification", ["Image","Classes","Scores"])
 
 def load_detection_model(inference_graph_path, tflite=True):
     if tflite:
@@ -137,17 +134,8 @@ def load_labelmap(labelmap_path):
     category_index = label_map_util.create_category_index(categories)
     return category_index
 
-def detect_on_single_frame(image_np, category_index, detection_model, tflite=True, min_score_thresh=0.6,
-                           max_boxes_to_draw=1):
-    if tflite:
-        classification = detect_on_single_frame_tflite(
-            image_np, category_index, *detection_model, min_score_thresh=min_score_thresh, max_boxes_to_draw=max_boxes_to_draw)
-    else:
-        classification = detect_on_single_frame_tf(
-            image_np, category_index, *detection_model, min_score_thresh=min_score_thresh, max_boxes_to_draw=max_boxes_to_draw)
-    return classification
-
 def visualize_on_single_frame(image_np,boxes,classes,scores,category_index,min_score_thresh,max_boxes_to_draw):
+
     # adjust the bounding box size depending on the image size
     height, width = image_np.shape[:2]
     line_thickness_adjustment = math.ceil(max(height, width) / 400)
@@ -164,6 +152,16 @@ def visualize_on_single_frame(image_np,boxes,classes,scores,category_index,min_s
         min_score_thresh=min_score_thresh,
         max_boxes_to_draw=max_boxes_to_draw)
 
+def detect_on_single_frame(image_np, category_index, detection_model, tflite=True, min_score_thresh=0.6,
+                           max_boxes_to_draw=1):
+    if tflite:
+        classification = detect_on_single_frame_tflite(
+            image_np, category_index, *detection_model, min_score_thresh=min_score_thresh, max_boxes_to_draw=max_boxes_to_draw)
+    else:
+        classification = detect_on_single_frame_tf(
+            image_np, category_index, *detection_model, min_score_thresh=min_score_thresh, max_boxes_to_draw=max_boxes_to_draw)
+    return classification
+
 
 def detect_on_single_frame_tf(image_np, category_index,
                               sess,
@@ -179,9 +177,10 @@ def detect_on_single_frame_tf(image_np, category_index,
     (boxes, scores, classes, _) = sess.run(
         output_tensors, feed_dict={image_tensor: image_expanded})
 
-    # Draw the results of the detection (aka 'visualize the results')
     visualize_on_single_frame(image_np,boxes,classes,scores,category_index,min_score_thresh,max_boxes_to_draw)
 
+    # Declare a NamedTuple to hold an image, its predicted classes, and the scores associated with each of those classes
+    Classification = collections.namedtuple("classification", ["Image","Classes","Scores"])
     classification = Classification(image_np, classes, scores)
 
     # # Here output the best class
@@ -228,11 +227,11 @@ def detect_on_single_frame_tflite(image_np,
     # Reindex lables to start at 1 (because TFLite is stupid)
     classes = classes + 1
 
-    # Draw the results of the detection (aka 'visualize the results')
     visualize_on_single_frame(image_np,boxes,classes,scores,category_index,min_score_thresh,max_boxes_to_draw)
-
+    # Declare a NamedTuple to hold an image, its predicted classes, and the scores associated with each of those classes
+    Classification = collections.namedtuple("classification", ["Image","Classes","Scores"])
     classification = Classification(image_np, classes, scores)
-    
+
     # Here output the best class
     # best_class_id = int(classes[np.argmax(scores)])
     # best_class_name = category_index.get(best_class_id)['name']
@@ -319,25 +318,26 @@ def webcam_detection(inference_graph, labelmap, gui=False, frame=None):
     detection_model = load_detection_model(inference_graph, tflite=tflite)
     category_index = load_labelmap(labelmap)
 
+    total_list = []
     if not gui:
         # Load webcam using OpenCV
         cap = cv2.VideoCapture(0)
-
+        
         while cap.isOpened():
             _, frame = cap.read()
             classification = detect_on_single_frame(
                 frame, category_index, detection_model, tflite=tflite)
-            #print("OUTPUT FRAME: " + str(classification))
-            print("CLASSES " + str(classification.Classes))
-            print("SCORES " + str(classification.Scores))
-
             cv2.imshow('Video', classification.Image)
             if cv2.waitKey(1) & 0xFF == ord('q'):
+                cap.release()
                 break
         cap.release()
     else:
-        return detect_on_single_frame(
-            frame, category_index, detection_model, tflite=tflite)
+        classification = detect_on_single_frame(frame, category_index, detection_model, tflite=tflite)
+        print(classification.Classes)
+        total_list.append(classification.Classes)
+        print(len(total_list))
+        return classification.Image
 
 if __name__ == "__main__":
     # set up command line

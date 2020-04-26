@@ -239,6 +239,8 @@ class Ui_MainWindow(QWidget):
         cv2.destroyAllWindows()
 
     def exit(self):
+        self.capture.release()
+        cv2.destroyAllWindows()
         sys.exit()
 
     def clear_screen(self):
@@ -267,6 +269,7 @@ class Ui_MainWindow(QWidget):
             detection.video_detection(
                 frozen_graph, labelmap, name, os.getcwd() + os.path.sep + "predicted.mp4")
             self.display(os.getcwd() + os.path.sep + "predicted.mp4")
+            self.clear_screen()
 
     def get_path(self):
         # Get path from the tier number
@@ -333,9 +336,15 @@ class Ui_MainWindow(QWidget):
 
         # Start webcam
         index = 0
-        self.capture = cv2.VideoCapture(index)
-        # self.image=self.capture.read()
-        # while self.image is None and index < 2:
+        self.capture=cv2.VideoCapture(index)
+
+        if not self.capture.isOpened():
+            print("Cap wasn't open: resetting")
+            cap.release()
+            cap = cv2.VideoCapture(0)
+        
+        #self.image=self.capture.read()
+        #while self.image is None and index < 2: 
         #    index += 1
         #    self.capture=cv2.VideoCapture(index)
         #    self.image=self.capture.read()
@@ -345,8 +354,7 @@ class Ui_MainWindow(QWidget):
 
         # Show stop button
         self.stop.setVisible(True)
-
-        self.timer = QTimer(self)
+        self.timer=QTimer(self)
         self.timer.timeout.connect(self.update_frame)
         self.timer.start(5)
 
