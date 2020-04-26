@@ -207,19 +207,11 @@ class Ui_MainWindow(QWidget):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("Video and Image Detection", "Video and Image Detection"))
+        MainWindow.setWindowTitle(_translate("Video and Image Detection", "Image and Video Detection"))
         MainWindow.showMaximized()
         self.title.setText(_translate("MainWindow", "Tiered Object Recognition - Image and Video Detection"))
         self.step_1_Label.setText(_translate("MainWindow", "Step 1: Choose tier!"))
-        self.tier_dropdown.setItemText(0, _translate("MainWindow", "Tier 1"))
-        self.tier_dropdown.setItemText(1, _translate("MainWindow", "Tier 2"))
-        self.tier_dropdown.setItemText(2, _translate("MainWindow", "Tier 3"))
-        self.tier_dropdown.setItemText(3, _translate("MainWindow", "Tier 4"))
         self.step_2_label.setText(_translate("MainWindow", "Step 2: Choose model!"))
-        self.model_dropdown.setItemText(0, _translate("MainWindow", "Faster RCNN Inception V2 Coco"))
-        self.model_dropdown.setItemText(1, _translate("MainWindow", "Faster RCNN Resnet101 Kitti"))
-        self.model_dropdown.setItemText(2, _translate("MainWindow", "RFCN Resnet101 Coco"))
-        self.model_dropdown.setItemText(3, _translate("MainWindow", "Faster RCNN Resnet101 Kitti"))
         self.step_3_label.setText(_translate("MainWindow", "Step 3: Upload or capture!"))
         self.upload_button.setText(_translate("MainWindow", "Upload"))
         self.capture_button.setText(_translate("MainWindow", "Capture"))
