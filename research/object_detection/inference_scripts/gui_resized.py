@@ -119,16 +119,8 @@ class Ui_MainWindow(QWidget):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.model_view.sizePolicy().hasHeightForWidth())
         self.model_view.setSizePolicy(sizePolicy)
-        #self.model_view.setAlignment(QtCore.Qt.AlignBottom|QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing)
         self.model_view.setObjectName("model_view")
 
-        #sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding)
-        #sizePolicy.setHorizontalStretch(0)
-        #sizePolicy.setVerticalStretch(0)
-        #sizePolicy.setHeightForWidth(self.model_view.sizePolicy().hasHeightForWidth())
-        #self.model_view.setSizePolicy(sizePolicy)
-        #self.model_view.setAlignment(QtCore.Qt.AlignBottom|QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing)
-        #self.model_view.setObjectName("model_view")
         self.model_layout.addWidget(self.model_view, 0, 0, 1, 1)
         self.gridLayout_2.addLayout(self.model_layout, 2, 0, 1, 2)
 
@@ -310,9 +302,6 @@ class Ui_MainWindow(QWidget):
 
         file_extension = os.path.splitext(media)
 
-        #width = self.model_layout.geometry().width()
-        #height = self.model_layout.geometry().height()
-
         if file_extension[1] == ".jpg":
             # Remove all other media
             self.clear_screen()
@@ -322,8 +311,6 @@ class Ui_MainWindow(QWidget):
             if pixmap.width() > 791 and pixmap.height() > 451:
                 pixmap = pixmap.scaledToWidth(960)
                 pixmap = pixmap.scaledToWidth(720)
-            #pixmap = pixmap.scaledToWidth(width)
-            #pixmap = pixmap.scaledToHeight(height)
             self.media_label.setPixmap(pixmap)
             self.resize(pixmap.width(), pixmap.height())
             self.media.addWidget(self.media_label)
