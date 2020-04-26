@@ -122,17 +122,6 @@ class Ui_MainWindow(QWidget):
         #self.model_view.setAlignment(QtCore.Qt.AlignBottom|QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing)
         self.model_view.setObjectName("model_view")
 
-        self.stop_button = QtWidgets.QPushButton(self.central_widget)
-        font = QtGui.QFont()
-        font.setFamily("Times New Roman")
-        font.setPointSize(13)
-        self.stop_button.setFont(font)
-        self.stop_button.setGeometry(QtCore.QRect(740, 640, 113, 32))
-        self.stop_button.setObjectName("stop")
-        MainWindow.setCentralWidget(self.central_widget)
-        self.stop_button.clicked.connect(self.stop_webcam)
-        self.stop_button.setVisible(False)
-
         #sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding)
         #sizePolicy.setHorizontalStretch(0)
         #sizePolicy.setVerticalStretch(0)
@@ -166,7 +155,7 @@ class Ui_MainWindow(QWidget):
         self.logo.setFont(font)
         self.logo.setText("")
 
-        self.logo.setPixmap(QtGui.QPixmap("images/zel_tech_logo.png"))
+        self.logo.setPixmap(QtGui.QPixmap("images/zel_tech_logo_white.png"))
         self.logo.setScaledContents(True)
         self.logo.setAlignment(QtCore.Qt.AlignBottom|QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft)
         self.logo.setIndent(0)
@@ -191,12 +180,22 @@ class Ui_MainWindow(QWidget):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.exit_button.sizePolicy().hasHeightForWidth())
 
+        self.stop_button = QtWidgets.QPushButton(self.central_widget)
+        font = QtGui.QFont()
+        font.setFamily("consolas")
+        font.setPointSize(13)
+        self.stop_button.setFont(font)
+        self.stop_button.setObjectName("stop_button")
+        self.stop_button.clicked.connect(self.stop_webcam)
+        self.stop_button.setVisible(False)
+
         self.exit_button.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
         font.setFamily("consolas")
         self.exit_button.setFont(font)
         self.exit_button.setIconSize(QtCore.QSize(0, 0))
         self.exit_button.setObjectName("exit_button")
+        self.exit_button_layout.addWidget(self.stop_button)
         self.exit_button_layout.addWidget(self.exit_button)
         self.gridLayout_2.addLayout(self.exit_button_layout, 3, 1, 1, 1)
         self.exit_button.clicked.connect(self.exit)
@@ -208,19 +207,11 @@ class Ui_MainWindow(QWidget):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("Video and Image Detection", "Video and Image Detection"))
+        MainWindow.setWindowTitle(_translate("Video and Image Detection", "Image and Video Detection"))
         MainWindow.showMaximized()
-        self.title.setText(_translate("MainWindow", "Tiered Object Recognition - Image and Video Detection"))
+        self.title.setText(_translate("MainWindow", "Tiered Object Recognition"))
         self.step_1_Label.setText(_translate("MainWindow", "Step 1: Choose tier!"))
-        self.tier_dropdown.setItemText(0, _translate("MainWindow", "Tier 1"))
-        self.tier_dropdown.setItemText(1, _translate("MainWindow", "Tier 2"))
-        self.tier_dropdown.setItemText(2, _translate("MainWindow", "Tier 3"))
-        self.tier_dropdown.setItemText(3, _translate("MainWindow", "Tier 4"))
         self.step_2_label.setText(_translate("MainWindow", "Step 2: Choose model!"))
-        self.model_dropdown.setItemText(0, _translate("MainWindow", "Faster RCNN Inception V2 Coco"))
-        self.model_dropdown.setItemText(1, _translate("MainWindow", "Faster RCNN Resnet101 Kitti"))
-        self.model_dropdown.setItemText(2, _translate("MainWindow", "RFCN Resnet101 Coco"))
-        self.model_dropdown.setItemText(3, _translate("MainWindow", "Faster RCNN Resnet101 Kitti"))
         self.step_3_label.setText(_translate("MainWindow", "Step 3: Upload or capture!"))
         self.upload_button.setText(_translate("MainWindow", "Upload"))
         self.capture_button.setText(_translate("MainWindow", "Capture"))
@@ -233,8 +224,7 @@ class Ui_MainWindow(QWidget):
         if str(self.tier_dropdown.currentText()) == 'Tier 1':
             self.model_dropdown.addItems(['Faster RCNN Inception V2 Coco', 'SSD Inception V2 Coco'])
         elif str(self.tier_dropdown.currentText()) == 'Tier 2':
-            self.model_dropdown.addItems(['Faster RCNN Inception V2 Coco', 'Faster RCNN Resnet101 Kitti',
-            'RFCN Resnet101 Coco', 'SSD Inception V2 Coco'])
+            self.model_dropdown.addItems(['Faster RCNN Inception V2 Coco', 'SSD Inception V2 Coco'])
         elif str(self.tier_dropdown.currentText()) == 'Tier 3':
             self.model_dropdown.addItems(['Faster RCNN Inception V2 Coco', 'SSD V2 Coco'])
         else:
@@ -269,6 +259,7 @@ class Ui_MainWindow(QWidget):
         index = 0
         self.capture = cv2.VideoCapture(index)
         self.image = self.capture.read()
+
         while self.image is None and index < 2:
             index += 1
             self.capture = cv2.VideoCapture(index)
@@ -280,16 +271,17 @@ class Ui_MainWindow(QWidget):
         # Show stop button
         self.stop_button.setVisible(True)
 
+        self.update_frame()
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_frame)
         self.timer.start(5)
 
     def stop_webcam(self):
-        self.timer.stop()
         self.stop_button.setVisible(False)
-        self.clear_screen()
         self.capture.release()
         cv2.destroyAllWindows()
+        self.clear_screen()
+        # self.timer.stop()
 
     def exit(self):
         sys.exit()
@@ -305,10 +297,6 @@ class Ui_MainWindow(QWidget):
         frozen_graph = ""
         if self.model_dropdown.currentText() == "Faster RCNN Inception V2 Coco":
             frozen_graph = "../tor_results/tier_" + tier + "/faster_rcnn_inception_v2_coco_2018_01_28.pb"
-        elif self.model_dropdown.currentText() == "Faster RCNN Resnet101 Kitti":
-            frozen_graph = "../tor_results/tier_" + tier + "/_faster_rcnn_resnet101_kitti_2018_01_28.pb"
-        elif self.model_dropdown.currentText() == "RFCN Resnet101 Coco":
-            frozen_graph = "../tor_results/tier_" + tier + "/rfcn_resnet101_coco_2018_01_28.pb"
         elif self.model_dropdown.currentText() == "SSD Inception V2 Coco":
             frozen_graph = "../tor_results/tier_" + tier + "/ssd_inception_v2_coco_2018_01_28.tflite"
         elif self.model_dropdown.currentText() == "SSD V2 Coco":
@@ -358,13 +346,25 @@ class Ui_MainWindow(QWidget):
             self.player.play()
 
     def update_frame(self):
-        # Get frame
-        _, self.image=self.capture.read()
-        self.image = cv2.flip(self.image, 1)
+        while(self.capture.isOpened()):
+            _, self.image = self.capture.read()
 
-        # Run inference on frame and display to screen
-        self.detected_image = detection.webcam_detection(self.frozen_graph, self.labelmap, True, self.image)
-        self.display_frame(self.detected_image)
+            self.image = cv2.flip(self.image, 1)
+
+            self.detected_image = detection.webcam_detection(self.frozen_graph, self.labelmap, True, self.image)
+            self.display_frame(self.detected_image)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+
+            self.stop_button.clicked.connect(self.stop_webcam)
+
+        # Get frame
+        # _, self.image=self.capture.read()
+        # self.image = cv2.flip(self.image, 1)
+
+        # # Run inference on frame and display to screen
+        # self.detected_image = detection.webcam_detection(self.frozen_graph, self.labelmap, True, self.image)
+        # self.display_frame(self.detected_image)
 
     def display_frame(self, frame):
         qformat = QImage.Format_Indexed8
@@ -400,7 +400,7 @@ class Ui_MainWindow(QWidget):
         self.title = QtWidgets.QLabel(self.central_widget)
         font = QtGui.QFont()
         font.setFamily("consolas")
-        font.setPointSize(36)
+        font.setPointSize(40)
         font.setUnderline(False)
         self.title.setFont(font)
         self.title.setAlignment(QtCore.Qt.AlignCenter)

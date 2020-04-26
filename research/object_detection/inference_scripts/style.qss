@@ -1,5 +1,11 @@
 QMainWindow{
-    background-color: #87c6e0;
+    background-color: #0a1e31;
     font-family: consolas;
 }
+
+QLabel{
+    color: #FFFFFF;
+}
+
+
 
