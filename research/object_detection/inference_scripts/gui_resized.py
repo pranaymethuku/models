@@ -192,6 +192,7 @@ class Ui_MainWindow(QWidget):
         self.exit_button.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
         font.setFamily("consolas")
+        font.setPointSize(13)
         self.exit_button.setFont(font)
         self.exit_button.setIconSize(QtCore.QSize(0, 0))
         self.exit_button.setObjectName("exit_button")
