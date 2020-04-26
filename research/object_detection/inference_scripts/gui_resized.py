@@ -227,9 +227,9 @@ class Ui_MainWindow(QWidget):
         elif str(self.tier_dropdown.currentText()) == 'Tier 2':
             self.model_dropdown.addItems(['Faster RCNN Inception V2 Coco', 'SSD Inception V2 Coco'])
         elif str(self.tier_dropdown.currentText()) == 'Tier 3':
-            self.model_dropdown.addItems(['Faster RCNN Inception V2 Coco', 'SSD V2 Coco'])
+            self.model_dropdown.addItems(['Faster RCNN Inception V2 Coco', 'SSD Inception V2 Coco'])
         else:
-            self.model_dropdown.addItems(['SSD V2 Coco'])
+            self.model_dropdown.addItems(['Faster RCNN Inception V2 Coco', 'SSD Inception V2 Coco'])
 
     def open_file(self):
         name = QFileDialog.getOpenFileName(self, 'Open File')[0]
