@@ -266,7 +266,7 @@ class Ui_MainWindow(QWidget):
         self.labelmap, self.frozen_graph = self.get_path()
 
         # Start webcam
-        index = -1
+        index = 0
         self.capture = cv2.VideoCapture(index)
         self.image = self.capture.read()
         while self.image is None and index < 2:
