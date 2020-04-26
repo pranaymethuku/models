@@ -25,8 +25,8 @@ class Ui_MainWindow(QWidget):
     def setupUi(self, MainWindow):
         # Set up MainWindow information
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(982, 713)
         MainWindow.setMinimumSize(QtCore.QSize(982, 713))
+        MainWindow.showMaximized()
         MainWindow.setWindowFlags(Qt.WindowCloseButtonHint | Qt.WindowMinimizeButtonHint)
         MainWindow.setWindowIcon(QtGui.QIcon("images/tor_logo.svg"))
 
