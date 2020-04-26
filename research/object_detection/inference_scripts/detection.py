@@ -34,8 +34,7 @@ import collections
 from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as vis_util
 
-# Minimum score threshold for detection 
-minimum_score_threshold = 0.6
+MINIMUM_SCORE_THRESHOLD = 0.6
 
 def load_detection_model(inference_graph_path, tflite=True):
     if tflite:
@@ -140,7 +139,7 @@ def load_labelmap(labelmap_path):
 
 
 def visualize_on_single_frame(image_np, boxes, classes, scores, category_index):
-    global minimum_score_threshold
+    global MINIMUM_SCORE_THRESHOLD
     # adjust the bounding box size depending on the image size
     height, width = image_np.shape[:2]
     line_thickness_adjustment = math.ceil(max(height, width) / 400)
@@ -154,7 +153,7 @@ def visualize_on_single_frame(image_np, boxes, classes, scores, category_index):
         category_index,
         use_normalized_coordinates=True,
         line_thickness=4+line_thickness_adjustment,
-        min_score_thresh=minimum_score_threshold,
+        min_score_thresh=MINIMUM_SCORE_THRESHOLD,
         max_boxes_to_draw=1)
 
 
@@ -357,7 +356,7 @@ if __name__ == "__main__":
                         help="Path to frozen detection graph .pb file, which contains the model that is used")
     parser.add_argument("-l", "--labelmap", type=str, required=True,
                         help="Path to the labelmap")
-    parser.add_argument("-mst", "--minimum_score_threshold", type=float, default=minimum_score_threshold,
+    parser.add_argument("-mst", "--minimum_score_threshold", type=float, default=MINIMUM_SCORE_THRESHOLD,
                         help="Threshold for the minimum confidence for detection")
     # image detection
     parser.add_argument("-ii", "--input_image", type=str,
@@ -380,7 +379,7 @@ if __name__ == "__main__":
     # other potential input and output streams would be configured here
     args = parser.parse_args()
 
-    minimum_score_threshold = args.minimum_score_threshold
+    MINIMUM_SCORE_THRESHOLD = args.minimum_score_threshold
 
     if args.input_image:
         image_detection(args.inference_graph, args.labelmap,
