@@ -271,10 +271,9 @@ class Ui_MainWindow(QWidget):
         # Show stop button
         self.stop_button.setVisible(True)
 
-        #self.update_frame()
-        # self.timer = QTimer(self)
-        # self.timer.timeout.connect(self.update_frame)
-        # self.timer.start(5)
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.update_frame)
+        self.timer.start(5)
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_frame)
@@ -282,10 +281,10 @@ class Ui_MainWindow(QWidget):
 
     def stop_webcam(self):
         self.timer.stop()
+        detection.webcam_detection(
+            self.frozen_graph, self.labelmap, True, self.image, True, self.capture)
         self.stop_button.setVisible(False)
         self.clear_screen()
-        self.capture.release()
-        cv2.destroyAllWindows()
 
     def exit(self):
         sys.exit()
@@ -359,19 +358,26 @@ class Ui_MainWindow(QWidget):
         self.display_frame(self.detected_image)
 
     def display_frame(self, frame):
+        # Image is stored using 8-bit indexes into a colormap
         qformat = QImage.Format_Indexed8
 
+        # Adjust based on current frame
         if len(frame.shape) == 3:
             if frame.shape[2] == 4:
+                # 32-bit RGBA format
                 qformat = QImage.Format_RGBA8888
             else:
+                # 24-bit RGB format
                 qformat = QImage.Format_RGB888
 
+        # convert to QImage
+        # Params are: data, width, height, bytesPerLine, format
         outImage = QImage(frame, frame.shape[1], frame.shape[0], frame.strides[0], qformat)
 
-        #BGR>>RGB
+        # Conversion
         outImage = outImage.rgbSwapped()
 
+        # Displaying the frame on the screen
         pixmap = QPixmap.fromImage(outImage)
         self.media_label.setPixmap(pixmap)
         self.media_label.setScaledContents(True)

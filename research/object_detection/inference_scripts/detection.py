@@ -317,7 +317,7 @@ def video_detection(inference_graph, labelmap, input_video, output_video, print_
         frame_count += 1
 
 
-def webcam_detection(inference_graph, labelmap, gui=False, frame=None):
+def webcam_detection(inference_graph, labelmap, gui=False, frame=None, quit=False, capture=None):
     tflite = '.tflite' in inference_graph
     detection_model = load_detection_model(inference_graph, tflite=tflite)
     category_index = load_labelmap(labelmap)
@@ -342,7 +342,12 @@ def webcam_detection(inference_graph, labelmap, gui=False, frame=None):
         print(classification.Classes)
         total_list.append(classification.Classes)
         print(len(total_list))
-        return classification.Image
+        if quit:
+            capture.release()
+            cv2.waitKey(1)
+            cv2.destroyAllWindows()
+        else:
+            return classification.Image
 
 
 if __name__ == "__main__":
