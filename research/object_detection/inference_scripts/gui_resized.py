@@ -155,7 +155,7 @@ class Ui_MainWindow(QWidget):
         self.logo.setFont(font)
         self.logo.setText("")
 
-        self.logo.setPixmap(QtGui.QPixmap("images/zel_tech_logo.png"))
+        self.logo.setPixmap(QtGui.QPixmap("images/zel_tech_logo_white.png"))
         self.logo.setScaledContents(True)
         self.logo.setAlignment(QtCore.Qt.AlignBottom|QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft)
         self.logo.setIndent(0)
@@ -209,7 +209,7 @@ class Ui_MainWindow(QWidget):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("Video and Image Detection", "Image and Video Detection"))
         MainWindow.showMaximized()
-        self.title.setText(_translate("MainWindow", "Tiered Object Recognition - Image and Video Detection"))
+        self.title.setText(_translate("MainWindow", "Tiered Object Recognition"))
         self.step_1_Label.setText(_translate("MainWindow", "Step 1: Choose tier!"))
         self.step_2_label.setText(_translate("MainWindow", "Step 2: Choose model!"))
         self.step_3_label.setText(_translate("MainWindow", "Step 3: Upload or capture!"))
@@ -386,7 +386,7 @@ class Ui_MainWindow(QWidget):
         self.title = QtWidgets.QLabel(self.central_widget)
         font = QtGui.QFont()
         font.setFamily("consolas")
-        font.setPointSize(36)
+        font.setPointSize(40)
         font.setUnderline(False)
         self.title.setFont(font)
         self.title.setAlignment(QtCore.Qt.AlignCenter)
