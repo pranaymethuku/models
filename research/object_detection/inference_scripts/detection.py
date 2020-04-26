@@ -29,12 +29,14 @@ import sys
 import argparse
 from PIL import Image
 import collections
+from object_detection.db import database
 
 # Import utilites
 from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as vis_util
 
 MINIMUM_SCORE_THRESHOLD = 0.6
+
 
 def load_detection_model(inference_graph_path, tflite=True):
     if tflite:
@@ -280,6 +282,10 @@ def image_detection(inference_graph, labelmap, input_image, output_image):
 
     img = Image.fromarray(classification.Image, 'RGB')
     img.save(output_image, "jpeg")
+
+    conn = database.create_connection("../db/detection.db")
+    database.insert_image_detection(
+        conn, input_image, output_image, inference_graph, category_index, classification)
 
 
 def video_detection(inference_graph, labelmap, input_video, output_video, print_progress=True):
