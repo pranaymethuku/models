@@ -118,3 +118,5 @@ research/object_detection/inference_scripts/frozen_inference_graph.pb
 research/object_detection/inference_scripts/labelmap.pbtxt
 research/object_detection/inference_scripts/predicted.mp4
 research/object_detection/inference_scripts/ssd_v2_coco_2018_01_28.tflite
+research/object_detection/db/database.py
+research/object_detection/db/create_database.sql
