@@ -28,11 +28,14 @@ from tensorflow.lite.python.interpreter import Interpreter
 import sys
 import argparse
 from PIL import Image
+import collections
 
 # Import utilites
 from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as vis_util
 
+# Declare a NamedTuple to hold an image, its predicted classes, and the scores associated with each of those classes
+Classification = collections.namedtuple("Classification", ["Image","Classes","Scores"])
 
 def load_detection_model(inference_graph_path, tflite=True):
     if tflite:
@@ -134,19 +137,17 @@ def load_labelmap(labelmap_path):
     category_index = label_map_util.create_category_index(categories)
     return category_index
 
-
 def detect_on_single_frame(image_np, category_index, detection_model, tflite=True, min_score_thresh=0.6,
                            max_boxes_to_draw=1):
     if tflite:
-        output_frame = detect_on_single_frame_tflite(
+        classification = detect_on_single_frame_tflite(
             image_np, category_index, *detection_model, min_score_thresh=min_score_thresh, max_boxes_to_draw=max_boxes_to_draw)
     else:
-        output_frame = detect_on_single_frame_tf(
+        classification = detect_on_single_frame_tf(
             image_np, category_index, *detection_model, min_score_thresh=min_score_thresh, max_boxes_to_draw=max_boxes_to_draw)
-    return output_frame
+    return classification
 
 def visualize_on_single_frame(image_np,boxes,classes,scores,category_index,min_score_thresh,max_boxes_to_draw):
-
     # adjust the bounding box size depending on the image size
     height, width = image_np.shape[:2]
     line_thickness_adjustment = math.ceil(max(height, width) / 400)
@@ -181,11 +182,13 @@ def detect_on_single_frame_tf(image_np, category_index,
     # Draw the results of the detection (aka 'visualize the results')
     visualize_on_single_frame(image_np,boxes,classes,scores,category_index,min_score_thresh,max_boxes_to_draw)
 
+    classification = Classification(image_np, classes, scores)
+
     # # Here output the best class
     # best_class_id = int(classes[np.argmax(scores)])
     # best_class_name = category_index.get(best_class_id)['name']
     # print("best class: {}".format(best_class_name))
-    return image_np
+    return classification
 
 
 def detect_on_single_frame_tflite(image_np,
@@ -228,11 +231,13 @@ def detect_on_single_frame_tflite(image_np,
     # Draw the results of the detection (aka 'visualize the results')
     visualize_on_single_frame(image_np,boxes,classes,scores,category_index,min_score_thresh,max_boxes_to_draw)
 
+    classification = Classification(image_np, classes, scores)
+    
     # Here output the best class
     # best_class_id = int(classes[np.argmax(scores)])
     # best_class_name = category_index.get(best_class_id)['name']
     # print("best class: {}".format(best_class_name))
-    return image_np
+    return classification
 
 
 def batch_detection(inference_graph, labelmap, input_folder, output_folder):
@@ -268,10 +273,10 @@ def image_detection(inference_graph, labelmap, input_image, output_image):
     image = cv2.imread(input_image)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-    output_frame = detect_on_single_frame(
+    classification = detect_on_single_frame(
         image, category_index, detection_model, tflite=tflite)
 
-    img = Image.fromarray(output_frame, 'RGB')
+    img = Image.fromarray(classification.Image, 'RGB')
     img.save(output_image, "jpeg")
 
 
@@ -302,9 +307,9 @@ def video_detection(inference_graph, labelmap, input_video, output_video, print_
                 print("Detecting on frame {} of {}".format(
                     frame_count, total_frames))
 
-            output_frame = detect_on_single_frame(
+            classification = detect_on_single_frame(
                 frame, category_index, detection_model, tflite=tflite)
-            out.write(output_frame)
+            out.write(classification.Image)
 
         frame_count += 1
 
@@ -320,11 +325,13 @@ def webcam_detection(inference_graph, labelmap, gui=False, frame=None):
 
         while cap.isOpened():
             _, frame = cap.read()
-            output_frame = detect_on_single_frame(
+            classification = detect_on_single_frame(
                 frame, category_index, detection_model, tflite=tflite)
-            print("OUTPUT FRAME: " + str(output_frame))
+            #print("OUTPUT FRAME: " + str(classification))
+            print("CLASSES " + str(classification.Classes))
+            print("SCORES " + str(classification.Scores))
 
-            cv2.imshow('Video', output_frame)
+            cv2.imshow('Video', classification.Image)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
         cap.release()
