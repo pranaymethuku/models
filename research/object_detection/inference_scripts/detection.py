@@ -35,8 +35,7 @@ from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as vis_util
 
 # Declare a NamedTuple to hold an image, its predicted classes, and the scores associated with each of those classes
-Classification = collections.namedtuple("Classification", ["Image","Classes","Scores"])
-
+classification = collections.namedtuple("classification", ["Image","Classes","Scores"])
 
 def load_detection_model(inference_graph_path, tflite=True):
     if tflite:
@@ -159,12 +158,12 @@ def visualize_on_single_frame(image_np,boxes,classes,scores,category_index,min_s
 def detect_on_single_frame(image_np, category_index, detection_model, tflite=True, min_score_thresh=0.6,
                            max_boxes_to_draw=1):
     if tflite:
-        output_frame = detect_on_single_frame_tflite(
+        classification = detect_on_single_frame_tflite(
             image_np, category_index, *detection_model, min_score_thresh=min_score_thresh, max_boxes_to_draw=max_boxes_to_draw)
     else:
-        output_frame = detect_on_single_frame_tf(
+        classification = detect_on_single_frame_tf(
             image_np, category_index, *detection_model, min_score_thresh=min_score_thresh, max_boxes_to_draw=max_boxes_to_draw)
-    return output_frame
+    return classification
 
 
 def detect_on_single_frame_tf(image_np, category_index,
@@ -269,10 +268,10 @@ def image_detection(inference_graph, labelmap, input_image, output_image):
     image = cv2.imread(input_image)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-    output_frame = detect_on_single_frame(
+    classification = detect_on_single_frame(
         image, category_index, detection_model, tflite=tflite)
 
-    img = Image.fromarray(output_frame, 'RGB')
+    img = Image.fromarray(classification.Image, 'RGB')
     img.save(output_image, "jpeg")
 
 
@@ -303,9 +302,9 @@ def video_detection(inference_graph, labelmap, input_video, output_video, print_
                 print("Detecting on frame {} of {}".format(
                     frame_count, total_frames))
 
-            output_frame = detect_on_single_frame(
+            classification = detect_on_single_frame(
                 frame, category_index, detection_model, tflite=tflite)
-            out.write(output_frame)
+            out.write(classification.Image)
 
         frame_count += 1
 
@@ -321,10 +320,10 @@ def webcam_detection(inference_graph, labelmap, gui=False, frame=None):
         
         while cap.isOpened():
             _, frame = cap.read()
-            output_frame = detect_on_single_frame(
+            classification = detect_on_single_frame(
                 frame, category_index, detection_model, tflite=tflite)
 
-            cv2.imshow('Video', output_frame)
+            cv2.imshow('Video', classification.Image)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 cap.release()
                 break
