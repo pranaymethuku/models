@@ -36,7 +36,6 @@ from object_detection.utils import visualization_utils as vis_util
 
 MINIMUM_SCORE_THRESHOLD = 0.6
 
-
 def load_detection_model(inference_graph_path, tflite=True):
     if tflite:
         interpreter = load_tflite_interpreter(inference_graph_path)

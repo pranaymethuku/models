@@ -258,8 +258,8 @@ class Ui_MainWindow(QWidget):
             self.capture = cv2.VideoCapture(index)
             self.image = self.capture.read()
 
-        self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-        self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+        self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+        self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)  
 
         # Show stop button
         self.stop_button.setVisible(True)
