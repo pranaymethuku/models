@@ -208,7 +208,7 @@ class Ui_MainWindow(QWidget):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("Video and Image Detection", "Image and Video Detection"))
+        MainWindow.setWindowTitle(_translate("TOR", "TOR"))
         MainWindow.showMaximized()
         self.title.setText(_translate("MainWindow", "Tiered Object Recognition"))
         self.step_1_Label.setText(_translate("MainWindow", "Step 1: Choose tier!"))
