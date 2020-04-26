@@ -138,6 +138,23 @@ def load_labelmap(labelmap_path):
     category_index = label_map_util.create_category_index(categories)
     return category_index
 
+def visualize_on_single_frame(image_np,boxes,classes,scores,category_index,min_score_thresh,max_boxes_to_draw):
+
+    # adjust the bounding box size depending on the image size
+    height, width = image_np.shape[:2]
+    line_thickness_adjustment = math.ceil(max(height, width) / 400)
+
+    # Draw the results of the detection (aka 'visualize the results')
+    return vis_util.visualize_boxes_and_labels_on_image_array(
+        image_np,
+        np.squeeze(boxes),
+        np.squeeze(classes).astype(np.int32),
+        np.squeeze(scores),
+        category_index,
+        use_normalized_coordinates=True,
+        line_thickness=4+line_thickness_adjustment,
+        min_score_thresh=min_score_thresh,
+        max_boxes_to_draw=max_boxes_to_draw)
 
 def detect_on_single_frame(image_np, category_index, detection_model, tflite=True, min_score_thresh=0.6,
                            max_boxes_to_draw=1):
@@ -157,10 +174,6 @@ def detect_on_single_frame_tf(image_np, category_index,
                               min_score_thresh=0.6,
                               max_boxes_to_draw=1):
 
-    # adjust the bounding box size depending on the image size
-    height, width = image_np.shape[:2]
-    line_thickness_adjustment = math.ceil(max(height, width) / 400)
-
     # expand image dimensions to have shape: [1, None, None, 3]
     image_expanded = np.expand_dims(image_np, axis=0)
 
@@ -168,17 +181,7 @@ def detect_on_single_frame_tf(image_np, category_index,
     (boxes, scores, classes, _) = sess.run(
         output_tensors, feed_dict={image_tensor: image_expanded})
 
-    # Draw the results of the detection (aka 'visualize the results')
-    vis_util.visualize_boxes_and_labels_on_image_array(
-        image_np,
-        np.squeeze(boxes),
-        np.squeeze(classes).astype(np.int32),
-        np.squeeze(scores),
-        category_index,
-        use_normalized_coordinates=True,
-        line_thickness=4+line_thickness_adjustment,
-        min_score_thresh=min_score_thresh,
-        max_boxes_to_draw=max_boxes_to_draw)
+    visualize_on_single_frame(image_np,boxes,classes,scores,category_index,min_score_thresh,max_boxes_to_draw)
 
     # # Here output the best class
     # best_class_id = int(classes[np.argmax(scores)])
@@ -198,10 +201,6 @@ def detect_on_single_frame_tflite(image_np,
                                   max_boxes_to_draw=1,
                                   input_mean=127.5,
                                   input_std=127.5):
-
-    # adjust the bounding box size depending on the image size
-    height, width = image_np.shape[:2]
-    line_thickness_adjustment = math.ceil(max(height, width) / 400)
 
     # expand image dimensions to have shape: [1, None, None, 3]
     image_resized = cv2.resize(image_np, image_shape)
@@ -228,17 +227,7 @@ def detect_on_single_frame_tflite(image_np,
     # Reindex lables to start at 1 (because TFLite is stupid)
     classes = classes + 1
 
-    # Draw the results of the detection (aka 'visualize the results')
-    vis_util.visualize_boxes_and_labels_on_image_array(
-        image_np,
-        np.squeeze(boxes),
-        np.squeeze(classes).astype(np.int32),
-        np.squeeze(scores),
-        category_index,
-        use_normalized_coordinates=True,
-        line_thickness=4+line_thickness_adjustment,
-        min_score_thresh=min_score_thresh,
-        max_boxes_to_draw=max_boxes_to_draw)
+    visualize_on_single_frame(image_np,boxes,classes,scores,category_index,min_score_thresh,max_boxes_to_draw)
 
     # Here output the best class
     # best_class_id = int(classes[np.argmax(scores)])
