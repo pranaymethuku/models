@@ -403,6 +403,7 @@ class Ui_MainWindow(QWidget):
         self.upload_button = QtWidgets.QPushButton(self.central_widget)
         font = QtGui.QFont()
         font.setFamily("consolas")
+        font.setPointSize(13)
         self.upload_button.setFont(font)
         self.upload_button.setObjectName("upload_button")
         self.detection_info_layout.addWidget(self.upload_button)
