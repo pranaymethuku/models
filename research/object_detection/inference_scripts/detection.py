@@ -135,7 +135,7 @@ def load_labelmap(labelmap_path):
     return category_index
 
 
-def detect_on_single_frame(image_np, category_index, detection_model, tflite=True, min_score_thresh=0.9,
+def detect_on_single_frame(image_np, category_index, detection_model, tflite=True, min_score_thresh=0.6,
                            max_boxes_to_draw=1):
     if tflite:
         output_frame = detect_on_single_frame_tflite(
@@ -150,7 +150,7 @@ def detect_on_single_frame_tf(image_np, category_index,
                               sess,
                               image_tensor,
                               output_tensors,
-                              min_score_thresh=0.9,
+                              min_score_thresh=0.6,
                               max_boxes_to_draw=1):
 
     # adjust the bounding box size depending on the image size
@@ -190,7 +190,7 @@ def detect_on_single_frame_tflite(image_np,
                                   output_tensors,
                                   image_shape,
                                   floating_model=False,
-                                  min_score_thresh=0.9,
+                                  min_score_thresh=0.6,
                                   max_boxes_to_draw=1,
                                   input_mean=127.5,
                                   input_std=127.5):
