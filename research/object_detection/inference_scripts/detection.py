@@ -346,6 +346,8 @@ if __name__ == "__main__":
                         help="Path to frozen detection graph .pb file, which contains the model that is used")
     parser.add_argument("-l", "--labelmap", type=str, required=True,
                         help="Path to the labelmap")
+    parser.add_argument("-mc", "--min_confidence", type=float, default=0.6,
+                        help="Threshold for the minimum confidence for detection")
     # image detection
     parser.add_argument("-ii", "--input_image", type=str,
                         help="Path to the input image to detect")
