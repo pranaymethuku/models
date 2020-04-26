@@ -275,16 +275,12 @@ class Ui_MainWindow(QWidget):
         self.timer.timeout.connect(self.update_frame)
         self.timer.start(5)
 
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.update_frame)
-        self.timer.start(5)
-
     def stop_webcam(self):
         self.timer.stop()
-        detection.webcam_detection(
-            self.frozen_graph, self.labelmap, True, self.image, True, self.capture)
         self.stop_button.setVisible(False)
         self.clear_screen()
+        self.capture.release()
+        cv2.destroyAllWindows()
 
     def exit(self):
         sys.exit()
