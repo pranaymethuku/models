@@ -1,5 +1,5 @@
 <RCC>
-  <qresource prefix="newPrefix">
-    <file>zel_tech_logo.png</file>
+  <qresource prefix="logo">
+    <file>images/zel_tech_logo.png</file>
   </qresource>
 </RCC>
