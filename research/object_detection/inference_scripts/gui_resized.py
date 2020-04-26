@@ -296,10 +296,6 @@ class Ui_MainWindow(QWidget):
         frozen_graph = ""
         if self.model_dropdown.currentText() == "Faster RCNN Inception V2 Coco":
             frozen_graph = "../tor_results/tier_" + tier + "/faster_rcnn_inception_v2_coco_2018_01_28.pb"
-        elif self.model_dropdown.currentText() == "Faster RCNN Resnet101 Kitti":
-            frozen_graph = "../tor_results/tier_" + tier + "/_faster_rcnn_resnet101_kitti_2018_01_28.pb"
-        elif self.model_dropdown.currentText() == "RFCN Resnet101 Coco":
-            frozen_graph = "../tor_results/tier_" + tier + "/rfcn_resnet101_coco_2018_01_28.pb"
         elif self.model_dropdown.currentText() == "SSD Inception V2 Coco":
             frozen_graph = "../tor_results/tier_" + tier + "/ssd_inception_v2_coco_2018_01_28.tflite"
         elif self.model_dropdown.currentText() == "SSD V2 Coco":
