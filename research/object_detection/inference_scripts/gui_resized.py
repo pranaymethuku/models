@@ -135,7 +135,7 @@ class Ui_MainWindow(QWidget):
         self.horizontalLayout_media = QtWidgets.QHBoxLayout(self.central_widget)
         self.horizontalLayout_media.setSizeConstraint(QtWidgets.QLayout.SetDefaultConstraint)
         self.horizontalLayout_media.setObjectName("horizontalLayout_media")
-        self.media_label = QtWidgets.QLabel(self.central_widget)
+        self.media_label = QtWidgets.QLabel(self)
         self.horizontalLayout_media.addWidget(self.media_label)
 
         self.logo_layout = QtWidgets.QHBoxLayout()
@@ -271,16 +271,21 @@ class Ui_MainWindow(QWidget):
         # Show stop button
         self.stop_button.setVisible(True)
 
-        self.update_frame()
+        #self.update_frame()
         # self.timer = QTimer(self)
         # self.timer.timeout.connect(self.update_frame)
         # self.timer.start(5)
 
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.update_frame)
+        self.timer.start(5)
+
     def stop_webcam(self):
+        self.timer.stop()
         self.stop_button.setVisible(False)
+        self.clear_screen()
         self.capture.release()
         cv2.destroyAllWindows()
-        self.clear_screen()
 
     def exit(self):
         sys.exit()
@@ -309,8 +314,8 @@ class Ui_MainWindow(QWidget):
 
         file_extension = os.path.splitext(media)
 
-        width = self.model_layout.geometry().width()
-        height = self.model_layout.geometry().height()
+        #width = self.model_layout.geometry().width()
+        #height = self.model_layout.geometry().height()
 
         if file_extension[1] == ".jpg":
             # Remove all other media
@@ -318,13 +323,13 @@ class Ui_MainWindow(QWidget):
 
             # Display image
             pixmap = QPixmap(media)
-            #if pixmap.width() > 791 and pixmap.height() > 451:
-             #   pixmap = pixmap.scaledToWidth(960)
-             #   pixmap = pixmap.scaledToWidth(720)
-            pixmap = pixmap.scaledToWidth(width)
-            pixmap = pixmap.scaledToHeight(height)
+            if pixmap.width() > 791 and pixmap.height() > 451:
+                pixmap = pixmap.scaledToWidth(960)
+                pixmap = pixmap.scaledToWidth(720)
+            #pixmap = pixmap.scaledToWidth(width)
+            #pixmap = pixmap.scaledToHeight(height)
             self.media_label.setPixmap(pixmap)
-            self.resize(width, height)
+            self.resize(pixmap.width(), pixmap.height())
             self.media.addWidget(self.media_label)
             self.media.setAlignment(Qt.AlignCenter)
         else:
@@ -345,17 +350,13 @@ class Ui_MainWindow(QWidget):
             self.player.play()
 
     def update_frame(self):
-        while(self.capture.isOpened()):
-            _, self.image = self.capture.read()
+        # Get frame
+        _, self.image = self.capture.read()
+        self.image = cv2.flip(self.image, 1)
 
-            self.image = cv2.flip(self.image, 1)
-
-            self.detected_image = detection.webcam_detection(self.frozen_graph, self.labelmap, True, self.image)
-            self.display_frame(self.detected_image)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
-
-            self.stop_button.clicked.connect(self.stop_webcam)
+        # Run inference on frame and display to screen
+        self.detected_image = detection.webcam_detection(self.frozen_graph, self.labelmap, True, self.image)
+        self.display_frame(self.detected_image)
 
     def display_frame(self, frame):
         qformat = QImage.Format_Indexed8
