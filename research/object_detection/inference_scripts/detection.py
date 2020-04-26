@@ -34,9 +34,6 @@ import collections
 from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as vis_util
 
-# Declare a NamedTuple to hold an image, its predicted classes, and the scores associated with each of those classes
-classification = collections.namedtuple("classification", ["Image","Classes","Scores"])
-
 def load_detection_model(inference_graph_path, tflite=True):
     if tflite:
         interpreter = load_tflite_interpreter(inference_graph_path)
@@ -182,11 +179,15 @@ def detect_on_single_frame_tf(image_np, category_index,
 
     visualize_on_single_frame(image_np,boxes,classes,scores,category_index,min_score_thresh,max_boxes_to_draw)
 
+    # Declare a NamedTuple to hold an image, its predicted classes, and the scores associated with each of those classes
+    Classification = collections.namedtuple("classification", ["Image","Classes","Scores"])
+    classification = Classification(image_np, classes, scores)
+
     # # Here output the best class
     # best_class_id = int(classes[np.argmax(scores)])
     # best_class_name = category_index.get(best_class_id)['name']
     # print("best class: {}".format(best_class_name))
-    return image_np
+    return classification
 
 
 def detect_on_single_frame_tflite(image_np,
@@ -227,12 +228,15 @@ def detect_on_single_frame_tflite(image_np,
     classes = classes + 1
 
     visualize_on_single_frame(image_np,boxes,classes,scores,category_index,min_score_thresh,max_boxes_to_draw)
+    # Declare a NamedTuple to hold an image, its predicted classes, and the scores associated with each of those classes
+    Classification = collections.namedtuple("classification", ["Image","Classes","Scores"])
+    classification = Classification(image_np, classes, scores)
 
     # Here output the best class
     # best_class_id = int(classes[np.argmax(scores)])
     # best_class_name = category_index.get(best_class_id)['name']
     # print("best class: {}".format(best_class_name))
-    return image_np
+    return classification
 
 
 def batch_detection(inference_graph, labelmap, input_folder, output_folder):
@@ -314,6 +318,7 @@ def webcam_detection(inference_graph, labelmap, gui=False, frame=None):
     detection_model = load_detection_model(inference_graph, tflite=tflite)
     category_index = load_labelmap(labelmap)
 
+    total_list = []
     if not gui:
         # Load webcam using OpenCV
         cap = cv2.VideoCapture(0)
@@ -322,15 +327,17 @@ def webcam_detection(inference_graph, labelmap, gui=False, frame=None):
             _, frame = cap.read()
             classification = detect_on_single_frame(
                 frame, category_index, detection_model, tflite=tflite)
-
             cv2.imshow('Video', classification.Image)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 cap.release()
                 break
         cap.release()
     else:
-        
-        return detect_on_single_frame(frame, category_index, detection_model, tflite=tflite)
+        classification = detect_on_single_frame(frame, category_index, detection_model, tflite=tflite)
+        print(classification.Classes)
+        total_list.append(classification.Classes)
+        print(len(total_list))
+        return classification.Image
 
 if __name__ == "__main__":
     # set up command line
