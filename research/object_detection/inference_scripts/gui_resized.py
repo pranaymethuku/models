@@ -224,8 +224,7 @@ class Ui_MainWindow(QWidget):
         if str(self.tier_dropdown.currentText()) == 'Tier 1':
             self.model_dropdown.addItems(['Faster RCNN Inception V2 Coco', 'SSD Inception V2 Coco'])
         elif str(self.tier_dropdown.currentText()) == 'Tier 2':
-            self.model_dropdown.addItems(['Faster RCNN Inception V2 Coco', 'Faster RCNN Resnet101 Kitti',
-            'RFCN Resnet101 Coco', 'SSD Inception V2 Coco'])
+            self.model_dropdown.addItems(['Faster RCNN Inception V2 Coco', 'SSD Inception V2 Coco'])
         elif str(self.tier_dropdown.currentText()) == 'Tier 3':
             self.model_dropdown.addItems(['Faster RCNN Inception V2 Coco', 'SSD V2 Coco'])
         else:
