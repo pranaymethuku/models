@@ -34,8 +34,8 @@ import collections
 from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as vis_util
 
+# Minimum score threshold for detection 
 minimum_score_threshold = 0.6
-
 
 def load_detection_model(inference_graph_path, tflite=True):
     if tflite:
