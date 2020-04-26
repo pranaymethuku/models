@@ -272,16 +272,15 @@ class Ui_MainWindow(QWidget):
         self.stop_button.setVisible(True)
 
         self.update_frame()
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.update_frame)
-        self.timer.start(5)
+        # self.timer = QTimer(self)
+        # self.timer.timeout.connect(self.update_frame)
+        # self.timer.start(5)
 
     def stop_webcam(self):
         self.stop_button.setVisible(False)
         self.capture.release()
         cv2.destroyAllWindows()
         self.clear_screen()
-        # self.timer.stop()
 
     def exit(self):
         sys.exit()
@@ -357,14 +356,6 @@ class Ui_MainWindow(QWidget):
                 break
 
             self.stop_button.clicked.connect(self.stop_webcam)
-
-        # Get frame
-        # _, self.image=self.capture.read()
-        # self.image = cv2.flip(self.image, 1)
-
-        # # Run inference on frame and display to screen
-        # self.detected_image = detection.webcam_detection(self.frozen_graph, self.labelmap, True, self.image)
-        # self.display_frame(self.detected_image)
 
     def display_frame(self, frame):
         qformat = QImage.Format_Indexed8
