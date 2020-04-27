@@ -302,6 +302,7 @@ def image_detection(inference_graph, labelmap, tier, input_image, output_image):
        conn, input_image, output_image, inference_graph, tier, classification)
 
 
+
 def video_detection(inference_graph, labelmap, tier, input_video, output_video, print_progress=True):
     tflite = '.tflite' in inference_graph
     detection_model = load_detection_model(inference_graph, tflite=tflite)
