@@ -28,7 +28,7 @@ from tensorflow.lite.python.interpreter import Interpreter
 import argparse
 from PIL import Image
 import collections
-#from object_detection.db import database
+from object_detection.db import database
 
 # Import utilites
 from object_detection.utils import label_map_util
@@ -206,7 +206,7 @@ def detect_on_single_frame_tflite(image_np,
                                   floating_model=False,
                                   input_mean=127.5,
                                   input_std=127.5):
-
+    global MAX_BOXES_TO_DRAW
     # expand image dimensions to have shape: [1, None, None, 3]
     image_resized = cv2.resize(image_np, image_shape)
     image_expanded = np.expand_dims(image_resized, axis=0)
@@ -236,16 +236,26 @@ def detect_on_single_frame_tflite(image_np,
     # Declare a NamedTuple to hold an image, its predicted classes, and the scores associated with each of those classes
     Classification = collections.namedtuple(
         "classification", ["Image", "Classes", "Scores"])
-    classification = Classification(image_np, classes, scores)
+    
+    # filter all scores and classes based on minimum score threshold
+    scores_above_mst = scores[scores > MINIMUM_SCORE_THRESHOLD]
+    classes_above_mst = classes[scores > MINIMUM_SCORE_THRESHOLD]
+    # determine the n largest boxes, where n is less than or equal to max boxes to draw
+    if MAX_BOXES_TO_DRAW < len(scores_above_mst):
+        best_indices = np.argpartition(scores_above_mst, -1 * MAX_BOXES_TO_DRAW)[-1 * MAX_BOXES_TO_DRAW:]
+    else:
+        # get all indices
+        best_indices = True
+    best_scores = scores_above_mst[best_indices].flatten()
+    best_class_ids = classes_above_mst[best_indices].flatten()
+    # store the actual class labels instead of class id
+    best_classes = [category_index.get(class_id)['name'] for class_id in best_class_ids]
 
-    # Here output the best class
-    # best_class_id = int(classes[np.argmax(scores)])
-    # best_class_name = category_index.get(best_class_id)['name']
-    # print("best class: {}".format(best_class_name))
+    classification = Classification(image_np, best_classes, best_scores)
     return classification
 
 
-def batch_detection(inference_graph, labelmap, input_folder, output_folder):
+def batch_detection(inference_graph, labelmap, tier, input_folder, output_folder):
     # walk through all directories
     for root, _, files in os.walk(input_folder, topdown=False):
         # we only want to walk through the jpgs here, ignore anything else
@@ -262,14 +272,14 @@ def batch_detection(inference_graph, labelmap, input_folder, output_folder):
             print("Processing {} ({}/{}) in {}".format(name,
                                                        file_num, total_num_files, root))
             if '.jpg' in name:
-                image_detection(inference_graph, labelmap,
+                image_detection(inference_graph, labelmap, tier,
                                 original_file, annotated_file)
             elif '.mp4' in name:
-                video_detection(inference_graph, labelmap,
+                video_detection(inference_graph, labelmap, tier,
                                 original_file, annotated_file)
 
 
-def image_detection(inference_graph, labelmap, input_image, output_image):
+def image_detection(inference_graph, labelmap, tier, input_image, output_image):
     tflite = '.tflite' in inference_graph
     detection_model = load_detection_model(inference_graph, tflite=tflite)
     category_index = load_labelmap(labelmap)
@@ -284,12 +294,12 @@ def image_detection(inference_graph, labelmap, input_image, output_image):
     img = Image.fromarray(classification.Image, 'RGB')
     img.save(output_image, "jpeg")
 
-    #conn = database.create_connection("../db/detection.db")
-    #database.insert_image_detection(
-    #    conn, input_image, output_image, inference_graph, category_index, classification)
+    conn = database.create_connection("../db/detection.db")
+    database.insert_image_detection(
+       conn, input_image, output_image, inference_graph, tier, classification)
 
 
-def video_detection(inference_graph, labelmap, input_video, output_video, print_progress=True):
+def video_detection(inference_graph, labelmap, tier, input_video, output_video, print_progress=True):
     tflite = '.tflite' in inference_graph
     detection_model = load_detection_model(inference_graph, tflite=tflite)
     category_index = load_labelmap(labelmap)
@@ -372,6 +382,8 @@ if __name__ == "__main__":
                         help="Path to frozen detection graph .pb file, which contains the model that is used")
     parser.add_argument("-l", "--labelmap", type=str, required=True,
                         help="Path to the labelmap")
+    parser.add_argument("-t", "--tier", type=int, required=True,
+                        help="Tier number corresponding to the inference_graph and labelmap")                    
     parser.add_argument("-mst", "--minimum_score_threshold", type=float, default=MINIMUM_SCORE_THRESHOLD,
                         help="Threshold for the minimum confidence for detection")
     parser.add_argument("-mbd", "--max_boxes_to_draw", type=int, default=MAX_BOXES_TO_DRAW,
@@ -401,13 +413,13 @@ if __name__ == "__main__":
     MAX_BOXES_TO_DRAW = args.max_boxes_to_draw
 
     if args.input_image:
-        image_detection(args.inference_graph, args.labelmap,
+        image_detection(args.inference_graph, args.labelmap, args.tier,
                         args.input_image, args.output_image)
     elif args.input_folder:
-        batch_detection(args.inference_graph, args.labelmap,
+        batch_detection(args.inference_graph, args.labelmap, args.tier,
                         args.input_folder, args.output_folder)
     elif args.input_webcam:
         webcam_detection(args.inference_graph, args.labelmap)
     elif args.input_video:
-        video_detection(args.inference_graph, args.labelmap,
+        video_detection(args.inference_graph, args.labelmap, args.tier,
                         args.input_video, args.output_video)

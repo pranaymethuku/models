@@ -10,18 +10,16 @@ def create_connection(db_file):
     """
     return sqlite3.connect(db_file)
 
-def prepare_detection_row(input_image, output_image, inference_graph, category_index, classification):
+def prepare_detection_rows(input_image, output_image, inference_graph, tier, classification):
     """
     Helper function to to pass into SQL insert statement
     """
     model = os.path.basename(inference_graph)
-    # retrieve the label and confidence score from classification
-    confidence = float(np.max(classification.Scores))
-    label_id = int(classification.Classes[np.argmax(classification.Scores)])
-    label = category_index.get(label_id)['name']
-    # NOTE: not sure how to get the tier in the best way possible yet, just hardcoding some value for now
-    tier = 2
-    return (input_image, output_image, confidence, label, tier, model, datetime.now())
+    detection_rows = []
+    for i in range(len(classification.Classes)):
+        row = (input_image, output_image, float(classification.Scores[i]), classification.Classes[i], tier, model, datetime.now())
+        detection_rows.append(row)
+    return detection_rows
 
 def __create_detection(conn, detection):
     sql = ''' INSERT into Detection(file_path, labeled_file_path, confidence, label, tier, model, time_stamp) 
@@ -31,9 +29,10 @@ def __create_detection(conn, detection):
     conn.commit()
     return cur.lastrowid
 
-def insert_image_detection(conn, input_image, output_image, inference_graph, category_index, classification):
-    detection_row = prepare_detection_row(input_image, output_image, inference_graph, category_index, classification)
-    return __create_detection(conn, detection_row)
+def insert_image_detection(conn, input_image, output_image, inference_graph, tier, classification):
+    detection_rows = prepare_detection_rows(input_image, output_image, inference_graph, tier, classification)
+    for detection in detection_rows:
+        __create_detection(conn, detection)
 
 if __name__ == "__main__":
     # create a database connection
