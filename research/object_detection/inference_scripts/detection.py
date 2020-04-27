@@ -30,7 +30,7 @@ sys.path.append('..')
 import argparse
 from PIL import Image
 import collections
-#from object_detection.db import database
+from object_detection.db import database
 
 # Import utilites
 from object_detection.utils import label_map_util
@@ -286,9 +286,9 @@ def image_detection(inference_graph, labelmap, input_image, output_image):
     img = Image.fromarray(classification.Image, 'RGB')
     img.save(output_image, "jpeg")
 
-    #conn = database.create_connection("../db/detection.db")
-    #database.insert_image_detection(
-    #    conn, input_image, output_image, inference_graph, category_index, classification)
+    conn = database.create_connection("../db/detection.db")
+    database.insert_image_detection(
+        conn, input_image, output_image, inference_graph, category_index, classification)
 
 
 def video_detection(inference_graph, labelmap, input_video, output_video, print_progress=True):
@@ -347,24 +347,23 @@ def start_any_webcam():
 
     return capture
 
-def webcam_detection(inference_graph, labelmap, gui=False, frame=None, quit=False, capture=None):
+def webcam_detection(inference_graph, labelmap):
     tflite = '.tflite' in inference_graph
     detection_model = load_detection_model(inference_graph, tflite=tflite)
     category_index = load_labelmap(labelmap)
 
-    if not gui:
-        # Load webcam using OpenCV
-        cap = start_any_webcam()
-    
-        while cap.isOpened():
-            _, frame = cap.read()
-            classification = detect_on_single_frame(
-                frame, category_index, detection_model, tflite=tflite)
-            cv2.imshow('Video', classification.Image)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                cap.release()
-                break
-        cap.release()
+    # Load webcam using OpenCV
+    cap = start_any_webcam()
+
+    while cap.isOpened():
+        _, frame = cap.read()
+        classification = detect_on_single_frame(
+            frame, category_index, detection_model, tflite=tflite)
+        cv2.imshow('Video', classification.Image)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            cap.release()
+            break
+    cap.release()
 
 
 if __name__ == "__main__":

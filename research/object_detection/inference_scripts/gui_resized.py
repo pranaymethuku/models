@@ -351,6 +351,7 @@ class Ui_MainWindow(QWidget):
         classification = detection.detect_on_single_frame(self.image, self.category_index, self.detection_model, tflite=self.tflite)
         self.detected_image = classification.Image
 
+        # Display the classified frame to the screen 
         self.display_frame(self.detected_image)
 
     def display_frame(self, frame):
