@@ -25,8 +25,6 @@ from cv2 import cv2
 import numpy as np
 import tensorflow as tf
 from tensorflow.lite.python.interpreter import Interpreter
-import sys
-sys.path.append('..')
 import argparse
 from PIL import Image
 import collections
