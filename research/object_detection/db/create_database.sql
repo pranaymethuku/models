@@ -1,7 +1,7 @@
 /* 
   Schema for creating database
   Tables - 
-    Detection - (id^, img_path, labeled_img_path, confidence, label**, tier** , model, time_stamp)
+    Detection - (id^, file_path, labeled_file_path, confidence, label**, tier** , model, time_stamp)
     Category - (label*, tier*)
 
     * - Primary key
@@ -11,8 +11,8 @@
 PRAGMA foreign_keys = ON;
 
 CREATE TABLE Detection (
-  img_path varchar(100) NOT NULL,
-  labeled_img_path varchar(100) NOT NULL,
+  file_path varchar(100) NOT NULL,
+  labeled_file_path varchar(100) NOT NULL,
   confidence real NOT NULL,
   label varchar(50) NOT NULL,
   tier int NOT NULL,

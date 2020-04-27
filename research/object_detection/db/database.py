@@ -24,7 +24,7 @@ def prepare_detection_row(input_image, output_image, inference_graph, category_i
     return (input_image, output_image, confidence, label, tier, model, datetime.now())
 
 def __create_detection(conn, detection):
-    sql = ''' INSERT into Detection(img_path, labeled_img_path, confidence, label, tier, model, time_stamp) 
+    sql = ''' INSERT into Detection(file_path, labeled_file_path, confidence, label, tier, model, time_stamp) 
               VALUES(?,?,?,?,?,?,?) '''
     cur = conn.cursor()
     cur.execute(sql, detection)
