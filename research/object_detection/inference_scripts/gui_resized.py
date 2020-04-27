@@ -255,6 +255,10 @@ class Ui_MainWindow(QWidget):
     def capture_media(self):
         # Get path of labelmap and frozen inference graph
         self.labelmap, self.frozen_graph = self.get_path()
+        self.tflite = '.tflite' in self.frozen_graph
+
+        self.detection_model = detection.load_detection_model(self.frozen_graph, tflite=self.tflite)
+        self.category_index = detection.load_labelmap(self.labelmap)
 
         # Start webcam
         self.capture = detection.start_any_webcam()
@@ -344,7 +348,9 @@ class Ui_MainWindow(QWidget):
         self.image = cv2.flip(self.image, 1)
 
         # Run inference on frame and display to screen
-        self.detected_image = detection.webcam_detection(self.frozen_graph, self.labelmap, True, self.image)
+        classification = detection.detect_on_single_frame(self.image, self.category_index, self.detection_model, tflite=self.tflite)
+        self.detected_image = classification.Image
+
         self.display_frame(self.detected_image)
 
     def display_frame(self, frame):

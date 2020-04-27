@@ -38,7 +38,7 @@ from object_detection.utils import visualization_utils as vis_util
 
 # Global defaults - adjustable by user in command-line 
 MINIMUM_SCORE_THRESHOLD = 0.6 # the minimum confidence for detection 
-MAX_BOXES_TO_DRAW = 2 # the maximum number of objects to detect on 
+MAX_BOXES_TO_DRAW = 1 # the maximum number of objects to detect on 
 
 def load_detection_model(inference_graph_path, tflite=True):
     if tflite:
@@ -365,21 +365,6 @@ def webcam_detection(inference_graph, labelmap, gui=False, frame=None, quit=Fals
                 cap.release()
                 break
         cap.release()
-    else:
-        print("---SINGLE FRAME---")
-        classification = detect_on_single_frame(
-            frame, category_index, detection_model, tflite=tflite)
-        print(classification.Classes)
-        print(classification.Scores)
-        print("---SINGLE FRAME---")
-        #total_list.append(classification.Classes)
-        #print(len(total_list))
-        if quit:
-            capture.release()
-            cv2.waitKey(1)
-            cv2.destroyAllWindows()
-        else:
-            return classification.Image
 
 
 if __name__ == "__main__":
