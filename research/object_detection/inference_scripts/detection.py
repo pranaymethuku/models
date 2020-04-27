@@ -30,15 +30,15 @@ sys.path.append('..')
 import argparse
 from PIL import Image
 import collections
-from object_detection.db import database
+#from object_detection.db import database
 
 # Import utilites
 from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as vis_util
 
-MINIMUM_SCORE_THRESHOLD = 0.6
-MAX_BOXES_TO_DRAW = 1
-
+# Global defaults - adjustable by user in command-line 
+MINIMUM_SCORE_THRESHOLD = 0.6 # the minimum confidence for detection 
+MAX_BOXES_TO_DRAW = 2 # the maximum number of objects to detect on 
 
 def load_detection_model(inference_graph_path, tflite=True):
     if tflite:
@@ -286,9 +286,9 @@ def image_detection(inference_graph, labelmap, input_image, output_image):
     img = Image.fromarray(classification.Image, 'RGB')
     img.save(output_image, "jpeg")
 
-    conn = database.create_connection("../db/detection.db")
-    database.insert_image_detection(
-        conn, input_image, output_image, inference_graph, category_index, classification)
+    #conn = database.create_connection("../db/detection.db")
+    #database.insert_image_detection(
+    #    conn, input_image, output_image, inference_graph, category_index, classification)
 
 
 def video_detection(inference_graph, labelmap, input_video, output_video, print_progress=True):
@@ -324,16 +324,33 @@ def video_detection(inference_graph, labelmap, input_video, output_video, print_
 
         frame_count += 1
 
+def start_any_webcam(): 
+    # Start webcam - first try the index setting that's supposed to capture input from any device
+    index = -1
+    capture = cv2.VideoCapture(index)
+
+    # Attempt indices 0 and 1 if -1 doesn't work 
+    while (capture is None or not capture.isOpened()) and index < 2:
+        print("WARNING: Unable to open video source: " + str(index))
+        index = index + 1
+        print("Attempting to use video source: " + str(index))
+        capture = cv2.VideoCapture(index)
+
+    # If no index works - terminate the program entirely
+    if (capture is None or not capture.isOpened()) and index == 2: 
+        print("ERROR: Unable to open any camera. Terminating program...")
+        sys.exit()
+
+    return capture
 
 def webcam_detection(inference_graph, labelmap, gui=False, frame=None, quit=False, capture=None):
     tflite = '.tflite' in inference_graph
     detection_model = load_detection_model(inference_graph, tflite=tflite)
     category_index = load_labelmap(labelmap)
 
-    total_list = []
     if not gui:
         # Load webcam using OpenCV
-        cap = cv2.VideoCapture(0)
+        cap = start_any_webcam()
 
         while cap.isOpened():
             _, frame = cap.read()
@@ -345,14 +362,12 @@ def webcam_detection(inference_graph, labelmap, gui=False, frame=None, quit=Fals
                 break
         cap.release()
     else:
+        print("---SINGLE FRAME---")
         classification = detect_on_single_frame(
             frame, category_index, detection_model, tflite=tflite)
-        #print(classification.Classes)
-
-        #detections = 
-        for i,v in enumerate(classification.Classes):
-            print(classification.Classes)
-            print(classification.Scores)
+        print(classification.Classes)
+        print(classification.Scores)
+        print("---SINGLE FRAME---")
         #total_list.append(classification.Classes)
         #print(len(total_list))
         if quit:

@@ -257,14 +257,7 @@ class Ui_MainWindow(QWidget):
         self.labelmap, self.frozen_graph = self.get_path()
 
         # Start webcam
-        index = 0
-        self.capture = cv2.VideoCapture(index)
-        self.image = self.capture.read()
-
-        while self.image is None and index < 2:
-            index += 1
-            self.capture = cv2.VideoCapture(index)
-            self.image = self.capture.read()
+        self.capture = detection.start_any_webcam()
 
         self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
         self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)  
