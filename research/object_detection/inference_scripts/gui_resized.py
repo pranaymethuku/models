@@ -234,13 +234,13 @@ class Ui_MainWindow(QWidget):
     def open_file(self):
         name = QFileDialog.getOpenFileName(self, 'Open File')[0]
         file_extension = os.path.splitext(name)
-
+        tier = self.tier_dropdown.currentText().split(" ")[1]
         # Get path of labelmap and frozen inference graph
         labelmap, frozen_graph = self.get_path()
 
         if file_extension[1] == ".jpg" or file_extension[1] == ".jpeg":
             # Run inference on image and display
-            detection.image_detection(frozen_graph, labelmap, name, "predicted.jpg")
+            detection.image_detection(frozen_graph, labelmap, tier, name, "predicted.jpg")
             self.display("predicted.jpg")
 
         if file_extension[1] in VIDEOS:
@@ -249,7 +249,7 @@ class Ui_MainWindow(QWidget):
                 self.media.itemAt(i).widget().deleteLater()
 
             # Run inference on video and display
-            detection.video_detection(frozen_graph, labelmap, name, os.getcwd() + os.path.sep + "predicted.mp4")
+            detection.video_detection(frozen_graph, labelmap, tier, name, os.getcwd() + os.path.sep + "predicted.mp4")
             self.display(os.getcwd() + os.path.sep + "predicted.mp4")
 
     def capture_media(self):
@@ -351,6 +351,7 @@ class Ui_MainWindow(QWidget):
         classification = detection.detect_on_single_frame(self.image, self.category_index, self.detection_model, tflite=self.tflite)
         self.detected_image = classification.Image
 
+        # Display the classified frame to the screen 
         self.display_frame(self.detected_image)
 
     def display_frame(self, frame):

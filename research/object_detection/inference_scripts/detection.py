@@ -355,24 +355,23 @@ def start_any_webcam():
 
     return capture
 
-def webcam_detection(inference_graph, labelmap, gui=False, frame=None, quit=False, capture=None):
+def webcam_detection(inference_graph, labelmap):
     tflite = '.tflite' in inference_graph
     detection_model = load_detection_model(inference_graph, tflite=tflite)
     category_index = load_labelmap(labelmap)
 
-    if not gui:
-        # Load webcam using OpenCV
-        cap = start_any_webcam()
-    
-        while cap.isOpened():
-            _, frame = cap.read()
-            classification = detect_on_single_frame(
-                frame, category_index, detection_model, tflite=tflite)
-            cv2.imshow('Video', classification.Image)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                cap.release()
-                break
-        cap.release()
+    # Load webcam using OpenCV
+    cap = start_any_webcam()
+
+    while cap.isOpened():
+        _, frame = cap.read()
+        classification = detect_on_single_frame(
+            frame, category_index, detection_model, tflite=tflite)
+        cv2.imshow('Video', classification.Image)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            cap.release()
+            break
+    cap.release()
 
 
 if __name__ == "__main__":
