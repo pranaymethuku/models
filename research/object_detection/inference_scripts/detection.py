@@ -37,9 +37,10 @@ from object_detection.db import database
 from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as vis_util
 
-# Global defaults - adjustable by user in command-line 
-MINIMUM_SCORE_THRESHOLD = 0.6 # the minimum confidence for detection 
-MAX_BOXES_TO_DRAW = 1 # the maximum number of objects to detect on 
+# Global defaults - adjustable by user in command-line
+MINIMUM_SCORE_THRESHOLD = 0.6  # the minimum confidence for detection
+MAX_BOXES_TO_DRAW = 1  # the maximum number of objects to detect on
+
 
 def load_detection_model(inference_graph_path, tflite=True):
     if tflite:
@@ -177,20 +178,22 @@ def get_frame_classification(image_np, classes, scores, category_index):
     # Declare a NamedTuple to hold an image, its predicted classes, and the scores associated with each of those classes
     Classification = collections.namedtuple(
         "classification", ["Image", "Classes", "Scores"])
-    
+
     # filter all scores and classes based on minimum score threshold
     scores_above_mst = scores[scores > MINIMUM_SCORE_THRESHOLD]
     classes_above_mst = classes[scores > MINIMUM_SCORE_THRESHOLD]
     # determine the n largest boxes, where n is less than or equal to max boxes to draw
     if MAX_BOXES_TO_DRAW < len(scores_above_mst):
-        best_indices = np.argpartition(scores_above_mst, -1 * MAX_BOXES_TO_DRAW)[-1 * MAX_BOXES_TO_DRAW:]
+        best_indices = np.argpartition(
+            scores_above_mst, -1 * MAX_BOXES_TO_DRAW)[-1 * MAX_BOXES_TO_DRAW:]
     else:
         # get all indices
         best_indices = True
     best_scores = scores_above_mst[best_indices].flatten()
     best_class_ids = classes_above_mst[best_indices].flatten()
     # store the actual class labels instead of class id
-    best_classes = [category_index.get(class_id)['name'] for class_id in best_class_ids]
+    best_classes = [category_index.get(class_id)['name']
+                    for class_id in best_class_ids]
 
     return Classification(image_np, best_classes, best_scores)
 
@@ -248,7 +251,7 @@ def detect_on_single_frame_tflite(image_np,
     classes = classes + 1
 
     visualize_on_single_frame(image_np, boxes, classes, scores, category_index)
-    
+
     return get_frame_classification(image_np, classes, scores, category_index)
 
 
@@ -293,7 +296,7 @@ def image_detection(inference_graph, labelmap, tier, input_image, output_image):
 
     conn = database.create_connection("../db/detection.db")
     database.insert_image_detection(
-       conn, input_image, output_image, inference_graph, tier, classification)
+        conn, input_image, output_image, inference_graph, tier, classification)
 
 
 def video_detection(inference_graph, labelmap, tier, input_video, output_video, print_progress=True):
@@ -329,12 +332,13 @@ def video_detection(inference_graph, labelmap, tier, input_video, output_video, 
 
         frame_count += 1
 
-def start_any_webcam(): 
+
+def start_any_webcam():
     # Start webcam - first try the index setting that's supposed to capture input from any device
     index = -1
     capture = cv2.VideoCapture(index)
 
-    # Attempt indices 0 and 1 if -1 doesn't work 
+    # Attempt indices 0 and 1 if -1 doesn't work
     while (capture is None or not capture.isOpened()) and index < 2:
         print("WARNING: Unable to open video source: " + str(index))
         index = index + 1
@@ -343,14 +347,15 @@ def start_any_webcam():
 
     # If no index works - terminate the program entirely
     # Otherwise - display to the user that a camera worked
-    if (capture is None or not capture.isOpened()) and index == 2: 
+    if (capture is None or not capture.isOpened()) and index == 2:
         print("WARNING: Unable to open video source: " + str(index))
         print("ERROR: Unable to open any camera. Terminating program...")
         sys.exit()
-    else: 
+    else:
         print("SUCCESS! Using video source: " + str(index))
 
     return capture
+
 
 def webcam_detection(inference_graph, labelmap):
     tflite = '.tflite' in inference_graph
@@ -380,7 +385,7 @@ if __name__ == "__main__":
     parser.add_argument("-l", "--labelmap", type=str, required=True,
                         help="Path to the labelmap")
     parser.add_argument("-t", "--tier", type=int, required=True,
-                        help="Tier number corresponding to the inference_graph and labelmap")                    
+                        help="Tier number corresponding to the inference_graph and labelmap")
     parser.add_argument("-mst", "--minimum_score_threshold", type=float, default=MINIMUM_SCORE_THRESHOLD,
                         help="Threshold for the minimum confidence for detection")
     parser.add_argument("-mbd", "--max_boxes_to_draw", type=int, default=MAX_BOXES_TO_DRAW,
