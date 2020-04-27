@@ -172,6 +172,28 @@ def detect_on_single_frame(image_np, category_index, detection_model, tflite=Tru
     return classification
 
 
+def get_frame_classification(image_np, classes, scores, category_index):
+    # Declare a NamedTuple to hold an image, its predicted classes, and the scores associated with each of those classes
+    Classification = collections.namedtuple(
+        "classification", ["Image", "Classes", "Scores"])
+    
+    # filter all scores and classes based on minimum score threshold
+    scores_above_mst = scores[scores > MINIMUM_SCORE_THRESHOLD]
+    classes_above_mst = classes[scores > MINIMUM_SCORE_THRESHOLD]
+    # determine the n largest boxes, where n is less than or equal to max boxes to draw
+    if MAX_BOXES_TO_DRAW < len(scores_above_mst):
+        best_indices = np.argpartition(scores_above_mst, -1 * MAX_BOXES_TO_DRAW)[-1 * MAX_BOXES_TO_DRAW:]
+    else:
+        # get all indices
+        best_indices = True
+    best_scores = scores_above_mst[best_indices].flatten()
+    best_class_ids = classes_above_mst[best_indices].flatten()
+    # store the actual class labels instead of class id
+    best_classes = [category_index.get(class_id)['name'] for class_id in best_class_ids]
+
+    return Classification(image_np, best_classes, best_scores)
+
+
 def detect_on_single_frame_tf(image_np, category_index,
                               sess,
                               image_tensor,
@@ -186,17 +208,7 @@ def detect_on_single_frame_tf(image_np, category_index,
 
     visualize_on_single_frame(image_np, boxes, classes,
                               scores, category_index)
-
-    # Declare a NamedTuple to hold an image, its predicted classes, and the scores associated with each of those classes
-    Classification = collections.namedtuple(
-        "classification", ["Image", "Classes", "Scores"])
-    classification = Classification(image_np, classes, scores)
-
-    # # Here output the best class
-    # best_class_id = int(classes[np.argmax(scores)])
-    # best_class_name = category_index.get(best_class_id)['name']
-    # print("best class: {}".format(best_class_name))
-    return classification
+    return get_frame_classification(image_np, classes, scores, category_index)
 
 
 def detect_on_single_frame_tflite(image_np,
@@ -235,26 +247,8 @@ def detect_on_single_frame_tflite(image_np,
     classes = classes + 1
 
     visualize_on_single_frame(image_np, boxes, classes, scores, category_index)
-    # Declare a NamedTuple to hold an image, its predicted classes, and the scores associated with each of those classes
-    Classification = collections.namedtuple(
-        "classification", ["Image", "Classes", "Scores"])
     
-    # filter all scores and classes based on minimum score threshold
-    scores_above_mst = scores[scores > MINIMUM_SCORE_THRESHOLD]
-    classes_above_mst = classes[scores > MINIMUM_SCORE_THRESHOLD]
-    # determine the n largest boxes, where n is less than or equal to max boxes to draw
-    if MAX_BOXES_TO_DRAW < len(scores_above_mst):
-        best_indices = np.argpartition(scores_above_mst, -1 * MAX_BOXES_TO_DRAW)[-1 * MAX_BOXES_TO_DRAW:]
-    else:
-        # get all indices
-        best_indices = True
-    best_scores = scores_above_mst[best_indices].flatten()
-    best_class_ids = classes_above_mst[best_indices].flatten()
-    # store the actual class labels instead of class id
-    best_classes = [category_index.get(class_id)['name'] for class_id in best_class_ids]
-
-    classification = Classification(image_np, best_classes, best_scores)
-    return classification
+    return get_frame_classification(image_np, classes, scores, category_index)
 
 
 def batch_detection(inference_graph, labelmap, tier, input_folder, output_folder):
