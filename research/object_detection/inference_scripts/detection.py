@@ -337,9 +337,13 @@ def start_any_webcam():
         capture = cv2.VideoCapture(index)
 
     # If no index works - terminate the program entirely
+    # Otherwise - display to the user that a camera worked
     if (capture is None or not capture.isOpened()) and index == 2: 
+        print("WARNING: Unable to open video source: " + str(index))
         print("ERROR: Unable to open any camera. Terminating program...")
         sys.exit()
+    else: 
+        print("SUCCESS! Using video source: " + str(index))
 
     return capture
 
@@ -351,7 +355,7 @@ def webcam_detection(inference_graph, labelmap, gui=False, frame=None, quit=Fals
     if not gui:
         # Load webcam using OpenCV
         cap = start_any_webcam()
-
+    
         while cap.isOpened():
             _, frame = cap.read()
             classification = detect_on_single_frame(
