@@ -82,7 +82,7 @@ class Ui_MainWindow(QWidget):
         self.model_dropdown.setFont(font)
         self.model_dropdown.setObjectName("model_dropdown")
         self.model_dropdown.addItems(
-            ['Faster RCNN Inception V2 Coco', 'SSD Inception V2 Coco'])
+            ['SSD Inception V2 Coco', 'Faster RCNN Inception V2 Coco'])
 
         self.detection_info_layout.addWidget(self.model_dropdown)
         spacerItem1 = QtWidgets.QSpacerItem(
@@ -248,16 +248,16 @@ class Ui_MainWindow(QWidget):
         self.model_dropdown.clear()
         if str(self.tier_dropdown.currentText()) == 'Tier 1':
             self.model_dropdown.addItems(
-                ['Faster RCNN Inception V2 Coco', 'SSD Inception V2 Coco'])
+                ['SSD Inception V2 Coco', 'Faster RCNN Inception V2 Coco'])
         elif str(self.tier_dropdown.currentText()) == 'Tier 2':
             self.model_dropdown.addItems(
-                ['Faster RCNN Inception V2 Coco', 'SSD Inception V2 Coco'])
+                ['SSD Inception V2 Coco', 'Faster RCNN Inception V2 Coco'])
         elif str(self.tier_dropdown.currentText()) == 'Tier 3':
             self.model_dropdown.addItems(
-                ['Faster RCNN Inception V2 Coco', 'SSD Inception V2 Coco'])
+                ['SSD Inception V2 Coco', 'Faster RCNN Inception V2 Coco'])
         else:
             self.model_dropdown.addItems(
-                ['Faster RCNN Inception V2 Coco', 'SSD Inception V2 Coco'])
+                ['SSD Inception V2 Coco', 'Faster RCNN Inception V2 Coco'])
 
     def open_file(self):
         name = QFileDialog.getOpenFileName(self, 'Open File')[0]
@@ -297,8 +297,12 @@ class Ui_MainWindow(QWidget):
         self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
         self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
 
+        for i in reversed(range(self.media.count())):
+            self.media.itemAt(i).widget().show()
+
         # Show stop button
         self.stop_button.setVisible(True)
+        self.capture_button.setVisible(False)
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_frame)
@@ -306,9 +310,10 @@ class Ui_MainWindow(QWidget):
 
     def stop_webcam(self):
         self.timer.stop()
-        cv2.destroyAllWindows()
         self.capture.release()
+        cv2.destroyAllWindows()
         self.stop_button.setVisible(False)
+        self.capture_button.setVisible(True)
         self.clear_screen()
 
     def exit(self):
@@ -316,7 +321,7 @@ class Ui_MainWindow(QWidget):
 
     def clear_screen(self):
         for i in reversed(range(self.media.count())):
-            self.media.itemAt(i).widget().setParent(None)
+            self.media.itemAt(i).widget().hide()
 
     def get_path(self):
         # Get path from the tier number
@@ -385,8 +390,8 @@ class Ui_MainWindow(QWidget):
             self.image, self.category_index, self.detection_model, tflite=self.tflite)
         self.detected_image = classification.Image
 
-        print(classification.Classes)
-        print(classification.Scores)
+        # print(classification.Classes)
+        # print(classification.Scores)
 
         # Display the classified frame to the screen
         self.display_frame(self.detected_image)
