@@ -415,13 +415,19 @@ if __name__ == "__main__":
     MAX_BOXES_TO_DRAW = args.max_boxes_to_draw
 
     if args.input_image:
+        input_image = os.path.abspath(args.input_image)
+        output_image = os.path.abspath(args.output_image)
         image_detection(args.inference_graph, args.labelmap, args.tier,
-                        args.input_image, args.output_image)
+                        input_image, output_image)
     elif args.input_folder:
+        input_folder = os.path.abspath(args.input_folder)
+        output_folder = os.path.abspath(args.output_folder)
         batch_detection(args.inference_graph, args.labelmap, args.tier,
-                        args.input_folder, args.output_folder)
+                        input_folder, output_folder)
     elif args.input_webcam:
         webcam_detection(args.inference_graph, args.labelmap)
     elif args.input_video:
+        input_video = os.path.abspath(args.input_video)
+        output_video = os.path.abspath(args.output_video)
         video_detection(args.inference_graph, args.labelmap, args.tier,
-                        args.input_video, args.output_video)
+                        input_video, output_video)
