@@ -35,6 +35,7 @@ from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as vis_util
 
 MINIMUM_SCORE_THRESHOLD = 0.6
+MAX_BOXES_TO_DRAW = 1
 
 def load_detection_model(inference_graph_path, tflite=True):
     if tflite:
@@ -140,6 +141,7 @@ def load_labelmap(labelmap_path):
 
 def visualize_on_single_frame(image_np, boxes, classes, scores, category_index):
     global MINIMUM_SCORE_THRESHOLD
+    global MAX_BOXES_TO_DRAW
     # adjust the bounding box size depending on the image size
     height, width = image_np.shape[:2]
     line_thickness_adjustment = math.ceil(max(height, width) / 400)
@@ -154,7 +156,7 @@ def visualize_on_single_frame(image_np, boxes, classes, scores, category_index):
         use_normalized_coordinates=True,
         line_thickness=4+line_thickness_adjustment,
         min_score_thresh=MINIMUM_SCORE_THRESHOLD,
-        max_boxes_to_draw=1)
+        max_boxes_to_draw=MAX_BOXES_TO_DRAW)
 
 
 def detect_on_single_frame(image_np, category_index, detection_model, tflite=True):
@@ -338,9 +340,14 @@ def webcam_detection(inference_graph, labelmap, gui=False, frame=None, quit=Fals
     else:
         classification = detect_on_single_frame(
             frame, category_index, detection_model, tflite=tflite)
-        print(classification.Classes)
-        total_list.append(classification.Classes)
-        print(len(total_list))
+        #print(classification.Classes)
+
+        #detections = 
+        for i,v in enumerate(classification.Classes):
+            print(classification.Classes)
+            print(classification.Scores)
+        #total_list.append(classification.Classes)
+        #print(len(total_list))
         if quit:
             capture.release()
             cv2.waitKey(1)
@@ -358,6 +365,8 @@ if __name__ == "__main__":
                         help="Path to the labelmap")
     parser.add_argument("-mst", "--minimum_score_threshold", type=float, default=MINIMUM_SCORE_THRESHOLD,
                         help="Threshold for the minimum confidence for detection")
+    parser.add_argument("-mbd", "--max_boxes_to_draw", type=int, default=MAX_BOXES_TO_DRAW,
+                        help="The maximum number of objects to detect")
     # image detection
     parser.add_argument("-ii", "--input_image", type=str,
                         help="Path to the input image to detect")
@@ -380,6 +389,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     MINIMUM_SCORE_THRESHOLD = args.minimum_score_threshold
+    MAX_BOXES_TO_DRAW = args.max_boxes_to_draw
 
     if args.input_image:
         image_detection(args.inference_graph, args.labelmap,
