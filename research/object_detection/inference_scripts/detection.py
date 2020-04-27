@@ -353,7 +353,6 @@ def start_any_webcam():
         sys.exit()
     else:
         print("SUCCESS! Using video source: " + str(index))
-
     return capture
 
 
