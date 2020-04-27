@@ -9,14 +9,16 @@ Prof: Prof. Jayanti
 A Python 3 script to perform object detection using Tensorflow on image, video, or webcam, and store/display output accordingly
 
 Usage:
-    python3 detection.py [-h] -ig INFERENCE_GRAPH -l LABELMAP
-                    [-ii INPUT_IMAGE] [-oi OUTPUT_IMAGE] [-iv INPUT_VIDEO]
-                    [-ov OUTPUT_VIDEO] [-iw]
+    python3 detection.py [-h] -ig INFERENCE_GRAPH -l LABELMAP -t TIER
+                    [-mst MINIMUM_SCORE_THRESHOLD] [-mbd MAX_BOXES_TO_DRAW]
+                    [-ii INPUT_IMAGE] [-oi OUTPUT_IMAGE] [-if INPUT_FOLDER]
+                    [-of OUTPUT_FOLDER] [-iv INPUT_VIDEO] [-ov OUTPUT_VIDEO]
+                    [-iw]
 
 Examples:
-    python3 detection.py -ig=inference_graph/inference_graph.pb -ii=./car.jpg -oi=./car_annotated.jpg
-    python3 detection.py -ig=inference_graph/inference_graph.tflite -iv=./truck.mp4 -oi=./truck_annotated.mp4
-    python3 detection.py -ig=inference_graph/inference_graph.pb -iw
+    python3 detection.py -ig=inference_graph/inference_graph.pb -t 1 -ii=./car.jpg -oi=./car_annotated.jpg
+    python3 detection.py -ig=inference_graph/inference_graph.tflite -t 2 -iv=./truck.mp4 -oi=./truck_annotated.mp4
+    python3 detection.py -ig=inference_graph/inference_graph.pb -t 3 -iw
 """
 
 import os
