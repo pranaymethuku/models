@@ -15,8 +15,10 @@ from PyQt5.QtPrintSupport import *
 from PyQt5.QtMultimedia import *
 from PyQt5.QtMultimediaWidgets import *
 import sys
+from collections import Counter
 import os
 import detection
+import numpy as np
 import cv2
 
 VIDEOS = [".mov", ".mp4", ".flv", ".avi", ".ogg", ".wmv"]
@@ -260,6 +262,10 @@ class Ui_MainWindow(QWidget):
         self.detection_model = detection.load_detection_model(self.frozen_graph, tflite=self.tflite)
         self.category_index = detection.load_labelmap(self.labelmap)
 
+        # Create lists which handle the notification for detections
+        self.seen_classes = []
+        self.seen_scores = []
+
         # Start webcam
         self.capture = detection.start_any_webcam()
 
@@ -351,8 +357,19 @@ class Ui_MainWindow(QWidget):
         classification = detection.detect_on_single_frame(self.image, self.category_index, self.detection_model, tflite=self.tflite)
         self.detected_image = classification.Image
 
-        print(classification.Classes)
-        print(classification.Scores)
+        self.seen_classes.append(classification.Classes)
+        self.seen_scores.append(classification.Scores)
+
+        print( [item for sublist in self.seen_classes for item in sublist] )
+        print( [item for sublist in self.seen_scores for item in sublist] )
+
+        #if len(self.seen_classes) > 20 and not any(c == [] for c in self.seen_classes[-20:]):
+        ##    print("Reached 20 consecutive detections!")
+        #    print("Most common class: " + str(max(set(self.seen_classes), key=self.seen_classes.count)))
+        #    # Use the most common class to compute the average liklihood of this 
+        #    print("Average score: " + str(self.seen_scores[-20:].avg()))
+
+
 
         # Display the classified frame to the screen 
         self.display_frame(self.detected_image)

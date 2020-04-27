@@ -249,7 +249,7 @@ def detect_on_single_frame_tflite(image_np,
     else:
         # get all indices
         best_indices = True
-    best_scores = scores_above_mst[best_indices].flatten()
+    best_scores = list(scores_above_mst[best_indices].flatten())
     best_class_ids = classes_above_mst[best_indices].flatten()
     # store the actual class labels instead of class id
     best_classes = [category_index.get(class_id)['name'] for class_id in best_class_ids]
