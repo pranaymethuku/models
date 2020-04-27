@@ -23,6 +23,7 @@ Examples:
 
 import os
 import math
+import sys
 from cv2 import cv2
 import numpy as np
 import tensorflow as tf
@@ -370,6 +371,7 @@ def webcam_detection(inference_graph, labelmap):
         classification = detect_on_single_frame(
             frame, category_index, detection_model, tflite=tflite)
         cv2.imshow('Video', classification.Image)
+
         if cv2.waitKey(1) & 0xFF == ord('q'):
             cap.release()
             break
