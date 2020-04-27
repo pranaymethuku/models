@@ -28,14 +28,15 @@ from tensorflow.lite.python.interpreter import Interpreter
 import argparse
 from PIL import Image
 import collections
-from object_detection.db import database
+#from object_detection.db import database
 
 # Import utilites
 from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as vis_util
 
-MINIMUM_SCORE_THRESHOLD = 0.6
-
+# Global defaults - adjustable by user in command-line 
+MINIMUM_SCORE_THRESHOLD = 0.6 # the minimum confidence for detection 
+MAX_BOXES_TO_DRAW = 1 # the maximum number of objects to detect on 
 
 def load_detection_model(inference_graph_path, tflite=True):
     if tflite:
@@ -141,6 +142,7 @@ def load_labelmap(labelmap_path):
 
 def visualize_on_single_frame(image_np, boxes, classes, scores, category_index):
     global MINIMUM_SCORE_THRESHOLD
+    global MAX_BOXES_TO_DRAW
     # adjust the bounding box size depending on the image size
     height, width = image_np.shape[:2]
     line_thickness_adjustment = math.ceil(max(height, width) / 400)
@@ -155,7 +157,7 @@ def visualize_on_single_frame(image_np, boxes, classes, scores, category_index):
         use_normalized_coordinates=True,
         line_thickness=4+line_thickness_adjustment,
         min_score_thresh=MINIMUM_SCORE_THRESHOLD,
-        max_boxes_to_draw=1)
+        max_boxes_to_draw=MAX_BOXES_TO_DRAW)
 
 
 def detect_on_single_frame(image_np, category_index, detection_model, tflite=True):
@@ -282,9 +284,9 @@ def image_detection(inference_graph, labelmap, input_image, output_image):
     img = Image.fromarray(classification.Image, 'RGB')
     img.save(output_image, "jpeg")
 
-    conn = database.create_connection("../db/detection.db")
-    database.insert_image_detection(
-        conn, input_image, output_image, inference_graph, category_index, classification)
+    #conn = database.create_connection("../db/detection.db")
+    #database.insert_image_detection(
+    #    conn, input_image, output_image, inference_graph, category_index, classification)
 
 
 def video_detection(inference_graph, labelmap, input_video, output_video, print_progress=True):
@@ -320,17 +322,38 @@ def video_detection(inference_graph, labelmap, input_video, output_video, print_
 
         frame_count += 1
 
+def start_any_webcam(): 
+    # Start webcam - first try the index setting that's supposed to capture input from any device
+    index = -1
+    capture = cv2.VideoCapture(index)
+
+    # Attempt indices 0 and 1 if -1 doesn't work 
+    while (capture is None or not capture.isOpened()) and index < 2:
+        print("WARNING: Unable to open video source: " + str(index))
+        index = index + 1
+        print("Attempting to use video source: " + str(index))
+        capture = cv2.VideoCapture(index)
+
+    # If no index works - terminate the program entirely
+    # Otherwise - display to the user that a camera worked
+    if (capture is None or not capture.isOpened()) and index == 2: 
+        print("WARNING: Unable to open video source: " + str(index))
+        print("ERROR: Unable to open any camera. Terminating program...")
+        sys.exit()
+    else: 
+        print("SUCCESS! Using video source: " + str(index))
+
+    return capture
 
 def webcam_detection(inference_graph, labelmap, gui=False, frame=None, quit=False, capture=None):
     tflite = '.tflite' in inference_graph
     detection_model = load_detection_model(inference_graph, tflite=tflite)
     category_index = load_labelmap(labelmap)
 
-    total_list = []
     if not gui:
         # Load webcam using OpenCV
-        cap = cv2.VideoCapture(0)
-
+        cap = start_any_webcam()
+    
         while cap.isOpened():
             _, frame = cap.read()
             classification = detect_on_single_frame(
@@ -340,18 +363,6 @@ def webcam_detection(inference_graph, labelmap, gui=False, frame=None, quit=Fals
                 cap.release()
                 break
         cap.release()
-    else:
-        classification = detect_on_single_frame(
-            frame, category_index, detection_model, tflite=tflite)
-        print(classification.Classes)
-        total_list.append(classification.Classes)
-        print(len(total_list))
-        if quit:
-            capture.release()
-            cv2.waitKey(1)
-            cv2.destroyAllWindows()
-        else:
-            return classification.Image
 
 
 if __name__ == "__main__":
@@ -363,6 +374,8 @@ if __name__ == "__main__":
                         help="Path to the labelmap")
     parser.add_argument("-mst", "--minimum_score_threshold", type=float, default=MINIMUM_SCORE_THRESHOLD,
                         help="Threshold for the minimum confidence for detection")
+    parser.add_argument("-mbd", "--max_boxes_to_draw", type=int, default=MAX_BOXES_TO_DRAW,
+                        help="The maximum number of objects to detect")
     # image detection
     parser.add_argument("-ii", "--input_image", type=str,
                         help="Path to the input image to detect")
@@ -385,6 +398,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     MINIMUM_SCORE_THRESHOLD = args.minimum_score_threshold
+    MAX_BOXES_TO_DRAW = args.max_boxes_to_draw
 
     if args.input_image:
         image_detection(args.inference_graph, args.labelmap,
