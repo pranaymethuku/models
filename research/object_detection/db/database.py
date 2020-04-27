@@ -37,6 +37,10 @@ def insert_image_detection(conn, input_image, output_image, inference_graph, tie
 if __name__ == "__main__":
     # create a database connection
     conn = create_connection("./detection.db")
-    detection = ("capture/test.jpg", "detection/result.jpg", 0.99, "Car", 1, "SSD Inception V2 Coco", datetime.now())
-    detection_id = __create_detection(conn, detection)
-    print(detection_id)
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM Detection")
+
+    rows = cur.fetchall()
+
+    for row in rows:
+        print(row)
