@@ -11,7 +11,7 @@
 PRAGMA foreign_keys = ON;
 
 CREATE TABLE Detection (
-  file_path varchar(100) NOT NULL,
+  file_path varchar(100),
   labeled_file_path varchar(100) NOT NULL,
   confidence real NOT NULL,
   label varchar(50) NOT NULL,

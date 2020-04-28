@@ -26,11 +26,13 @@ import math
 import sys
 from cv2 import cv2
 import numpy as np
+from scipy import stats
 import tensorflow as tf
 from tensorflow.lite.python.interpreter import Interpreter
 import argparse
 from PIL import Image
 import collections
+from datetime import datetime
 from object_detection.db import database
 
 # Import utilites
@@ -164,16 +166,6 @@ def visualize_on_single_frame(image_np, boxes, classes, scores, category_index):
         max_boxes_to_draw=MAX_BOXES_TO_DRAW)
 
 
-def detect_on_single_frame(image_np, category_index, detection_model, tflite=True):
-    if tflite:
-        classification = detect_on_single_frame_tflite(
-            image_np, category_index, *detection_model)
-    else:
-        classification = detect_on_single_frame_tf(
-            image_np, category_index, *detection_model)
-    return classification
-
-
 def get_frame_classification(image_np, classes, scores, category_index):
     # Declare a NamedTuple to hold an image, its predicted classes, and the scores associated with each of those classes
     Classification = collections.namedtuple(
@@ -196,6 +188,16 @@ def get_frame_classification(image_np, classes, scores, category_index):
                     for class_id in best_class_ids]
 
     return Classification(image_np, best_classes, best_scores)
+
+
+def detect_on_single_frame(image_np, category_index, detection_model, tflite=True):
+    if tflite:
+        classification = detect_on_single_frame_tflite(
+            image_np, category_index, *detection_model)
+    else:
+        classification = detect_on_single_frame_tf(
+            image_np, category_index, *detection_model)
+    return classification
 
 
 def detect_on_single_frame_tf(image_np, category_index,
@@ -294,7 +296,7 @@ def image_detection(inference_graph, labelmap, tier, input_image, output_image):
     img = Image.fromarray(classification.Image, 'RGB')
     img.save(output_image, "jpeg")
 
-    conn = database.create_connection("../db/detection.db")
+    conn = database.create_connection(database.DATABASE_PATH)
     database.insert_image_detection(
         conn, input_image, output_image, inference_graph, tier, classification)
 
@@ -306,31 +308,50 @@ def video_detection(inference_graph, labelmap, tier, input_video, output_video, 
 
     # Load video using OpenCV
     cap = cv2.VideoCapture(input_video)
+    cap.set(cv2.CAP_PROP_POS_FRAMES, 581)
 
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     out = cv2.VideoWriter(output_video, fourcc, 30.0, (int(
         cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))))
 
-    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    total_frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    classes = []
+    scores = []
 
     frame_count = 0
-    # cap.set(cv2.CAP_PROP_POS_FRAMES, 420)
     while cap.isOpened():
         _, frame = cap.read()
 
         if frame is None:
+            # video has finished
             out.release()
             cap.release()
+            break
         else:
             if print_progress:
                 print("Detecting on frame {} of {}".format(
-                    frame_count, total_frames))
+                    frame_count, total_frame_count))
 
             classification = detect_on_single_frame(
                 frame, category_index, detection_model, tflite=tflite)
             out.write(classification.Image)
 
+            classes.append(classification.Classes)
+            scores.append(classification.Scores)
+
         frame_count += 1
+
+    classes = np.array(classes).flatten()
+    scores = np.array(scores).flatten()
+    if (len(classes) > 0):
+        overall_detected_class = stats.mode(classes)[0][0]
+        detected_class_indices = np.argwhere(classes == overall_detected_class)
+        detected_class_scores = scores[detected_class_indices]
+        best_score = np.max(detected_class_scores)
+
+        conn = database.create_connection(database.DATABASE_PATH)
+        database.insert_video_detection(
+            conn, input_video, output_video, best_score, overall_detected_class, tier, inference_graph)
 
 
 def start_any_webcam():
@@ -355,7 +376,7 @@ def start_any_webcam():
     return capture
 
 
-def webcam_detection(inference_graph, labelmap):
+def webcam_detection(inference_graph, labelmap, tier):
     tflite = '.tflite' in inference_graph
     detection_model = load_detection_model(inference_graph, tflite=tflite)
     category_index = load_labelmap(labelmap)
@@ -363,11 +384,62 @@ def webcam_detection(inference_graph, labelmap):
     # Load webcam using OpenCV
     cap = start_any_webcam()
 
+    # Create lists which handle the detection of an object
+    seen_classes = []
+    seen_scores = []
+    seen_frames = []
+    current_detection_window = False
+
+    conn = database.create_connection(database.DATABASE_PATH)
     while cap.isOpened():
         _, frame = cap.read()
         classification = detect_on_single_frame(
             frame, category_index, detection_model, tflite=tflite)
         cv2.imshow('Video', classification.Image)
+
+        # Keep track of all Classes, Scores, and Images seen
+        seen_classes.append(classification.Classes)
+        seen_scores.append(classification.Scores)
+        seen_frames.append(classification.Image)
+
+        # The grace period that we wait in order to notify
+        grace_period = 60
+
+        # If we've seen at least a single grace period's worth of consecutive detections, notify somebody about it!
+        if len(seen_classes) > grace_period and not any(c == [] for c in seen_classes[-grace_period:]) and not current_detection_window:
+            detection_time = datetime.now().strftime("%H:%M:%S on %m-%d-%Y")
+            print(detection_time)
+            # Get the current date and time
+            # Create a detection window consisting of only the last detections
+            current_detection_window = True
+            detection_window_classes = seen_classes[-grace_period:]
+            detection_window_scores = seen_scores[-grace_period:]
+            detection_window_frames = seen_frames[-grace_period:]
+
+            # Flatten the arrays 
+            detection_window_classes = np.array(detection_window_classes).flatten()
+            detection_window_scores = np.array(detection_window_scores).flatten()
+
+            overall_detected_class = stats.mode(detection_window_classes)[0][0]
+            detected_class_indices = np.argwhere(detection_window_classes == overall_detected_class)
+            scores = list(detection_window_scores[detected_class_indices])
+            # average_score = np.mean(scores)
+            best_score = np.max(scores)
+
+            # Save the file to disk 
+            img = detection_window_frames[scores.index(best_score)]
+            filename = overall_detected_class.replace(" ", "_") + "_" + str(best_score) + "_at_" +  detection_time.replace(" ","_") + ".jpg"
+            cv2.imwrite(filename, img)
+
+            database.insert_webcam_detection(conn, os.path.abspath(
+                filename), best_score, overall_detected_class, tier, inference_graph)
+
+            # Reset the lists
+            seen_classes = []
+            seen_scores = []
+            seen_frames = []
+            current_detection_window = False
+
         if cv2.waitKey(1) & 0xFF == ord('q'):
             cap.release()
             break
@@ -422,7 +494,7 @@ if __name__ == "__main__":
         batch_detection(args.inference_graph, args.labelmap, args.tier,
                         input_folder, output_folder)
     elif args.input_webcam:
-        webcam_detection(args.inference_graph, args.labelmap)
+        webcam_detection(args.inference_graph, args.labelmap, args.tier)
     elif args.input_video:
         input_video = os.path.abspath(args.input_video)
         output_video = os.path.abspath(args.output_video)
