@@ -17,7 +17,8 @@ def prepare_detection_rows(input_image, output_image, inference_graph, tier, cla
     model = os.path.basename(inference_graph)
     detection_rows = []
     for i in range(len(classification.Classes)):
-        row = (input_image, output_image, float(classification.Scores[i]), classification.Classes[i], tier, model, datetime.now())
+        datetime_now = datetime.now().strftime("%H:%M:%S on %m-%d-%Y")
+        row = (input_image, output_image, float(classification.Scores[i]), classification.Classes[i], tier, model, datetime_now)
         detection_rows.append(row)
     return detection_rows
 
