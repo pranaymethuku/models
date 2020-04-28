@@ -269,7 +269,10 @@ class Ui_MainWindow(QWidget):
         tier = self.tier_dropdown.currentText().split(" ")[1]
         # Get path of labelmap and frozen inference graph
         labelmap, frozen_graph = self.get_path()
-
+        
+        for i in reversed(range(self.media.count())):
+            self.media.itemAt(i).widget().show()
+        
         if file_extension[1] == ".jpg" or file_extension[1] == ".jpeg":
             # Run inference on image and display
             detection.image_detection(
@@ -324,14 +327,15 @@ class Ui_MainWindow(QWidget):
         cv2.destroyAllWindows()
         self.stop_button.setVisible(False)
         self.capture_button.setVisible(True)
-        self.clear_screen()
+        for i in reversed(range(self.media.count())):
+            self.media.itemAt(i).widget().hide()
 
     def exit(self):
         sys.exit()
 
     def clear_screen(self):
         for i in reversed(range(self.media.count())):
-            self.media.itemAt(i).widget().hide()
+            self.media.itemAt(i).widget().setParent(None)
 
     def get_path(self):
         # Get path from the tier number
@@ -389,6 +393,7 @@ class Ui_MainWindow(QWidget):
 
             self.media.addWidget(self.video)
             self.player.play()
+        
 
     def update_frame(self):
         # Get frame
