@@ -134,16 +134,8 @@ class Ui_MainWindow(QWidget):
         sizePolicy.setHeightForWidth(
             self.model_view.sizePolicy().hasHeightForWidth())
         self.model_view.setSizePolicy(sizePolicy)
-        # self.model_view.setAlignment(QtCore.Qt.AlignBottom|QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing)
         self.model_view.setObjectName("model_view")
 
-        #sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding)
-        # sizePolicy.setHorizontalStretch(0)
-        # sizePolicy.setVerticalStretch(0)
-        # sizePolicy.setHeightForWidth(self.model_view.sizePolicy().hasHeightForWidth())
-        # self.model_view.setSizePolicy(sizePolicy)
-        # self.model_view.setAlignment(QtCore.Qt.AlignBottom|QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing)
-        # self.model_view.setObjectName("model_view")
         self.model_layout.addWidget(self.model_view, 0, 0, 1, 1)
         self.gridLayout_2.addLayout(self.model_layout, 2, 0, 1, 2)
 
