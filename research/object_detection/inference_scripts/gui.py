@@ -14,19 +14,20 @@ from PyQt5.QtCore import *
 from PyQt5.QtPrintSupport import *
 from PyQt5.QtMultimedia import *
 from PyQt5.QtMultimediaWidgets import *
-import datetime
+from datetime import datetime
 import sys
 from PIL import Image
 import os
 import detection
 import numpy as np
+from scipy import stats
 import cv2
-from collections import Counter
-import statistics
 import notification
 import threading
+from object_detection.db import database
 
 VIDEOS = [".mov", ".mp4", ".flv", ".avi", ".ogg", ".wmv"]
+
 
 class Ui_MainWindow(QWidget):
     def setupUi(self, MainWindow):
@@ -262,15 +263,15 @@ class Ui_MainWindow(QWidget):
         file_extension = os.path.splitext(name)
         tier = self.tier_dropdown.currentText().split(" ")[1]
         # Get path of labelmap and frozen inference graph
-        labelmap, frozen_graph = self.get_path()
-        
+        labelmap, inference_graph = self.get_path()
+
         for i in reversed(range(self.media.count())):
             self.media.itemAt(i).widget().show()
-        
+
         if file_extension[1] == ".jpg" or file_extension[1] == ".jpeg":
             # Run inference on image and display
             detection.image_detection(
-                frozen_graph, labelmap, tier, name, os.path.abspath("predicted.jpg"))
+                inference_graph, labelmap, tier, name, os.path.abspath("predicted.jpg"))
             self.display(os.path.abspath("predicted.jpg"))
 
         if file_extension[1] in VIDEOS:
@@ -280,16 +281,17 @@ class Ui_MainWindow(QWidget):
 
             # Run inference on video and display
             detection.video_detection(
-                frozen_graph, labelmap, tier, name, os.path.abspath("predicted.mp4"))
+                inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4"))
             self.display(os.path.abspath("predicted.mp4"))
 
     def capture_media(self):
+        self.tier = self.tier_dropdown.currentText().split(" ")[1]
         # Get path of labelmap and frozen inference graph
-        self.labelmap, self.frozen_graph = self.get_path()
-        self.tflite = '.tflite' in self.frozen_graph
+        self.labelmap, self.inference_graph = self.get_path()
+        self.tflite = '.tflite' in self.inference_graph
 
         self.detection_model = detection.load_detection_model(
-            self.frozen_graph, tflite=self.tflite)
+            self.inference_graph, tflite=self.tflite)
         self.category_index = detection.load_labelmap(self.labelmap)
 
         # Create lists which handle the notification for detections
@@ -312,6 +314,7 @@ class Ui_MainWindow(QWidget):
         self.capture_button.setEnabled(False)
         self.upload_button.setEnabled(False)
 
+        self.conn = database.create_connection(database.DATABASE_PATH)
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_frame)
         self.timer.start(5)
@@ -338,14 +341,14 @@ class Ui_MainWindow(QWidget):
         tier = self.tier_dropdown.currentText().split(" ")[1]
         labelmap = os.path.abspath(
             "../tor_results/tier_{}/labelmap.pbtxt".format(tier))
-        frozen_graph = ""
+        inference_graph = ""
         if self.model_dropdown.currentText() == "Faster RCNN Inception V2 Coco":
-            frozen_graph = os.path.abspath(
+            inference_graph = os.path.abspath(
                 "../tor_results/tier_{}/faster_rcnn_inception_v2_coco_2018_01_28.pb".format(tier))
         elif self.model_dropdown.currentText() == "SSD Inception V2 Coco":
-            frozen_graph = os.path.abspath(
+            inference_graph = os.path.abspath(
                 "../tor_results/tier_{}/ssd_inception_v2_coco_2018_01_28.tflite".format(tier))
-        return labelmap, frozen_graph
+        return labelmap, inference_graph
 
     def display(self, media=None):
         # Show dialog if File->Open
@@ -389,7 +392,6 @@ class Ui_MainWindow(QWidget):
 
             self.media.addWidget(self.video)
             self.player.play()
-        
 
     def update_frame(self):
         # Get frame
@@ -401,52 +403,48 @@ class Ui_MainWindow(QWidget):
             self.image, self.category_index, self.detection_model, tflite=self.tflite)
         self.detected_image = classification.Image
 
-        # Keep track of all Classes, Scores, and Images seen 
+        # Keep track of all Classes, Scores, and Images seen
         self.seen_classes.append(classification.Classes)
         self.seen_scores.append(classification.Scores)
         self.seen_frames.append(classification.Image)
 
-        # The grace period that we wait in order to notify 
+        # The grace period that we wait in order to notify
         grace_period = 60
 
-        print(self.seen_classes)
-
-        # If we've seen at least a single grace period's worth of consecutive detections, notify somebody about it! 
+        # If we've seen at least a single grace period's worth of consecutive detections, notify somebody about it!
         if len(self.seen_classes) > grace_period and not any(c == [] for c in self.seen_classes[-grace_period:]) and not self.current_detection_window:
-            # Get the current date and time 
-            detection_time = datetime.datetime.now().strftime("%H:%M:%S on %m-%d-%Y")
+            # Get the current date and time
+            detection_time = datetime.now().strftime("%H:%M:%S on %m-%d-%Y")
             print(detection_time)
             # Create a detection window consisting of only the last detections
-            self.current_detection_window = True 
+            self.current_detection_window = True
             self.detection_window_classes = self.seen_classes[-grace_period:]
             self.detection_window_scores = self.seen_scores[-grace_period:]
             self.detection_window_frames = self.seen_frames[-grace_period:]
-            
-            # Flatten the arrays 
-            self.detection_window_classes = [item for sublist in self.detection_window_classes for item in sublist]
-            self.detection_window_scores = [item for sublist in self.detection_window_scores for item in sublist]
 
-            # Get the most commonly identified class, the average score, and the best score 
-            overall_detected_class = str(Counter(self.detection_window_classes).most_common(1)[0][0])
-            self.detected_class_indices = [i for i,c in enumerate(self.detection_window_classes) if c == overall_detected_class]
-            scores = [self.detection_window_scores[i] for i in self.detected_class_indices]
-            average_score = statistics.mean(scores)
-            best_score = max(scores)
-            
-            print("DETECTION: ")
-            print(overall_detected_class)
-            print(average_score)
-            print(best_score)
+            # Flatten the arrays 
+            self.detection_window_classes = np.array(self.detection_window_classes).flatten()
+            self.detection_window_scores = np.array(self.detection_window_scores).flatten()
+
+            overall_detected_class = stats.mode(self.detection_window_classes)[0][0]
+            self.detected_class_indices = np.argwhere(self.detection_window_classes == overall_detected_class)
+            scores = list(self.detection_window_scores[self.detected_class_indices])
+            average_score = np.mean(scores)
+            best_score = np.max(scores)
 
             # Save the file to disk 
             img = self.detection_window_frames[scores.index(best_score)]
             filename = overall_detected_class.replace(" ", "_") + "_" + str(best_score) + "_at_" +  detection_time.replace(" ","_") + ".jpg"
             cv2.imwrite(filename, img)
 
+            database.insert_webcam_detection(self.conn, os.path.abspath(
+                filename), best_score, overall_detected_class, self.tier, self.inference_graph)
+
             # Send the notification email
-            t1 = threading.Thread(target=notification.send_notification_email, args=((filename, overall_detected_class, best_score, average_score, detection_time)))
+            t1 = threading.Thread(target=notification.send_notification_email, args=(
+                (filename, overall_detected_class, best_score, average_score, detection_time)))
             t1.start()
-            
+
             # Reset the lists
             self.seen_classes = []
             self.seen_score = []
