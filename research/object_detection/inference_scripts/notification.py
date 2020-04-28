@@ -71,6 +71,8 @@ def send_notification_email(attachment, detected_class, best_score, average_scor
 
         # Attempt to attach the file 
         try:
+            print(attachment)
+            print(basename(attachment))
             with open(attachment, "rb") as a:
                 img_data = a.read()
             msg.add_attachment(img_data, maintype='image',

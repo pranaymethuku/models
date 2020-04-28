@@ -409,7 +409,7 @@ class Ui_MainWindow(QWidget):
         if results:
             best_frame, overall_detected_class, best_score, average_score, detection_time = results
 
-            filename = "{} {} at {}.jpg".format(overall_detected_class, best_score, detection_time).replace(" ", "_")
+            filename = "{} {} at {}.jpeg".format(overall_detected_class, best_score, detection_time).replace(" ", "_")
             cv2.imwrite(filename, best_frame)
 
             database.insert_webcam_detection(self.conn, os.path.abspath(
