@@ -22,6 +22,7 @@ import numpy as np
 import cv2
 from collections import Counter
 import statistics
+from notification import send_notification_email
 
 VIDEOS = [".mov", ".mp4", ".flv", ".avi", ".ogg", ".wmv"]
 
