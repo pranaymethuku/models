@@ -2,11 +2,10 @@ import smtplib, ssl
 from email.mime.text import MIMEText 
 from email.utils import formataddr  
 
-from email.mime.multipart import MIMEMultipart # New line
-from email.mime.base import MIMEBase # New line
-from email import encoders # New line
+from email.mime.multipart import MIMEMultipart 
+from email.mime.base import MIMEBase 
+from email import encoders 
 
-# 
 host = "smtp.gmail.com"
 port = 587
 # User configuration
