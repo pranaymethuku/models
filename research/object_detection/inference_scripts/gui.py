@@ -1,3 +1,4 @@
+#!/home/rkabealo/anaconda3/envs/tor/bin/python
 # -*- coding: utf-8 -*-
 
 # Form implementation generated from reading ui file 'design.ui'
@@ -5,7 +6,6 @@
 # Created by: PyQt5 UI code generator 5.14.2
 #
 # WARNING! All changes made in this file will be lost!
-
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import *
@@ -443,7 +443,7 @@ class Ui_MainWindow(QWidget):
 
             # Save the file to disk 
             img = self.detection_window_frames[scores.index(best_score)]
-            filename = overall_detected_class.replace(" ", "_") + "_" + str(best_score) + "_at_" +  detection_time.replace(" ","_") + ".jpg"
+            filename = overall_detected_class.replace(" ", "_") + "_" + str(best_score) + "_at_" +  detection_time.replace(" ","_").replace(":","_") + ".jpg"
             cv2.imwrite(filename, img)
 
             # Send the notification email
