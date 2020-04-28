@@ -9,24 +9,25 @@ Prof: Prof. Jayanti
 A Python 3 script to perform object detection using Tensorflow on image, video, or webcam, and store/display output accordingly
 
 Usage:
-    python3 detection.py [-h] -ig INFERENCE_GRAPH -l LABELMAP
-                    [-ii INPUT_IMAGE] [-oi OUTPUT_IMAGE] [-iv INPUT_VIDEO]
-                    [-ov OUTPUT_VIDEO] [-iw]
+    python3 detection.py [-h] -ig INFERENCE_GRAPH -l LABELMAP -t TIER
+                    [-mst MINIMUM_SCORE_THRESHOLD] [-mbd MAX_BOXES_TO_DRAW]
+                    [-ii INPUT_IMAGE] [-oi OUTPUT_IMAGE] [-if INPUT_FOLDER]
+                    [-of OUTPUT_FOLDER] [-iv INPUT_VIDEO] [-ov OUTPUT_VIDEO]
+                    [-iw]
 
 Examples:
-    python3 detection.py -ig=inference_graph/inference_graph.pb -ii=./car.jpg -oi=./car_annotated.jpg
-    python3 detection.py -ig=inference_graph/inference_graph.tflite -iv=./truck.mp4 -oi=./truck_annotated.mp4
-    python3 detection.py -ig=inference_graph/inference_graph.pb -iw
+    python3 detection.py -ig=inference_graph/inference_graph.pb -t 1 -ii=./car.jpg -oi=./car_annotated.jpg
+    python3 detection.py -ig=inference_graph/inference_graph.tflite -t 2 -iv=./truck.mp4 -oi=./truck_annotated.mp4
+    python3 detection.py -ig=inference_graph/inference_graph.pb -t 3 -iw
 """
 
 import os
 import math
+import sys
 from cv2 import cv2
 import numpy as np
 import tensorflow as tf
 from tensorflow.lite.python.interpreter import Interpreter
-import sys
-sys.path.append('..')
 import argparse
 from PIL import Image
 import collections
@@ -36,7 +37,9 @@ from object_detection.db import database
 from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as vis_util
 
-MINIMUM_SCORE_THRESHOLD = 0.6
+# Global defaults - adjustable by user in command-line
+MINIMUM_SCORE_THRESHOLD = 0.6  # the minimum confidence for detection
+MAX_BOXES_TO_DRAW = 1  # the maximum number of objects to detect on
 
 
 def load_detection_model(inference_graph_path, tflite=True):
@@ -143,6 +146,7 @@ def load_labelmap(labelmap_path):
 
 def visualize_on_single_frame(image_np, boxes, classes, scores, category_index):
     global MINIMUM_SCORE_THRESHOLD
+    global MAX_BOXES_TO_DRAW
     # adjust the bounding box size depending on the image size
     height, width = image_np.shape[:2]
     line_thickness_adjustment = math.ceil(max(height, width) / 400)
@@ -157,7 +161,7 @@ def visualize_on_single_frame(image_np, boxes, classes, scores, category_index):
         use_normalized_coordinates=True,
         line_thickness=4+line_thickness_adjustment,
         min_score_thresh=MINIMUM_SCORE_THRESHOLD,
-        max_boxes_to_draw=1)
+        max_boxes_to_draw=MAX_BOXES_TO_DRAW)
 
 
 def detect_on_single_frame(image_np, category_index, detection_model, tflite=True):
@@ -168,6 +172,30 @@ def detect_on_single_frame(image_np, category_index, detection_model, tflite=Tru
         classification = detect_on_single_frame_tf(
             image_np, category_index, *detection_model)
     return classification
+
+
+def get_frame_classification(image_np, classes, scores, category_index):
+    # Declare a NamedTuple to hold an image, its predicted classes, and the scores associated with each of those classes
+    Classification = collections.namedtuple(
+        "classification", ["Image", "Classes", "Scores"])
+
+    # filter all scores and classes based on minimum score threshold
+    scores_above_mst = scores[scores > MINIMUM_SCORE_THRESHOLD]
+    classes_above_mst = classes[scores > MINIMUM_SCORE_THRESHOLD]
+    # determine the n largest boxes, where n is less than or equal to max boxes to draw
+    if MAX_BOXES_TO_DRAW < len(scores_above_mst):
+        best_indices = np.argpartition(
+            scores_above_mst, -1 * MAX_BOXES_TO_DRAW)[-1 * MAX_BOXES_TO_DRAW:]
+    else:
+        # get all indices
+        best_indices = True
+    best_scores = scores_above_mst[best_indices].flatten()
+    best_class_ids = classes_above_mst[best_indices].flatten()
+    # store the actual class labels instead of class id
+    best_classes = [category_index.get(class_id)['name']
+                    for class_id in best_class_ids]
+
+    return Classification(image_np, best_classes, best_scores)
 
 
 def detect_on_single_frame_tf(image_np, category_index,
@@ -184,17 +212,7 @@ def detect_on_single_frame_tf(image_np, category_index,
 
     visualize_on_single_frame(image_np, boxes, classes,
                               scores, category_index)
-
-    # Declare a NamedTuple to hold an image, its predicted classes, and the scores associated with each of those classes
-    Classification = collections.namedtuple(
-        "classification", ["Image", "Classes", "Scores"])
-    classification = Classification(image_np, classes, scores)
-
-    # # Here output the best class
-    # best_class_id = int(classes[np.argmax(scores)])
-    # best_class_name = category_index.get(best_class_id)['name']
-    # print("best class: {}".format(best_class_name))
-    return classification
+    return get_frame_classification(image_np, classes, scores, category_index)
 
 
 def detect_on_single_frame_tflite(image_np,
@@ -206,7 +224,7 @@ def detect_on_single_frame_tflite(image_np,
                                   floating_model=False,
                                   input_mean=127.5,
                                   input_std=127.5):
-
+    global MAX_BOXES_TO_DRAW
     # expand image dimensions to have shape: [1, None, None, 3]
     image_resized = cv2.resize(image_np, image_shape)
     image_expanded = np.expand_dims(image_resized, axis=0)
@@ -233,19 +251,11 @@ def detect_on_single_frame_tflite(image_np,
     classes = classes + 1
 
     visualize_on_single_frame(image_np, boxes, classes, scores, category_index)
-    # Declare a NamedTuple to hold an image, its predicted classes, and the scores associated with each of those classes
-    Classification = collections.namedtuple(
-        "classification", ["Image", "Classes", "Scores"])
-    classification = Classification(image_np, classes, scores)
 
-    # Here output the best class
-    # best_class_id = int(classes[np.argmax(scores)])
-    # best_class_name = category_index.get(best_class_id)['name']
-    # print("best class: {}".format(best_class_name))
-    return classification
+    return get_frame_classification(image_np, classes, scores, category_index)
 
 
-def batch_detection(inference_graph, labelmap, input_folder, output_folder):
+def batch_detection(inference_graph, labelmap, tier, input_folder, output_folder):
     # walk through all directories
     for root, _, files in os.walk(input_folder, topdown=False):
         # we only want to walk through the jpgs here, ignore anything else
@@ -262,14 +272,14 @@ def batch_detection(inference_graph, labelmap, input_folder, output_folder):
             print("Processing {} ({}/{}) in {}".format(name,
                                                        file_num, total_num_files, root))
             if '.jpg' in name:
-                image_detection(inference_graph, labelmap,
+                image_detection(inference_graph, labelmap, tier,
                                 original_file, annotated_file)
             elif '.mp4' in name:
-                video_detection(inference_graph, labelmap,
+                video_detection(inference_graph, labelmap, tier,
                                 original_file, annotated_file)
 
 
-def image_detection(inference_graph, labelmap, input_image, output_image):
+def image_detection(inference_graph, labelmap, tier, input_image, output_image):
     tflite = '.tflite' in inference_graph
     detection_model = load_detection_model(inference_graph, tflite=tflite)
     category_index = load_labelmap(labelmap)
@@ -286,10 +296,10 @@ def image_detection(inference_graph, labelmap, input_image, output_image):
 
     conn = database.create_connection("../db/detection.db")
     database.insert_image_detection(
-        conn, input_image, output_image, inference_graph, category_index, classification)
+        conn, input_image, output_image, inference_graph, tier, classification)
 
 
-def video_detection(inference_graph, labelmap, input_video, output_video, print_progress=True):
+def video_detection(inference_graph, labelmap, tier, input_video, output_video, print_progress=True):
     tflite = '.tflite' in inference_graph
     detection_model = load_detection_model(inference_graph, tflite=tflite)
     category_index = load_labelmap(labelmap)
@@ -323,37 +333,45 @@ def video_detection(inference_graph, labelmap, input_video, output_video, print_
         frame_count += 1
 
 
-def webcam_detection(inference_graph, labelmap, gui=False, frame=None, quit=False, capture=None):
+def start_any_webcam():
+    # Start webcam - first try the index setting that's supposed to capture input from any device
+    index = -1
+    capture = cv2.VideoCapture(index)
+    # Attempt indices 0 and 1 if -1 doesn't work
+    while (capture is None or not capture.isOpened()) and index < 2:
+        print("WARNING: Unable to open video source: " + str(index))
+        index = index + 1
+        print("Attempting to use video source: " + str(index))
+        capture = cv2.VideoCapture(index)
+
+    # If no index works - terminate the program entirely
+    # Otherwise - display to the user that a camera worked
+    if (capture is None or not capture.isOpened()) and index == 2:
+        print("WARNING: Unable to open video source: " + str(index))
+        print("ERROR: Unable to open any camera. Terminating program...")
+        sys.exit()
+    else:
+        print("SUCCESS! Using video source: " + str(index))
+    return capture
+
+
+def webcam_detection(inference_graph, labelmap):
     tflite = '.tflite' in inference_graph
     detection_model = load_detection_model(inference_graph, tflite=tflite)
     category_index = load_labelmap(labelmap)
 
-    total_list = []
-    if not gui:
-        # Load webcam using OpenCV
-        cap = cv2.VideoCapture(0)
+    # Load webcam using OpenCV
+    cap = start_any_webcam()
 
-        while cap.isOpened():
-            _, frame = cap.read()
-            classification = detect_on_single_frame(
-                frame, category_index, detection_model, tflite=tflite)
-            cv2.imshow('Video', classification.Image)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                cap.release()
-                break
-        cap.release()
-    else:
+    while cap.isOpened():
+        _, frame = cap.read()
         classification = detect_on_single_frame(
             frame, category_index, detection_model, tflite=tflite)
-        print(classification.Classes)
-        total_list.append(classification.Classes)
-        print(len(total_list))
-        if quit:
-            capture.release()
-            cv2.waitKey(1)
-            cv2.destroyAllWindows()
-        else:
-            return classification.Image
+        cv2.imshow('Video', classification.Image)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            cap.release()
+            break
+    cap.release()
 
 
 if __name__ == "__main__":
@@ -363,8 +381,12 @@ if __name__ == "__main__":
                         help="Path to frozen detection graph .pb file, which contains the model that is used")
     parser.add_argument("-l", "--labelmap", type=str, required=True,
                         help="Path to the labelmap")
+    parser.add_argument("-t", "--tier", type=int, required=True,
+                        help="Tier number corresponding to the inference_graph and labelmap")
     parser.add_argument("-mst", "--minimum_score_threshold", type=float, default=MINIMUM_SCORE_THRESHOLD,
                         help="Threshold for the minimum confidence for detection")
+    parser.add_argument("-mbd", "--max_boxes_to_draw", type=int, default=MAX_BOXES_TO_DRAW,
+                        help="The maximum number of objects to detect")
     # image detection
     parser.add_argument("-ii", "--input_image", type=str,
                         help="Path to the input image to detect")
@@ -387,15 +409,22 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     MINIMUM_SCORE_THRESHOLD = args.minimum_score_threshold
+    MAX_BOXES_TO_DRAW = args.max_boxes_to_draw
 
     if args.input_image:
-        image_detection(args.inference_graph, args.labelmap,
-                        args.input_image, args.output_image)
+        input_image = os.path.abspath(args.input_image)
+        output_image = os.path.abspath(args.output_image)
+        image_detection(args.inference_graph, args.labelmap, args.tier,
+                        input_image, output_image)
     elif args.input_folder:
-        batch_detection(args.inference_graph, args.labelmap,
-                        args.input_folder, args.output_folder)
+        input_folder = os.path.abspath(args.input_folder)
+        output_folder = os.path.abspath(args.output_folder)
+        batch_detection(args.inference_graph, args.labelmap, args.tier,
+                        input_folder, output_folder)
     elif args.input_webcam:
         webcam_detection(args.inference_graph, args.labelmap)
     elif args.input_video:
-        video_detection(args.inference_graph, args.labelmap,
-                        args.input_video, args.output_video)
+        input_video = os.path.abspath(args.input_video)
+        output_video = os.path.abspath(args.output_video)
+        video_detection(args.inference_graph, args.labelmap, args.tier,
+                        input_video, output_video)

@@ -15,11 +15,16 @@ from PyQt5.QtPrintSupport import *
 from PyQt5.QtMultimedia import *
 from PyQt5.QtMultimediaWidgets import *
 import sys
+from PIL import Image
 import os
 import detection
+import numpy as np
 import cv2
+from collections import Counter
+import statistics
 
 VIDEOS = [".mov", ".mp4", ".flv", ".avi", ".ogg", ".wmv"]
+
 
 class Ui_MainWindow(QWidget):
     def setupUi(self, MainWindow):
@@ -27,7 +32,8 @@ class Ui_MainWindow(QWidget):
         MainWindow.setObjectName("MainWindow")
         MainWindow.setMinimumSize(QtCore.QSize(982, 713))
         MainWindow.showMaximized()
-        MainWindow.setWindowFlags(Qt.WindowCloseButtonHint | Qt.WindowMinimizeButtonHint)
+        MainWindow.setWindowFlags(
+            Qt.WindowCloseButtonHint | Qt.WindowMinimizeButtonHint)
         MainWindow.setWindowIcon(QtGui.QIcon("images/tor_logo.svg"))
 
         self.central_widget = QtWidgets.QWidget(MainWindow)
@@ -39,7 +45,8 @@ class Ui_MainWindow(QWidget):
         self.display_title()
 
         self.detection_info_layout = QtWidgets.QHBoxLayout()
-        self.detection_info_layout.setSizeConstraint(QtWidgets.QLayout.SetDefaultConstraint)
+        self.detection_info_layout.setSizeConstraint(
+            QtWidgets.QLayout.SetDefaultConstraint)
         self.detection_info_layout.setObjectName("detection_info_layout")
 
         self.step_1_Label = QtWidgets.QLabel(self.central_widget)
@@ -58,9 +65,11 @@ class Ui_MainWindow(QWidget):
         self.detection_info_layout.addWidget(self.tier_dropdown)
 
         # Based on what tier is selected, models will be placed
-        self.tier_dropdown.currentIndexChanged[str].connect(self.on_tier_currentIndexChanged)
+        self.tier_dropdown.currentIndexChanged[str].connect(
+            self.on_tier_currentIndexChanged)
 
-        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacerItem = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.detection_info_layout.addItem(spacerItem)
 
         self.step_2_label = QtWidgets.QLabel(self.central_widget)
@@ -76,10 +85,12 @@ class Ui_MainWindow(QWidget):
         font.setPointSize(13)
         self.model_dropdown.setFont(font)
         self.model_dropdown.setObjectName("model_dropdown")
-        self.model_dropdown.addItems(['Faster RCNN Inception V2 Coco', 'SSD Inception V2 Coco'])
+        self.model_dropdown.addItems(
+            ['SSD Inception V2 Coco', 'Faster RCNN Inception V2 Coco'])
 
         self.detection_info_layout.addWidget(self.model_dropdown)
-        spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacerItem1 = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.detection_info_layout.addItem(spacerItem1)
 
         self.step_3_label = QtWidgets.QLabel(self.central_widget)
@@ -108,24 +119,32 @@ class Ui_MainWindow(QWidget):
         #self.model_view = QtWidgets.QGraphicsView(self.central_widget)
         self.model_view = QWidget(self.central_widget)
         self.model_view.setGeometry(QtCore.QRect(10, 140, 961, 491))
-        self.model_view.setStyleSheet("border: 2px solid black; background-color: #e8e9eb")
+        self.model_view.setStyleSheet(
+            "border: 2px solid black; background-color: #e8e9eb")
 
         self.media = QHBoxLayout(self.model_view)
         self.media.setContentsMargins(0, 0, 0, 0)
         self.media.setObjectName("media")
 
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.model_view.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.model_view.sizePolicy().hasHeightForWidth())
         self.model_view.setSizePolicy(sizePolicy)
+        self.model_view.setObjectName("model_view")
+
+        # self.model_view.setAlignment(QtCore.Qt.AlignBottom|QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing)
         self.model_view.setObjectName("model_view")
 
         self.model_layout.addWidget(self.model_view, 0, 0, 1, 1)
         self.gridLayout_2.addLayout(self.model_layout, 2, 0, 1, 2)
 
-        self.horizontalLayout_media = QtWidgets.QHBoxLayout(self.central_widget)
-        self.horizontalLayout_media.setSizeConstraint(QtWidgets.QLayout.SetDefaultConstraint)
+        self.horizontalLayout_media = QtWidgets.QHBoxLayout(
+            self.central_widget)
+        self.horizontalLayout_media.setSizeConstraint(
+            QtWidgets.QLayout.SetDefaultConstraint)
         self.horizontalLayout_media.setObjectName("horizontalLayout_media")
         self.media_label = QtWidgets.QLabel(self)
         self.horizontalLayout_media.addWidget(self.media_label)
@@ -134,10 +153,12 @@ class Ui_MainWindow(QWidget):
         self.logo_layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
         self.logo_layout.setObjectName("logo_layout")
         self.logo = QtWidgets.QLabel(self.central_widget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.logo.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.logo.sizePolicy().hasHeightForWidth())
 
         self.logo.setSizePolicy(sizePolicy)
         self.logo.setMinimumSize(QtCore.QSize(141, 31))
@@ -149,28 +170,34 @@ class Ui_MainWindow(QWidget):
 
         self.logo.setPixmap(QtGui.QPixmap("images/zel_tech_logo_white.png"))
         self.logo.setScaledContents(True)
-        self.logo.setAlignment(QtCore.Qt.AlignBottom|QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft)
+        self.logo.setAlignment(QtCore.Qt.AlignBottom |
+                               QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft)
         self.logo.setIndent(0)
         self.logo.setObjectName("logo")
         self.logo_layout.addWidget(self.logo)
         self.gridLayout_2.addLayout(self.logo_layout, 3, 0, 1, 1)
 
         self.exit_button_layout = QtWidgets.QHBoxLayout()
-        self.exit_button_layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
+        self.exit_button_layout.setSizeConstraint(
+            QtWidgets.QLayout.SetFixedSize)
         self.exit_button_layout.setContentsMargins(0, -1, -1, -1)
         self.exit_button_layout.setObjectName("exit_button_layout")
 
-        spacerItem2 = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
+        spacerItem2 = QtWidgets.QSpacerItem(
+            20, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
         self.exit_button_layout.addItem(spacerItem2)
 
-        spacerItem3 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacerItem3 = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.exit_button_layout.addItem(spacerItem3)
         self.exit_button = QtWidgets.QPushButton(self.central_widget)
 
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.exit_button.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.exit_button.sizePolicy().hasHeightForWidth())
 
         self.stop_button = QtWidgets.QPushButton(self.central_widget)
         font = QtGui.QFont()
@@ -202,10 +229,14 @@ class Ui_MainWindow(QWidget):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("TOR", "TOR"))
         MainWindow.showMaximized()
-        self.title.setText(_translate("MainWindow", "Tiered Object Recognition"))
-        self.step_1_Label.setText(_translate("MainWindow", "Step 1: Choose Tier!"))
-        self.step_2_label.setText(_translate("MainWindow", "Step 2: Choose Model!"))
-        self.step_3_label.setText(_translate("MainWindow", "Step 3: Upload or Capture!"))
+        self.title.setText(_translate(
+            "MainWindow", "Tiered Object Recognition"))
+        self.step_1_Label.setText(_translate(
+            "MainWindow", "Step 1: Choose Tier!"))
+        self.step_2_label.setText(_translate(
+            "MainWindow", "Step 2: Choose Model!"))
+        self.step_3_label.setText(_translate(
+            "MainWindow", "Step 3: Upload or Capture!"))
         self.upload_button.setText(_translate("MainWindow", "Upload"))
         self.capture_button.setText(_translate("MainWindow", "Capture"))
         self.exit_button.setText(_translate("MainWindow", "Exit"))
@@ -215,25 +246,30 @@ class Ui_MainWindow(QWidget):
         # Change the models to show based on tier selected
         self.model_dropdown.clear()
         if str(self.tier_dropdown.currentText()) == 'Tier 1':
-            self.model_dropdown.addItems(['Faster RCNN Inception V2 Coco', 'SSD Inception V2 Coco'])
+            self.model_dropdown.addItems(
+                ['SSD Inception V2 Coco', 'Faster RCNN Inception V2 Coco'])
         elif str(self.tier_dropdown.currentText()) == 'Tier 2':
-            self.model_dropdown.addItems(['Faster RCNN Inception V2 Coco', 'SSD Inception V2 Coco'])
+            self.model_dropdown.addItems(
+                ['SSD Inception V2 Coco', 'Faster RCNN Inception V2 Coco'])
         elif str(self.tier_dropdown.currentText()) == 'Tier 3':
-            self.model_dropdown.addItems(['Faster RCNN Inception V2 Coco', 'SSD Inception V2 Coco'])
+            self.model_dropdown.addItems(
+                ['SSD Inception V2 Coco', 'Faster RCNN Inception V2 Coco'])
         else:
-            self.model_dropdown.addItems(['Faster RCNN Inception V2 Coco', 'SSD Inception V2 Coco'])
+            self.model_dropdown.addItems(
+                ['SSD Inception V2 Coco', 'Faster RCNN Inception V2 Coco'])
 
     def open_file(self):
         name = QFileDialog.getOpenFileName(self, 'Open File')[0]
         file_extension = os.path.splitext(name)
-
+        tier = self.tier_dropdown.currentText().split(" ")[1]
         # Get path of labelmap and frozen inference graph
         labelmap, frozen_graph = self.get_path()
 
         if file_extension[1] == ".jpg" or file_extension[1] == ".jpeg":
             # Run inference on image and display
-            detection.image_detection(frozen_graph, labelmap, name, "predicted.jpg")
-            self.display("predicted.jpg")
+            detection.image_detection(
+                frozen_graph, labelmap, tier, name, os.path.abspath("predicted.jpg"))
+            self.display(os.path.abspath("predicted.jpg"))
 
         if file_extension[1] in VIDEOS:
             # Clear area so everything isn't weird
@@ -241,28 +277,37 @@ class Ui_MainWindow(QWidget):
                 self.media.itemAt(i).widget().deleteLater()
 
             # Run inference on video and display
-            detection.video_detection(frozen_graph, labelmap, name, os.getcwd() + os.path.sep + "predicted.mp4")
-            self.display(os.getcwd() + os.path.sep + "predicted.mp4")
+            detection.video_detection(
+                frozen_graph, labelmap, tier, name, os.path.abspath("predicted.mp4"))
+            self.display(os.path.abspath("predicted.mp4"))
 
     def capture_media(self):
         # Get path of labelmap and frozen inference graph
         self.labelmap, self.frozen_graph = self.get_path()
+        self.tflite = '.tflite' in self.frozen_graph
+
+        self.detection_model = detection.load_detection_model(
+            self.frozen_graph, tflite=self.tflite)
+        self.category_index = detection.load_labelmap(self.labelmap)
+
+        # Create lists which handle the notification for detections
+        self.seen_classes = []
+        self.seen_scores = []
+        self.seen_frames = []
+        self.current_detection_window = False
 
         # Start webcam
-        index = 0
-        self.capture = cv2.VideoCapture(index)
-        self.image = self.capture.read()
-
-        while self.image is None and index < 2:
-            index += 1
-            self.capture = cv2.VideoCapture(index)
-            self.image = self.capture.read()
+        self.capture = detection.start_any_webcam()
 
         self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
-        self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)  
+        self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+
+        for i in reversed(range(self.media.count())):
+            self.media.itemAt(i).widget().show()
 
         # Show stop button
         self.stop_button.setVisible(True)
+        self.capture_button.setVisible(False)
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_frame)
@@ -270,29 +315,31 @@ class Ui_MainWindow(QWidget):
 
     def stop_webcam(self):
         self.timer.stop()
-        self.stop_button.setVisible(False)
-        self.clear_screen()
         self.capture.release()
         cv2.destroyAllWindows()
+        self.stop_button.setVisible(False)
+        self.capture_button.setVisible(True)
+        self.clear_screen()
 
     def exit(self):
         sys.exit()
 
     def clear_screen(self):
         for i in reversed(range(self.media.count())):
-            self.media.itemAt(i).widget().setParent(None)
+            self.media.itemAt(i).widget().hide()
 
     def get_path(self):
         # Get path from the tier number
         tier = self.tier_dropdown.currentText().split(" ")[1]
-        labelmap = "../tor_results/tier_" + tier + "/labelmap.pbtxt"
+        labelmap = os.path.abspath(
+            "../tor_results/tier_{}/labelmap.pbtxt".format(tier))
         frozen_graph = ""
         if self.model_dropdown.currentText() == "Faster RCNN Inception V2 Coco":
-            frozen_graph = "../tor_results/tier_" + tier + "/faster_rcnn_inception_v2_coco_2018_01_28.pb"
+            frozen_graph = os.path.abspath(
+                "../tor_results/tier_{}/faster_rcnn_inception_v2_coco_2018_01_28.pb".format(tier))
         elif self.model_dropdown.currentText() == "SSD Inception V2 Coco":
-            frozen_graph = "../tor_results/tier_" + tier + "/ssd_inception_v2_coco_2018_01_28.tflite"
-        elif self.model_dropdown.currentText() == "SSD V2 Coco":
-            frozen_graph = "../tor_results/tier_" + tier + "/ssd_v2_coco_2018_01_28.tflite"
+            frozen_graph = os.path.abspath(
+                "../tor_results/tier_{}/ssd_inception_v2_coco_2018_01_28.tflite".format(tier))
         return labelmap, frozen_graph
 
     def display(self, media=None):
@@ -327,7 +374,8 @@ class Ui_MainWindow(QWidget):
             self.player = QMediaPlayer()
             self.player.setVideoOutput(self.video)
             self.player.setMedia(QMediaContent(QUrl.fromLocalFile(media)))
-            self.player.setPosition(0)  # to start at the beginning of the video every time
+            # to start at the beginning of the video every time
+            self.player.setPosition(0)
 
             self.media.addWidget(self.video)
             self.player.play()
@@ -338,7 +386,47 @@ class Ui_MainWindow(QWidget):
         self.image = cv2.flip(self.image, 1)
 
         # Run inference on frame and display to screen
-        self.detected_image = detection.webcam_detection(self.frozen_graph, self.labelmap, True, self.image)
+        classification = detection.detect_on_single_frame(
+            self.image, self.category_index, self.detection_model, tflite=self.tflite)
+        self.detected_image = classification.Image
+
+        # Keep track of all Classes, Scores, and Images seen 
+        self.seen_classes.append(classification.Classes)
+        self.seen_scores.append(classification.Scores)
+        self.seen_frames.append(classification.Image)
+
+        # The grace period that we wait in order to notify 
+        gp = 20
+
+        # If we've seen at least 60 consecutive detections, notify somebody about it! 
+        if len(self.seen_classes) > gp and not any(c == [] for c in self.seen_classes[-gp:]) and not self.current_detection_window:
+            # Create a detection window consisting of only the last 60 detections
+            print("Reached 60 consecutive detections!")
+            self.current_detection_window = True 
+            self.detection_window_classes = self.seen_classes[-gp:]
+            self.detection_window_scores = self.seen_scores[-gp:]
+            self.detection_window_frames = self.seen_frames[-gp:]
+            
+            # Flatten the arrays 
+            self.detection_window_classes = [item for sublist in self.detection_window_classes for item in sublist]
+            self.detection_window_scores = [item for sublist in self.detection_window_scores for item in sublist]
+
+            print(self.detection_window_classes)
+            print(self.detection_window_scores)
+            
+            # Get the most common class 
+            most_common_class = Counter(self.detection_window_classes).most_common(1)[0][0]
+            print("Most common class: " + str(most_common_class))
+            self.detected_class_indices = [i for i,c in enumerate(self.detection_window_classes) if c == most_common_class]
+            scores = [self.detection_window_scores[i] for i in self.detected_class_indices]
+            print("Average score: " + str(statistics.mean(scores)))
+
+            # img = Image.fromarray(self.detection_window_frames[scores.index(max(scores))])
+            # img.save("test.jpg", "jpeg")
+            img = self.detection_window_frames[scores.index(max(scores))]
+            cv2.imwrite("output.jpg", img)
+
+        # Display the classified frame to the screen
         self.display_frame(self.detected_image)
 
     def display_frame(self, frame):
@@ -356,7 +444,8 @@ class Ui_MainWindow(QWidget):
 
         # convert to QImage
         # Params are: data, width, height, bytesPerLine, format
-        outImage = QImage(frame, frame.shape[1], frame.shape[0], frame.strides[0], qformat)
+        outImage = QImage(
+            frame, frame.shape[1], frame.shape[0], frame.strides[0], qformat)
 
         # Conversion
         outImage = outImage.rgbSwapped()
@@ -399,6 +488,7 @@ class Ui_MainWindow(QWidget):
         self.upload_button.setObjectName("upload_button")
         self.detection_info_layout.addWidget(self.upload_button)
         self.upload_button.clicked.connect(self.open_file)
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
