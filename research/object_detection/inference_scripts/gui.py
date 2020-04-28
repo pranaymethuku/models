@@ -24,6 +24,7 @@ import cv2
 from collections import Counter
 import statistics
 import notification
+import threading
 
 VIDEOS = [".mov", ".mp4", ".flv", ".avi", ".ogg", ".wmv"]
 
@@ -443,7 +444,8 @@ class Ui_MainWindow(QWidget):
             cv2.imwrite(filename, img)
 
             # Send the notification email
-            notification.send_notification_email(filename, overall_detected_class, best_score, average_score, detection_time)
+            t1 = threading.Thread(target=notification.send_notification_email, args=((filename, overall_detected_class, best_score, average_score, detection_time)))
+            t1.start()
             
             # Reset the lists
             self.seen_classes = []
