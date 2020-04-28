@@ -23,7 +23,7 @@ from email import encoders
 # Other necessary imports
 import sys
 
-def send_notification_email(attachment): 
+def send_notification_email(attachment, detected_class, best_score, average_score): 
     # Define a file which holds a list of users to be notified
     reciever_file = "notified_users.txt"
 
@@ -49,18 +49,20 @@ def send_notification_email(attachment):
 
     # Email body
     email_body = """
-    SEE ATTACHED.
-    """
+    Detected a\"{}\" with a max confidence of {:0.4} and an average confidence of {:0.4}. 
+    
+    The frame with the max confidence is attached. 
+    """.format(detected_class, best_score, average_score)
 
     for receiver_email in receiver_emails:
         # Display that we're attempting to send the email in the terminal 
         print("Sending notification email...")
-
+        print(detected_class)
         # Define the message 
         msg = MIMEMultipart()
         msg["To"] = formataddr((default_receiver_name, receiver_email))
         msg["From"] = formataddr((sender_name, sender_email))
-        msg["Subject"] = "Detection"
+        msg["Subject"] = detected_class.upper() + " Detected"
         msg.attach(MIMEText(email_body, "plain"))
 
         # Attempt to attach the file 

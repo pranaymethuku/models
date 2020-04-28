@@ -22,10 +22,9 @@ import numpy as np
 import cv2
 from collections import Counter
 import statistics
-from notification import send_notification_email
+import notification
 
 VIDEOS = [".mov", ".mp4", ".flv", ".avi", ".ogg", ".wmv"]
-
 
 class Ui_MainWindow(QWidget):
     def setupUi(self, MainWindow):
@@ -134,16 +133,8 @@ class Ui_MainWindow(QWidget):
         sizePolicy.setHeightForWidth(
             self.model_view.sizePolicy().hasHeightForWidth())
         self.model_view.setSizePolicy(sizePolicy)
-        # self.model_view.setAlignment(QtCore.Qt.AlignBottom|QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing)
         self.model_view.setObjectName("model_view")
 
-        #sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding)
-        # sizePolicy.setHorizontalStretch(0)
-        # sizePolicy.setVerticalStretch(0)
-        # sizePolicy.setHeightForWidth(self.model_view.sizePolicy().hasHeightForWidth())
-        # self.model_view.setSizePolicy(sizePolicy)
-        # self.model_view.setAlignment(QtCore.Qt.AlignBottom|QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing)
-        # self.model_view.setObjectName("model_view")
         self.model_layout.addWidget(self.model_view, 0, 0, 1, 1)
         self.gridLayout_2.addLayout(self.model_layout, 2, 0, 1, 2)
 
@@ -407,35 +398,41 @@ class Ui_MainWindow(QWidget):
         self.seen_frames.append(classification.Image)
 
         # The grace period that we wait in order to notify 
-        gp = 20
+        grace_period = 60
 
         # If we've seen at least 60 consecutive detections, notify somebody about it! 
-        if len(self.seen_classes) > gp and not any(c == [] for c in self.seen_classes[-gp:]) and not self.current_detection_window:
+        if len(self.seen_classes) > grace_period and not any(c == [] for c in self.seen_classes[-grace_period:]) and not self.current_detection_window:
             # Create a detection window consisting of only the last 60 detections
             print("Reached 60 consecutive detections!")
             self.current_detection_window = True 
-            self.detection_window_classes = self.seen_classes[-gp:]
-            self.detection_window_scores = self.seen_scores[-gp:]
-            self.detection_window_frames = self.seen_frames[-gp:]
+            self.detection_window_classes = self.seen_classes[-grace_period:]
+            self.detection_window_scores = self.seen_scores[-grace_period:]
+            self.detection_window_frames = self.seen_frames[-grace_period:]
             
             # Flatten the arrays 
             self.detection_window_classes = [item for sublist in self.detection_window_classes for item in sublist]
             self.detection_window_scores = [item for sublist in self.detection_window_scores for item in sublist]
 
-            print(self.detection_window_classes)
-            print(self.detection_window_scores)
-            
             # Get the most common class 
-            most_common_class = Counter(self.detection_window_classes).most_common(1)[0][0]
-            print("Most common class: " + str(most_common_class))
-            self.detected_class_indices = [i for i,c in enumerate(self.detection_window_classes) if c == most_common_class]
+            overall_detected_class = str(Counter(self.detection_window_classes).most_common(1)[0][0])
+            print("Most common class: " + str(overall_detected_class))
+            self.detected_class_indices = [i for i,c in enumerate(self.detection_window_classes) if c == overall_detected_class]
             scores = [self.detection_window_scores[i] for i in self.detected_class_indices]
-            print("Average score: " + str(statistics.mean(scores)))
+            average_score = statistics.mean(scores)
+            print("Average score: " + str(average_score))
 
-            # img = Image.fromarray(self.detection_window_frames[scores.index(max(scores))])
-            # img.save("test.jpg", "jpeg")
-            img = self.detection_window_frames[scores.index(max(scores))]
-            cv2.imwrite("output.jpg", img)
+            best_score = max(scores)
+            img = self.detection_window_frames[scores.index(best_score)]
+            filename = overall_detected_class + "_" + str(best_score) + ".jpg"
+            # Save the file to disk 
+            cv2.imwrite(filename, img)
+            # Send the notification email
+            notification.send_notification_email(filename, overall_detected_class, best_score, average_score)
+            # Reset the lists
+            self.seen_classes = []
+            self.seen_score = []
+            self.seen_frames = []
+            self.current_detection_window = False
 
         # Display the classified frame to the screen
         self.display_frame(self.detected_image)
