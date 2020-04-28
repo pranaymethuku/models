@@ -15,11 +15,13 @@ from PyQt5.QtPrintSupport import *
 from PyQt5.QtMultimedia import *
 from PyQt5.QtMultimediaWidgets import *
 import sys
-from collections import Counter
+from PIL import Image
 import os
 import detection
 import numpy as np
 import cv2
+from collections import Counter
+import statistics
 
 VIDEOS = [".mov", ".mp4", ".flv", ".avi", ".ogg", ".wmv"]
 
@@ -296,6 +298,8 @@ class Ui_MainWindow(QWidget):
         # Create lists which handle the notification for detections
         self.seen_classes = []
         self.seen_scores = []
+        self.seen_frames = []
+        self.current_detection_window = False
 
         # Start webcam
         self.capture = detection.start_any_webcam()
@@ -396,19 +400,39 @@ class Ui_MainWindow(QWidget):
             self.image, self.category_index, self.detection_model, tflite=self.tflite)
         self.detected_image = classification.Image
 
+        # Keep track of all Classes, Scores, and Images seen 
         self.seen_classes.append(classification.Classes)
         self.seen_scores.append(classification.Scores)
+        self.seen_frames.append(classification.Image)
 
-        print( [item for sublist in self.seen_classes for item in sublist] )
-        print( [item for sublist in self.seen_scores for item in sublist] )
+        # The grace period that we wait in order to notify 
+        gp = 20
 
-        #if len(self.seen_classes) > 20 and not any(c == [] for c in self.seen_classes[-20:]):
-        ##    print("Reached 20 consecutive detections!")
-        #    print("Most common class: " + str(max(set(self.seen_classes), key=self.seen_classes.count)))
-        #    # Use the most common class to compute the average liklihood of this 
-        #    print("Average score: " + str(self.seen_scores[-20:].avg()))
+        # If we've seen at least 60 consecutive detections, notify somebody about it! 
+        if len(self.seen_classes) > gp and not any(c == [] for c in self.seen_classes[-gp:]) and not self.current_detection_window:
+            # Create a detection window consisting of only the last 60 detections
+            print("Reached 60 consecutive detections!")
+            self.current_detection_window = True 
+            self.detection_window_classes = self.seen_classes[-gp:]
+            self.detection_window_scores = self.seen_scores[-gp:]
+            self.detection_window_frames = self.seen_frames[-gp:]
+            
+            # Flatten the arrays 
+            self.detection_window_classes = [item for sublist in self.detection_window_classes for item in sublist]
+            self.detection_window_scores = [item for sublist in self.detection_window_scores for item in sublist]
 
+            print(self.detection_window_classes)
+            print(self.detection_window_scores)
+            
+            # Get the most common class 
+            most_common_class = Counter(self.detection_window_classes).most_common(1)[0][0]
+            print("Most common class: " + str(most_common_class))
+            self.detected_class_indices = [i for i,c in enumerate(self.detection_window_classes) if c == most_common_class]
+            scores = [self.detection_window_scores[i] for i in self.detected_class_indices]
+            print("Average score: " + str(statistics.mean(scores)))
 
+            img = Image.fromarray(self.detection_window_frames[scores.index(max(scores))])
+            img.save("OUTPUT", "jpeg")
 
         # Display the classified frame to the screen
         self.display_frame(self.detected_image)
