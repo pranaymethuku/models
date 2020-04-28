@@ -21,9 +21,6 @@ import cv2
 
 from PIL import Image
 
-VIDEOS = [".mov", ".mp4", ".flv", ".avi", ".ogg", ".wmv"]
-
-
 class Ui_MainWindow(QWidget):
     def setupUi(self, MainWindow):
         # Initial setup of the GUI
@@ -260,7 +257,7 @@ class Ui_MainWindow(QWidget):
                 frozen_graph, labelmap, name, "predicted.jpg")
             self.display("predicted.jpg")
 
-        if file_extension[1] in VIDEOS:
+        if file_extension[1] == '.mp4':
             # Clear area so everything isn't weird
             for i in reversed(range(self.media.count())):
                 self.media.itemAt(i).widget().deleteLater()
