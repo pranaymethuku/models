@@ -329,13 +329,13 @@ Run the detection.py script while specifying the inference graph, label map, and
 
 Run the detection.py script while specifying the inference graph, label map, and input and output paths for the video.
 
-`python detection.py -ig <path to inference graph> -l <path to labelmap> -t <tier number> -ii <path to image> -oi <output path>`
+`python detection.py -ig <path to inference graph> -l <path to labelmap> -t <tier number> -ii <path to video> -oi <output path>`
 
 **For webcam:**
 
 Run the detection.py script while specifying the inference graph, label map, and the use of a webcam.
 
-`python detection.py -ig <path to inference graph> -l <path to labelmap> -t <tier number> -ii <path to image> -oi <output path>`
+`python detection.py -ig <path to inference graph> -l <path to labelmap> -t <tier number> -iw`
 
 ### GUI
 
