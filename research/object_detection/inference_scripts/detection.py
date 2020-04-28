@@ -24,10 +24,7 @@ Examples:
 import os
 import math
 import sys
-try:
-    from cv2 import cv2
-except ImportError:
-    import cv2
+from cv2 import cv2
 import numpy as np
 import tensorflow as tf
 from tensorflow.lite.python.interpreter import Interpreter
