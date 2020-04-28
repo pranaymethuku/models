@@ -10,7 +10,7 @@ A Python 3 script to perform object detection using Tensorflow on image, video, 
 
 Usage:
     python3 detection.py [-h] -ig INFERENCE_GRAPH -l LABELMAP -t TIER
-                    [-mst MINIMUM_SCORE_THRESHOLD] [-mbd MAX_BOXES_TO_DRAW]
+                    [-mst MIN_SCORE_THRESHOLD] [-mbd MAX_BOXES_TO_DRAW]
                     [-gp GRACE_PERIOD] [-ii INPUT_IMAGE] [-oi OUTPUT_IMAGE]
                     [-if INPUT_FOLDER] [-of OUTPUT_FOLDER] [-iv INPUT_VIDEO]
                     [-ov OUTPUT_VIDEO] [-iw]
@@ -40,7 +40,7 @@ from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as vis_util
 
 # Global defaults - adjustable by user in command-line
-MINIMUM_SCORE_THRESHOLD = 0.6  # the minimum confidence for detection
+MIN_SCORE_THRESHOLD = 0.6  # the minimum confidence for detection
 MAX_BOXES_TO_DRAW = 1  # the maximum number of objects to detect on
 GRACE_PERIOD = 60  # the number of frames to wait to check for a stable detection
 
@@ -148,7 +148,7 @@ def load_labelmap(labelmap_path):
 
 
 def visualize_on_single_frame(image_np, boxes, classes, scores, category_index):
-    global MINIMUM_SCORE_THRESHOLD
+    global MIN_SCORE_THRESHOLD
     global MAX_BOXES_TO_DRAW
     # adjust the bounding box size depending on the image size
     height, width = image_np.shape[:2]
@@ -163,7 +163,7 @@ def visualize_on_single_frame(image_np, boxes, classes, scores, category_index):
         category_index,
         use_normalized_coordinates=True,
         line_thickness=4+line_thickness_adjustment,
-        min_score_thresh=MINIMUM_SCORE_THRESHOLD,
+        min_score_thresh=MIN_SCORE_THRESHOLD,
         max_boxes_to_draw=MAX_BOXES_TO_DRAW)
 
 
@@ -173,8 +173,8 @@ def get_frame_classification(image_np, classes, scores, category_index):
         "classification", ["Image", "Classes", "Scores"])
 
     # filter all scores and classes based on minimum score threshold
-    scores_above_mst = scores[scores > MINIMUM_SCORE_THRESHOLD]
-    classes_above_mst = classes[scores > MINIMUM_SCORE_THRESHOLD]
+    scores_above_mst = scores[scores > MIN_SCORE_THRESHOLD]
+    classes_above_mst = classes[scores > MIN_SCORE_THRESHOLD]
     # determine the n largest boxes, where n is less than or equal to max boxes to draw
     if MAX_BOXES_TO_DRAW < len(scores_above_mst):
         best_indices = np.argpartition(
@@ -482,7 +482,7 @@ if __name__ == "__main__":
                         help="Path to the labelmap")
     parser.add_argument("-t", "--tier", type=int, required=True,
                         help="Tier number corresponding to the inference_graph and labelmap")
-    parser.add_argument("-mst", "--minimum_score_threshold", type=float, default=MINIMUM_SCORE_THRESHOLD,
+    parser.add_argument("-mst", "--min_score_threshold", type=float, default=MIN_SCORE_THRESHOLD,
                         help="Threshold for the minimum confidence for detection")
     parser.add_argument("-mbd", "--max_boxes_to_draw", type=int, default=MAX_BOXES_TO_DRAW,
                         help="The maximum number of objects to detect")
@@ -509,7 +509,7 @@ if __name__ == "__main__":
     # other potential input and output streams would be configured here
     args = parser.parse_args()
 
-    MINIMUM_SCORE_THRESHOLD = args.minimum_score_threshold
+    MIN_SCORE_THRESHOLD = args.min_score_threshold
     MAX_BOXES_TO_DRAW = args.max_boxes_to_draw
     GRACE_PERIOD = args.grace_period
 
