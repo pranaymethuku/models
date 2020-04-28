@@ -23,7 +23,7 @@ from email import encoders
 # Other necessary imports
 import sys
 
-def send_notification_email(attachment, detected_class, best_score, average_score): 
+def send_notification_email(attachment, detected_class, best_score, average_score, detection_time): 
     # Define a file which holds a list of users to be notified
     reciever_file = "notified_users.txt"
 
@@ -42,17 +42,16 @@ def send_notification_email(attachment, detected_class, best_score, average_scor
             receiver_emails = [line.rstrip() for line in f]
     except Exception as e: 
         print("ERROR: {}".format(e))
-        sys.exit()
 
     # Configure a default reciever name for people who recieve the files (since we may not have their actual names)
     default_receiver_name = "user"
 
     # Email body
     email_body = """
-    Detected a\"{}\" with a max confidence of {:0.4} and an average confidence of {:0.4}. 
+    Detected a \"{}\" at {} with a max confidence of {:0.4}% and an average confidence of {:0.4}%. 
     
-    The frame with the max confidence is attached. 
-    """.format(detected_class, best_score, average_score)
+    A snapshot of the detection at the time of maximum confidence is attached! 
+    """.format(detected_class, detection_time, best_score*100, average_score*100)
 
     for receiver_email in receiver_emails:
         # Display that we're attempting to send the email in the terminal 
@@ -62,7 +61,7 @@ def send_notification_email(attachment, detected_class, best_score, average_scor
         msg = MIMEMultipart()
         msg["To"] = formataddr((default_receiver_name, receiver_email))
         msg["From"] = formataddr((sender_name, sender_email))
-        msg["Subject"] = detected_class.upper() + " Detected"
+        msg["Subject"] = "DETECTION: " + detected_class.upper() 
         msg.attach(MIMEText(email_body, "plain"))
 
         # Attempt to attach the file 

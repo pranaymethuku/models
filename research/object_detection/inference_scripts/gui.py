@@ -14,6 +14,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtPrintSupport import *
 from PyQt5.QtMultimedia import *
 from PyQt5.QtMultimediaWidgets import *
+import datetime
 import sys
 from PIL import Image
 import os
@@ -407,10 +408,14 @@ class Ui_MainWindow(QWidget):
         # The grace period that we wait in order to notify 
         grace_period = 60
 
-        # If we've seen at least 60 consecutive detections, notify somebody about it! 
+        print(self.seen_classes)
+
+        # If we've seen at least a single grace period's worth of consecutive detections, notify somebody about it! 
         if len(self.seen_classes) > grace_period and not any(c == [] for c in self.seen_classes[-grace_period:]) and not self.current_detection_window:
-            # Create a detection window consisting of only the last 60 detections
-            print("Reached 60 consecutive detections!")
+            # Get the current date and time 
+            detection_time = datetime.datetime.now().strftime("%H:%M:%S on %m-%d-%Y")
+            print(detection_time)
+            # Create a detection window consisting of only the last detections
             self.current_detection_window = True 
             self.detection_window_classes = self.seen_classes[-grace_period:]
             self.detection_window_scores = self.seen_scores[-grace_period:]
@@ -420,21 +425,26 @@ class Ui_MainWindow(QWidget):
             self.detection_window_classes = [item for sublist in self.detection_window_classes for item in sublist]
             self.detection_window_scores = [item for sublist in self.detection_window_scores for item in sublist]
 
-            # Get the most common class 
+            # Get the most commonly identified class, the average score, and the best score 
             overall_detected_class = str(Counter(self.detection_window_classes).most_common(1)[0][0])
-            print("Most common class: " + str(overall_detected_class))
             self.detected_class_indices = [i for i,c in enumerate(self.detection_window_classes) if c == overall_detected_class]
             scores = [self.detection_window_scores[i] for i in self.detected_class_indices]
             average_score = statistics.mean(scores)
-            print("Average score: " + str(average_score))
-
             best_score = max(scores)
-            img = self.detection_window_frames[scores.index(best_score)]
-            filename = overall_detected_class + "_" + str(best_score) + ".jpg"
+            
+            print("DETECTION: ")
+            print(overall_detected_class)
+            print(average_score)
+            print(best_score)
+
             # Save the file to disk 
+            img = self.detection_window_frames[scores.index(best_score)]
+            filename = overall_detected_class.replace(" ", "_") + "_" + str(best_score) + "_at_" +  detection_time.replace(" ","_") + ".jpg"
             cv2.imwrite(filename, img)
+
             # Send the notification email
-            notification.send_notification_email(filename, overall_detected_class, best_score, average_score)
+            notification.send_notification_email(filename, overall_detected_class, best_score, average_score, detection_time)
+            
             # Reset the lists
             self.seen_classes = []
             self.seen_score = []
