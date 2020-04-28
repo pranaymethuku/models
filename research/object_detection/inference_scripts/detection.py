@@ -11,14 +11,14 @@ A Python 3 script to perform object detection using Tensorflow on image, video, 
 Usage:
     python3 detection.py [-h] -ig INFERENCE_GRAPH -l LABELMAP -t TIER
                     [-mst MINIMUM_SCORE_THRESHOLD] [-mbd MAX_BOXES_TO_DRAW]
-                    [-ii INPUT_IMAGE] [-oi OUTPUT_IMAGE] [-if INPUT_FOLDER]
-                    [-of OUTPUT_FOLDER] [-iv INPUT_VIDEO] [-ov OUTPUT_VIDEO]
-                    [-iw]
+                    [-gp GRACE_PERIOD] [-ii INPUT_IMAGE] [-oi OUTPUT_IMAGE]
+                    [-if INPUT_FOLDER] [-of OUTPUT_FOLDER] [-iv INPUT_VIDEO]
+                    [-ov OUTPUT_VIDEO] [-iw]
 
 Examples:
     python3 detection.py -ig=inference_graph/inference_graph.pb -t 1 -ii=./car.jpg -oi=./car_annotated.jpg
     python3 detection.py -ig=inference_graph/inference_graph.tflite -t 2 -iv=./truck.mp4 -oi=./truck_annotated.mp4
-    python3 detection.py -ig=inference_graph/inference_graph.pb -t 3 -iw
+    python3 detection.py -ig=inference_graph/inference_graph.pb -t 3 -iw -gp 120
 """
 
 import os
@@ -42,6 +42,7 @@ from object_detection.utils import visualization_utils as vis_util
 # Global defaults - adjustable by user in command-line
 MINIMUM_SCORE_THRESHOLD = 0.6  # the minimum confidence for detection
 MAX_BOXES_TO_DRAW = 1  # the maximum number of objects to detect on
+GRACE_PERIOD = 60  # the number of frames to wait to check for a stable detection
 
 
 def load_detection_model(inference_graph_path, tflite=True):
@@ -376,6 +377,62 @@ def start_any_webcam():
     return capture
 
 
+def update_wake_up_state(classification, seen_classes, seen_scores, seen_frames, current_detection_window):
+    global GRACE_PERIOD
+    # Keep track of all Classes, Scores, and Images seen
+    seen_classes.append(classification.Classes)
+    seen_scores.append(classification.Scores)
+    seen_frames.append(classification.Image)
+
+    # If we've seen at least a single grace period's worth of consecutive detections, notify somebody about it!
+    if len(seen_classes) > GRACE_PERIOD and not any(c == [] for c in seen_classes[-GRACE_PERIOD:]) and not current_detection_window:
+        detection_time = datetime.now().strftime("%H:%M:%S on %m-%d-%Y")
+        print(detection_time)
+        # Get the current date and time
+        # Create a detection window consisting of only the last detections
+        current_detection_window = True
+        detection_window_classes = seen_classes[-GRACE_PERIOD:]
+        detection_window_scores = seen_scores[-GRACE_PERIOD:]
+        detection_window_frames = seen_frames[-GRACE_PERIOD:]
+
+        # Convert the lists to numpy arrays and flatten them if necessary
+        detection_window_classes = np.array(detection_window_classes).flatten()
+        detection_window_scores = np.array(detection_window_scores).flatten()
+        detection_window_frames = np.array(detection_window_frames)
+
+        # now detection_window_classes is a list of consecutive classes
+        # not necessarily all the same because the model isn't perfect with all angles
+        # so we need to get the "mode", i.e most frequent class
+        overall_detected_class = stats.mode(detection_window_classes)[0][0]
+        # get all frames and scores corresponding to the mode class
+        detected_class_indices = np.argwhere(
+            detection_window_classes == overall_detected_class)
+        scores = detection_window_scores[detected_class_indices]
+        frames = detection_window_frames[detected_class_indices]
+        # aggregate all frames and scores corresponding to the mode class
+        average_score = np.mean(scores)
+        best_score = np.max(scores)
+        best_frame = frames[np.argmax(scores)]
+
+        # now we are done with this current detection window, clear state
+        seen_classes.clear()
+        seen_scores.clear()
+        seen_frames.clear()
+        current_detection_window = False
+        return current_detection_window, (best_frame, overall_detected_class, best_score, average_score, detection_time)
+    
+    # Alternatively - prevent the array from getting too big and eating all our memory (this is a temporary fix)
+    # We say it's "too big" if we iterate through 2 grace periods and it hasn't made a detection 
+    if len(seen_classes) > 2 * GRACE_PERIOD and any(c == [] for c in seen_classes[(-2 * GRACE_PERIOD):]): 
+        # Reset the lists
+        termination_index = seen_classes.index([])
+        seen_classes[:] = seen_classes[termination_index+1:]
+        seen_scores[:] = seen_scores[termination_index+1:]
+        seen_frames[:] = seen_frames[termination_index+1:]
+
+    return current_detection_window, None
+
+
 def webcam_detection(inference_graph, labelmap, tier):
     tflite = '.tflite' in inference_graph
     detection_model = load_detection_model(inference_graph, tflite=tflite)
@@ -393,57 +450,27 @@ def webcam_detection(inference_graph, labelmap, tier):
     conn = database.create_connection(database.DATABASE_PATH)
     while cap.isOpened():
         _, frame = cap.read()
+        frame = cv2.flip(frame, 1)
         classification = detect_on_single_frame(
             frame, category_index, detection_model, tflite=tflite)
-        cv2.imshow('Video', classification.Image)
+        cv2.imshow('Tiered Object Recognition', classification.Image)
 
-        # Keep track of all Classes, Scores, and Images seen
-        seen_classes.append(classification.Classes)
-        seen_scores.append(classification.Scores)
-        seen_frames.append(classification.Image)
+        current_detection_window, results = update_wake_up_state(
+            classification, seen_classes, seen_scores, seen_frames, current_detection_window)
 
-        # The grace period that we wait in order to notify
-        grace_period = 60
-
-        # If we've seen at least a single grace period's worth of consecutive detections, notify somebody about it!
-        if len(seen_classes) > grace_period and not any(c == [] for c in seen_classes[-grace_period:]) and not current_detection_window:
-            detection_time = datetime.now().strftime("%H:%M:%S on %m-%d-%Y")
-            print(detection_time)
-            # Get the current date and time
-            # Create a detection window consisting of only the last detections
-            current_detection_window = True
-            detection_window_classes = seen_classes[-grace_period:]
-            detection_window_scores = seen_scores[-grace_period:]
-            detection_window_frames = seen_frames[-grace_period:]
-
-            # Flatten the arrays 
-            detection_window_classes = np.array(detection_window_classes).flatten()
-            detection_window_scores = np.array(detection_window_scores).flatten()
-
-            overall_detected_class = stats.mode(detection_window_classes)[0][0]
-            detected_class_indices = np.argwhere(detection_window_classes == overall_detected_class)
-            scores = list(detection_window_scores[detected_class_indices])
-            # average_score = np.mean(scores)
-            best_score = np.max(scores)
-
-            # Save the file to disk 
-            img = detection_window_frames[scores.index(best_score)]
-            filename = overall_detected_class.replace(" ", "_") + "_" + str(best_score) + "_at_" +  detection_time.replace(" ","_") + ".jpg"
-            cv2.imwrite(filename, img)
+        if results:
+            best_frame, overall_detected_class, best_score, _, detection_time = results
+            filename = "{} {} at {}.jpg".format(
+                overall_detected_class, best_score, detection_time).replace(" ", "_")
+            cv2.imwrite(filename, best_frame)
 
             database.insert_webcam_detection(conn, os.path.abspath(
                 filename), best_score, overall_detected_class, tier, inference_graph)
 
-            # Reset the lists
-            seen_classes = []
-            seen_scores = []
-            seen_frames = []
-            current_detection_window = False
-
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        if (cv2.waitKey(1) & 0xFF == ord('q')):
+            print(cv2.getWindowProperty('Tiered Object Recognition', 0))
             cap.release()
             break
-    cap.release()
 
 
 if __name__ == "__main__":
@@ -459,6 +486,8 @@ if __name__ == "__main__":
                         help="Threshold for the minimum confidence for detection")
     parser.add_argument("-mbd", "--max_boxes_to_draw", type=int, default=MAX_BOXES_TO_DRAW,
                         help="The maximum number of objects to detect")
+    parser.add_argument("-gp", "--grace_period", type=int, default=GRACE_PERIOD,
+                        help="The amount of frames to wait before waking up")
     # image detection
     parser.add_argument("-ii", "--input_image", type=str,
                         help="Path to the input image to detect")
@@ -482,6 +511,7 @@ if __name__ == "__main__":
 
     MINIMUM_SCORE_THRESHOLD = args.minimum_score_threshold
     MAX_BOXES_TO_DRAW = args.max_boxes_to_draw
+    GRACE_PERIOD = args.grace_period
 
     if args.input_image:
         input_image = os.path.abspath(args.input_image)

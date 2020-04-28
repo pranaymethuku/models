@@ -21,7 +21,7 @@ import os
 import detection
 import numpy as np
 from scipy import stats
-import cv2
+from cv2 import cv2
 import notification
 import threading
 from object_detection.db import database
@@ -403,38 +403,14 @@ class Ui_MainWindow(QWidget):
             self.image, self.category_index, self.detection_model, tflite=self.tflite)
         self.detected_image = classification.Image
 
-        # Keep track of all Classes, Scores, and Images seen
-        self.seen_classes.append(classification.Classes)
-        self.seen_scores.append(classification.Scores)
-        self.seen_frames.append(classification.Image)
+        self.current_detection_window, results = detection.update_wake_up_state(
+            classification, self.seen_classes, self.seen_scores, self.seen_frames, self.current_detection_window)
 
-        # The grace period that we wait in order to notify
-        grace_period = 60
+        if results:
+            best_frame, overall_detected_class, best_score, average_score, detection_time = results
 
-        # If we've seen at least a single grace period's worth of consecutive detections, notify somebody about it!
-        if len(self.seen_classes) > grace_period and not any(c == [] for c in self.seen_classes[-grace_period:]) and not self.current_detection_window:
-            # Get the current date and time
-            detection_time = datetime.now().strftime("%H:%M:%S on %m-%d-%Y")
-            # Create a detection window consisting of only the last detections
-            self.current_detection_window = True
-            self.detection_window_classes = self.seen_classes[-grace_period:]
-            self.detection_window_scores = self.seen_scores[-grace_period:]
-            self.detection_window_frames = self.seen_frames[-grace_period:]
-
-            # Flatten the arrays 
-            self.dectection_window_classes = np.array(self.detection_window_classes).flatten()
-            self.detection_window_scores = np.array(self.detection_window_scores).flatten()
-
-            overall_detected_class = stats.mode(self.detection_window_classes)[0][0]
-            self.detected_class_indices = np.argwhere(self.detection_window_classes == overall_detected_class)
-            scores = list(self.detection_window_scores[self.detected_class_indices])
-            average_score = np.mean(scores)
-            best_score = np.max(scores)
-
-            # Save the file to disk 
-            img = self.detection_window_frames[scores.index(best_score)]
-            filename = overall_detected_class.replace(" ", "_") + "_" + str(best_score) + "_at_" +  detection_time.replace(" ","_") + ".jpg"
-            cv2.imwrite(filename, img)
+            filename = "{} {} at {}.jpg".format(overall_detected_class, best_score, detection_time).replace(" ", "_")
+            cv2.imwrite(filename, best_frame)
 
             database.insert_webcam_detection(self.conn, os.path.abspath(
                 filename), best_score, overall_detected_class, self.tier, self.inference_graph)
@@ -443,21 +419,6 @@ class Ui_MainWindow(QWidget):
             t1 = threading.Thread(target=notification.send_notification_email, args=(
                 (filename, overall_detected_class, best_score, average_score, detection_time)))
             t1.start()
-
-            # Reset the lists
-            self.seen_classes = []
-            self.seen_score = []
-            self.seen_frames = []
-            self.current_detection_window = False
-        
-        # Alternatively - prevent the array from getting too big and eating all our memory (this is a temporary fix)
-        # We say it's "too big" if we iterate through 2 grace periods and it hasn't made a detection 
-        if len(self.seen_classes) > 2*grace_period and any(c == [] for c in self.seen_classes[(-2*grace_period):]): 
-            # Reset the lists
-            termination_index = self.seen_classes.index([])
-            self.seen_classes = self.seen_classes[termination_index+1:]
-            self.seen_scores = self.seen_scores[termination_index+1:]
-            self.seen_frames = self.seen_frames[termination_index+1:]
 
         # Display the classified frame to the screen
         self.display_frame(self.detected_image)
