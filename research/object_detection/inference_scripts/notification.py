@@ -39,7 +39,7 @@ def send_notification_email(attachment, detected_class, best_score, average_scor
     # Get list of recievers from file
     try: 
         with open(reciever_file) as f:
-            receiver_emails = [line.rstrip() for line in f]
+            receiver_emails = [line.rstrip() for line in f if '#' not in line]
     except Exception as e: 
         print("ERROR: {}".format(e))
 
