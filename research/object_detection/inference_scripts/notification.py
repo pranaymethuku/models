@@ -19,6 +19,11 @@ from email.utils import formataddr
 from email.mime.multipart import MIMEMultipart 
 from email.mime.base import MIMEBase 
 from email import encoders 
+# And imghdr to find the types of our images
+import imghdr
+from os.path import basename 
+from email.message import EmailMessage
+
 
 # Other necessary imports
 import sys
@@ -58,26 +63,18 @@ def send_notification_email(attachment, detected_class, best_score, average_scor
         print("Sending notification email...")
         print(detected_class)
         # Define the message 
-        msg = MIMEMultipart()
+        msg = EmailMessage()
         msg["To"] = formataddr((default_receiver_name, receiver_email))
         msg["From"] = formataddr((sender_name, sender_email))
         msg["Subject"] = "DETECTION: " + detected_class.upper() 
-        msg.attach(MIMEText(email_body, "plain"))
+        msg.set_content(email_body)
 
         # Attempt to attach the file 
         try:
             with open(attachment, "rb") as a:
-                    part = MIMEBase("application", "octet-stream")
-                    part.set_payload(a.read())
-            # Encode file in ASCII 
-            encoders.encode_base64(part)
-            # Add header as key/value pair to attachment part
-            part.add_header(
-                "Content-Disposition",
-                f"attachment; filename= {attachment}",
-            )
-            # Attach the fully read file 
-            msg.attach(part)
+                img_data = a.read()
+            msg.add_attachment(img_data, maintype='image',
+                                        subtype=imghdr.what(None, img_data), filename = basename(attachment))
         except Exception as e:
             print("ERROR: Email not sent. File {} not found.".format(attachment))
             break

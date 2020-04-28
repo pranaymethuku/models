@@ -415,7 +415,6 @@ class Ui_MainWindow(QWidget):
         if len(self.seen_classes) > grace_period and not any(c == [] for c in self.seen_classes[-grace_period:]) and not self.current_detection_window:
             # Get the current date and time
             detection_time = datetime.now().strftime("%H:%M:%S on %m-%d-%Y")
-            print(detection_time)
             # Create a detection window consisting of only the last detections
             self.current_detection_window = True
             self.detection_window_classes = self.seen_classes[-grace_period:]
@@ -423,7 +422,7 @@ class Ui_MainWindow(QWidget):
             self.detection_window_frames = self.seen_frames[-grace_period:]
 
             # Flatten the arrays 
-            self.detection_window_classes = np.array(self.detection_window_classes).flatten()
+            self.dectection_window_classes = np.array(self.detection_window_classes).flatten()
             self.detection_window_scores = np.array(self.detection_window_scores).flatten()
 
             overall_detected_class = stats.mode(self.detection_window_classes)[0][0]
