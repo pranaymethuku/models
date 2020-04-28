@@ -450,6 +450,15 @@ class Ui_MainWindow(QWidget):
             self.seen_score = []
             self.seen_frames = []
             self.current_detection_window = False
+        
+        # Alternatively - prevent the array from getting too big and eating all our memory (this is a temporary fix)
+        # We say it's "too big" if we iterate through 2 grace periods and it hasn't made a detection 
+        if len(self.seen_classes) > 2*grace_period and any(c == [] for c in self.seen_classes[(-2*grace_period):]): 
+            # Reset the lists
+            termination_index = self.seen_classes.index([])
+            self.seen_classes = self.seen_classes[termination_index+1:]
+            self.seen_scores = self.seen_scores[termination_index+1:]
+            self.seen_frames = self.seen_frames[termination_index+1:]
 
         # Display the classified frame to the screen
         self.display_frame(self.detected_image)
