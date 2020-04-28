@@ -314,6 +314,15 @@ class Ui_MainWindow(QWidget):
         for i in reversed(range(self.media.count())):
             self.media.itemAt(i).widget().show()
 
+        i = 0
+        while os.path.exists("webcam%s.mp4" % i):
+            i += 1
+
+        webcam_output = "webcam" + str(i) + ".mp4"
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        self.out = cv2.VideoWriter(webcam_output, fourcc, 10.0, (int(
+            self.capture.get(cv2.CAP_PROP_FRAME_WIDTH)), int(self.capture.get(cv2.CAP_PROP_FRAME_HEIGHT))))
+
         # Show stop button
         self.stop_button.setVisible(True)
         self.capture_button.setEnabled(False)
@@ -326,6 +335,7 @@ class Ui_MainWindow(QWidget):
     def stop_webcam(self):
         self.timer.stop()
         self.capture.release()
+        self.out.release()
         cv2.destroyAllWindows()
         self.stop_button.setVisible(False)
         self.capture_button.setEnabled(True)
@@ -407,6 +417,8 @@ class Ui_MainWindow(QWidget):
         classification = detection.detect_on_single_frame(
             self.image, self.category_index, self.detection_model, tflite=self.tflite)
         self.detected_image = classification.Image
+
+        self.out.write(classification.Image)
 
         # Keep track of all Classes, Scores, and Images seen 
         self.seen_classes.append(classification.Classes)
