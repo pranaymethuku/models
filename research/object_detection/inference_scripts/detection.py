@@ -379,10 +379,10 @@ def start_any_webcam():
 
 def update_wake_up_state(classification, seen_classes, seen_scores, seen_frames, current_detection_window):
     global GRACE_PERIOD
-    # Keep track of all Classes, Scores, and Images seen
+    # Keep track of all Classes, Scores, and Images (PIL.Image objects) seen
     seen_classes.append(classification.Classes)
     seen_scores.append(classification.Scores)
-    seen_frames.append(classification.Image)
+    seen_frames.append(Image.fromarray(classification.Image, 'RGB'))
 
     # If we've seen at least a single grace period's worth of consecutive detections, notify somebody about it!
     if len(seen_classes) > GRACE_PERIOD and not any(c == [] for c in seen_classes[-GRACE_PERIOD:]) and not current_detection_window:
@@ -395,10 +395,10 @@ def update_wake_up_state(classification, seen_classes, seen_scores, seen_frames,
         detection_window_scores = seen_scores[-GRACE_PERIOD:]
         detection_window_frames = seen_frames[-GRACE_PERIOD:]
 
-        # Convert the lists to numpy arrays and flatten them if necessary
+        # Convert the lists to numpy arrays and flatten them
+        # we cannot convert detection_window_frames to a numpy array because it contains Image objects and not ints
         detection_window_classes = np.array(detection_window_classes).flatten()
         detection_window_scores = np.array(detection_window_scores).flatten()
-        detection_window_frames = np.array(detection_window_frames)
 
         # now detection_window_classes is a list of consecutive classes
         # not necessarily all the same because the model isn't perfect with all angles
@@ -406,14 +406,14 @@ def update_wake_up_state(classification, seen_classes, seen_scores, seen_frames,
         overall_detected_class = stats.mode(detection_window_classes)[0][0]
         # get all frames and scores corresponding to the mode class
         detected_class_indices = np.argwhere(
-            detection_window_classes == overall_detected_class)
+            detection_window_classes == overall_detected_class).flatten()
         scores = detection_window_scores[detected_class_indices]
-        frames = detection_window_frames[detected_class_indices]
+        frames = [detection_window_frames[i] for i in detected_class_indices]
+
         # aggregate all frames and scores corresponding to the mode class
         average_score = np.mean(scores)
         best_score = np.max(scores)
-        best_frame = frames[np.argmax(scores)]
-
+        best_frame = np.array(frames[np.argmax(scores)])
         # now we are done with this current detection window, clear state
         seen_classes.clear()
         seen_scores.clear()
@@ -460,15 +460,15 @@ def webcam_detection(inference_graph, labelmap, tier):
 
         if results:
             best_frame, overall_detected_class, best_score, _, detection_time = results
+            cv2.imshow('Best Frame', best_frame)
             filename = "{} {} at {}.jpg".format(
                 overall_detected_class, best_score, detection_time).replace(" ", "_")
-            cv2.imwrite(filename, best_frame)
+            print(cv2.imwrite(filename, best_frame))
 
             database.insert_webcam_detection(conn, os.path.abspath(
                 filename), best_score, overall_detected_class, tier, inference_graph)
 
         if (cv2.waitKey(1) & 0xFF == ord('q')):
-            print(cv2.getWindowProperty('Tiered Object Recognition', 0))
             cap.release()
             break
 
