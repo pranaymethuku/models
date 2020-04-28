@@ -511,6 +511,7 @@ if __name__ == "__main__":
 
     MINIMUM_SCORE_THRESHOLD = args.minimum_score_threshold
     MAX_BOXES_TO_DRAW = args.max_boxes_to_draw
+    GRACE_PERIOD = args.grace_period
 
     if args.input_image:
         input_image = os.path.abspath(args.input_image)
