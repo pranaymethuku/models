@@ -443,7 +443,7 @@ class Ui_MainWindow(QWidget):
 
             # Save the file to disk 
             img = self.detection_window_frames[scores.index(best_score)]
-            filename = overall_detected_class.replace(" ", "_") + "_" + str(best_score) + "_at_" +  detection_time.replace(" ","_").replace(":","_") + ".jpg"
+            filename = overall_detected_class.replace(" ", "_") + "_" + str(best_score) + "_at_" +  detection_time.replace(" ","_") + ".jpg"
             cv2.imwrite(filename, img)
 
             # Send the notification email
