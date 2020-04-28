@@ -395,20 +395,26 @@ def update_wake_up_state(classification, seen_classes, seen_scores, seen_frames,
         detection_window_scores = seen_scores[-GRACE_PERIOD:]
         detection_window_frames = seen_frames[-GRACE_PERIOD:]
 
-        # Flatten the arrays
+        # Convert the lists to numpy arrays and flatten them if necessary
         detection_window_classes = np.array(detection_window_classes).flatten()
         detection_window_scores = np.array(detection_window_scores).flatten()
         detection_window_frames = np.array(detection_window_frames)
 
+        # now detection_window_classes is a list of consecutive classes
+        # not necessarily all the same because the model isn't perfect with all angles
+        # so we need to get the "mode", i.e most frequent class
         overall_detected_class = stats.mode(detection_window_classes)[0][0]
+        # get all frames and scores corresponding to the mode class
         detected_class_indices = np.argwhere(
             detection_window_classes == overall_detected_class)
         scores = detection_window_scores[detected_class_indices]
         frames = detection_window_frames[detected_class_indices]
+        # aggregate all frames and scores corresponding to the mode class
         average_score = np.mean(scores)
         best_score = np.max(scores)
-
         best_frame = frames[np.argmax(scores)]
+
+        # now we are done with this current detection window, clear state
         seen_classes.clear()
         seen_scores.clear()
         seen_frames.clear()
