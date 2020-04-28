@@ -307,6 +307,44 @@ The above command will generate the `tflite_graph.tflite` file under the `tier_2
 
 ## Inference
 
+Now in order to run inference using the trained models, navigate to `object_detection/inference_scripts`. This can be accomplished in two ways:
+
+1) Run the command line script `detection.py` (for power users)
+
+2) Launch a user-friendly GUI using `gui.py`
+
+### Command Line
+
+Let's first go over usage for `detection.py`. In order to view general information, run `python detection.py -h`. This will display all the parameters and their usage.
+
+**NOTE**: The inference graph and label map should both correspond to the same tier, which also must be specified. The same input and output media flags must be used. For example, use -ii with -oi and -iv with -ov. 
+
+**For images:**
+
+Run the detection.py script while specifying the inference graph, label map, and input and output paths for the image.
+
+`python detection.py -ig <path to inference graph> -l <path to labelmap> -t <tier number> -ii <path to image> -oi <output path>`
+
+**For videos:**
+
+Run the detection.py script while specifying the inference graph, label map, and input and output paths for the video.
+
+`python detection.py -ig <path to inference graph> -l <path to labelmap> -t <tier number> -ii <path to image> -oi <output path>`
+
+**For webcam:**
+
+Run the detection.py script while specifying the inference graph, label map, and the use of a webcam.
+
+`python detection.py -ig <path to inference graph> -l <path to labelmap> -t <tier number> -ii <path to image> -oi <output path>`
+
+### GUI
+
+Either double-click the TOR icon on the computer’s desktop, or navigate to the directory of `gui.py` and run the command `python gui.py`.
+
+Upon launching the application, a window will open up serving as the homepage of the application. The user can select from 4 different Tiers each having their own models trained on it.
+
+After selecting a tier and model, the user can either upload an image or video that they want inferenced or launch a webcam to inference live feed. Inferenced images and videos will be saved in the same directory as the source file of `gui.py` with the name `predicted.jpg` and `predicted.mp4`, respectively.
+
 ---TODO---
 
 ## Resources
