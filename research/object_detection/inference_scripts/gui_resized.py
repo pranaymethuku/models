@@ -431,8 +431,10 @@ class Ui_MainWindow(QWidget):
             scores = [self.detection_window_scores[i] for i in self.detected_class_indices]
             print("Average score: " + str(statistics.mean(scores)))
 
-            img = Image.fromarray(self.detection_window_frames[scores.index(max(scores))])
-            img.save("OUTPUT", "jpeg")
+            # img = Image.fromarray(self.detection_window_frames[scores.index(max(scores))])
+            # img.save("test.jpg", "jpeg")
+            img = self.detection_window_frames[scores.index(max(scores))]
+            cv2.imwrite("output.jpg", img)
 
         # Display the classified frame to the screen
         self.display_frame(self.detected_image)

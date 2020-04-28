@@ -337,7 +337,6 @@ def start_any_webcam():
     # Start webcam - first try the index setting that's supposed to capture input from any device
     index = -1
     capture = cv2.VideoCapture(index)
-
     # Attempt indices 0 and 1 if -1 doesn't work
     while (capture is None or not capture.isOpened()) and index < 2:
         print("WARNING: Unable to open video source: " + str(index))
@@ -369,7 +368,6 @@ def webcam_detection(inference_graph, labelmap):
         classification = detect_on_single_frame(
             frame, category_index, detection_model, tflite=tflite)
         cv2.imshow('Video', classification.Image)
-
         if cv2.waitKey(1) & 0xFF == ord('q'):
             cap.release()
             break
