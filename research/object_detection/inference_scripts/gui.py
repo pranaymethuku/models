@@ -316,8 +316,8 @@ class Ui_MainWindow(QWidget):
 
         # Show stop button
         self.stop_button.setVisible(True)
-        self.capture_button.setVisible(False)
-        self.upload_button.setVisible(False)
+        self.capture_button.setEnabled(False)
+        self.upload_button.setEnabled(False)
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_frame)
@@ -328,8 +328,8 @@ class Ui_MainWindow(QWidget):
         self.capture.release()
         cv2.destroyAllWindows()
         self.stop_button.setVisible(False)
-        self.capture_button.setVisible(True)
-        self.upload_button.setVisible(True)
+        self.capture_button.setEnabled(True)
+        self.upload_button.setEnabled(True)
         for i in reversed(range(self.media.count())):
             self.media.itemAt(i).widget().hide()
 
