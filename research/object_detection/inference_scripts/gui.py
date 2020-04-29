@@ -105,7 +105,7 @@ class UIMainWindow(QWidget):
         self.model_layout.setObjectName("model_layout")
 
         self.loading_animation = QtWidgets.QLabel(self)
-        self.movie = QMovie("images/loading.gif")
+        self.movie = QMovie(os.path.abspath("images/loading.gif"))
         self.loading_animation.setAlignment(
             QtCore.Qt.AlignCenter | QtCore.Qt.AlignHCenter)
         self.loading_animation.setMovie(self.movie)
