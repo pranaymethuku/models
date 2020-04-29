@@ -105,12 +105,11 @@ class UIMainWindow(QWidget):
         self.model_layout.setObjectName("model_layout")
 
         self.loading_animation = QtWidgets.QLabel(self)
-        self.movie = QMovie("images/loading.gif")
+        self.movie = QMovie(os.path.abspath("images/loading.gif"))
         self.loading_animation.setAlignment(
             QtCore.Qt.AlignCenter | QtCore.Qt.AlignHCenter)
         self.loading_animation.setMovie(self.movie)
         self.movie.setCacheMode(QMovie.CacheAll)
-        self.movie.loopCount()
         self.model_layout.addWidget(self.loading_animation)
 
         self.display_upload_button()
@@ -290,7 +289,7 @@ class UIMainWindow(QWidget):
 
             # Run inference on video and display
             #detection.video_detection(inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4"))
-            self.start_loading()
+            #self.movie.start()
 
             thread = threading.Thread(target=detection.video_detection, args=(
                 inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4")))
@@ -299,9 +298,11 @@ class UIMainWindow(QWidget):
             while True:
                 QtWidgets.qApp.processEvents()
                 if thread.isAlive():
-                    self.start_loading()
+                    self.movie.start()
                 else:
-                    self.stop_loading()
+                    self.movie.stop()
+                    self.movie.disconnect()
+                    self.loading_animation.clear()
                     break
 
             self.display(os.path.abspath("predicted.mp4"))
