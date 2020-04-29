@@ -26,6 +26,8 @@ import notification
 import threading
 from object_detection.db import database
 
+VIDEOS = [".mov", ".mp4", ".flv", ".avi", ".ogg", ".wmv"]
+
 class UIMainWindow(QWidget):
     def setupUi(self, MainWindow):
         # Set up MainWindow information
@@ -282,28 +284,28 @@ class UIMainWindow(QWidget):
                 inference_graph, labelmap, tier, name, os.path.abspath("predicted.jpg"))
             self.display(os.path.abspath("predicted.jpg"))
 
-        if file_extension[1] == '.mp4':
+        if file_extension[1] in VIDEOS:
             # Clear area so everything isn't weird
             for i in reversed(range(self.media.count())):
                 self.media.itemAt(i).widget().deleteLater()
 
             # Run inference on video and display
-            #detection.video_detection(inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4"))
+            detection.video_detection(inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4"))
             #self.movie.start()
 
-            thread = threading.Thread(target=detection.video_detection, args=(
-                inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4")))
-            thread.start()
+            #thread = threading.Thread(target=detection.video_detection, args=(
+            #    inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4")))
+            #thread.start()
 
-            while True:
-                QtWidgets.qApp.processEvents()
-                if thread.isAlive():
-                    self.movie.start()
-                else:
-                    self.movie.stop()
-                    self.movie.disconnect()
-                    self.loading_animation.clear()
-                    break
+            # while True:
+            #     QtWidgets.qApp.processEvents()
+            #     if thread.isAlive():
+            #         self.movie.start()
+            #     else:
+            #         self.movie.stop()
+            #         self.movie.disconnect()
+            #         self.loading_animation.clear()
+            #         break
 
             self.display(os.path.abspath("predicted.mp4"))
 
@@ -419,7 +421,6 @@ class UIMainWindow(QWidget):
     def update_frame(self):
         # Get frame
         _, self.image = self.capture.read()
-        self.image = cv2.flip(self.image, 1)
 
         # Run inference on frame and display to screen
         classification = detection.detect_on_single_frame(
@@ -512,8 +513,6 @@ class UIMainWindow(QWidget):
 
     def stop_loading(self):
         self.movie.stop()
-
-
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)

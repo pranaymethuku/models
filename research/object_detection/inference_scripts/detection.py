@@ -459,7 +459,6 @@ def webcam_detection(inference_graph, labelmap, tier):
     conn = database.create_connection(database.DATABASE_PATH)
     while cap.isOpened():
         _, frame = cap.read()
-        frame = cv2.flip(frame, 1)
         classification = detect_on_single_frame(
             frame, category_index, detection_model, tflite=tflite)
         cv2.imshow('Tiered Object Recognition', classification.Image)
