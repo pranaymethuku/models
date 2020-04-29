@@ -376,9 +376,6 @@ class UIMainWindow(QWidget):
 
         file_extension = os.path.splitext(media)
 
-        #width = self.model_layout.geometry().width()
-        #height = self.model_layout.geometry().height()
-
         if file_extension[1] == ".jpg":
             # Remove all other media
             # self.clear_screen()
@@ -388,9 +385,6 @@ class UIMainWindow(QWidget):
             if pixmap.width() > 791 and pixmap.height() > 451:
                 pixmap = pixmap.scaledToWidth(960)
                 pixmap = pixmap.scaledToWidth(720)
-            #pixmap = pixmap.scaledToWidth(width)
-            #pixmap = pixmap.scaledToHeight(height)
-            self.media_label = QtWidgets.QLabel(self)
             self.media_label.setPixmap(pixmap)
             self.resize(pixmap.width(), pixmap.height())
             self.media.addWidget(self.media_label)
