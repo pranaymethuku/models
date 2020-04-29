@@ -281,7 +281,7 @@ class Ui_MainWindow(QWidget):
 
             # Run inference on video and display
             detection.video_detection(
-                inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4"))
+                inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4"))         
             self.display(os.path.abspath("predicted.mp4"))
 
     def capture_media(self):
