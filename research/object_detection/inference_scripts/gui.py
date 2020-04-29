@@ -104,6 +104,17 @@ class Ui_MainWindow(QWidget):
         self.step_3_label.setObjectName("step_3_label")
         self.detection_info_layout.addWidget(self.step_3_label)
 
+        self.model_layout = QtWidgets.QGridLayout()
+        self.model_layout.setObjectName("model_layout")
+
+        self.loading_animation = QtWidgets.QLabel(self)
+        self.movie = QMovie("images/loading.gif")
+        self.loading_animation.setAlignment(QtCore.Qt.AlignCenter | QtCore.Qt.AlignHCenter)
+        self.loading_animation.setMovie(self.movie)
+        self.movie.setCacheMode(QMovie.CacheAll)
+        self.movie.loopCount()
+        self.model_layout.addWidget(self.loading_animation)
+
         self.display_upload_button()
 
         self.capture_button = QtWidgets.QPushButton(self.central_widget)
@@ -117,13 +128,12 @@ class Ui_MainWindow(QWidget):
         self.detection_info_layout.addWidget(self.capture_button)
         self.gridLayout_2.addLayout(self.detection_info_layout, 1, 0, 1, 2)
 
-        self.model_layout = QtWidgets.QGridLayout()
-        self.model_layout.setObjectName("model_layout")
-        #self.model_view = QtWidgets.QGraphicsView(self.central_widget)
-        self.model_view = QWidget(self.central_widget)
+        #self.model_layout = QtWidgets.QGridLayout()
+        #self.model_layout.setObjectName("model_layout")
+        self.model_view = QtWidgets.QGraphicsView(self.central_widget)
+        #self.model_view = QtWidgets.QWidget(self.central_widget)
         self.model_view.setGeometry(QtCore.QRect(10, 140, 961, 491))
-        self.model_view.setStyleSheet(
-            "border: 2px solid black; background-color: #e8e9eb")
+        self.model_view.setStyleSheet("border: 2px solid black; background-color: #e8e9eb")
 
         self.media = QHBoxLayout(self.model_view)
         self.media.setContentsMargins(0, 0, 0, 0)
@@ -280,8 +290,19 @@ class Ui_MainWindow(QWidget):
                 self.media.itemAt(i).widget().deleteLater()
 
             # Run inference on video and display
-            detection.video_detection(
-                inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4"))
+            #detection.video_detection(inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4"))
+            self.start_loading()
+            thread = threading.Thread(target=detection.video_detection, args=(inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4")))
+            thread.start()
+
+            while True:
+                QtWidgets.qApp.processEvents()
+                if thread.isAlive():
+                    self.start_loading()
+                else:
+                    self.stop_loading()
+                    break
+
             self.display(os.path.abspath("predicted.mp4"))
 
     def capture_media(self):
@@ -482,6 +503,12 @@ class Ui_MainWindow(QWidget):
         self.upload_button.setObjectName("upload_button")
         self.detection_info_layout.addWidget(self.upload_button)
         self.upload_button.clicked.connect(self.open_file)
+
+    def start_loading(self):
+        self.movie.start()
+
+    def stop_loading(self):
+        self.movie.stop()
 
 
 if __name__ == "__main__":
