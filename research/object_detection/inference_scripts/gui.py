@@ -290,22 +290,22 @@ class UIMainWindow(QWidget):
                 self.media.itemAt(i).widget().deleteLater()
 
             # Run inference on video and display
-            #detection.video_detection(inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4"))
+            detection.video_detection(inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4"))
             #self.movie.start()
 
-            thread = threading.Thread(target=detection.video_detection, args=(
-                inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4")))
-            thread.start()
+            #thread = threading.Thread(target=detection.video_detection, args=(
+            #    inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4")))
+            #thread.start()
 
-            while True:
-                QtWidgets.qApp.processEvents()
-                if thread.isAlive():
-                    self.movie.start()
-                else:
-                    self.movie.stop()
-                    self.movie.disconnect()
-                    self.loading_animation.clear()
-                    break
+            # while True:
+            #     QtWidgets.qApp.processEvents()
+            #     if thread.isAlive():
+            #         self.movie.start()
+            #     else:
+            #         self.movie.stop()
+            #         self.movie.disconnect()
+            #         self.loading_animation.clear()
+            #         break
 
             self.display(os.path.abspath("predicted.mp4"))
 
@@ -513,8 +513,6 @@ class UIMainWindow(QWidget):
 
     def stop_loading(self):
         self.movie.stop()
-
-
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
