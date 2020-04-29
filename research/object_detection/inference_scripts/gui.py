@@ -129,8 +129,8 @@ class UIMainWindow(QWidget):
 
         #self.model_layout = QtWidgets.QGridLayout()
         # self.model_layout.setObjectName("model_layout")
-        self.model_view = QtWidgets.QGraphicsView(self.central_widget)
-        #self.model_view = QtWidgets.QWidget(self.central_widget)
+        # self.model_view = QtWidgets.QGraphicsView(self.central_widget)
+        self.model_view = QtWidgets.QWidget(self.central_widget)
         self.model_view.setGeometry(QtCore.QRect(10, 140, 961, 491))
         self.model_view.setStyleSheet(
             "border: 2px solid black; background-color: #e8e9eb")
@@ -275,8 +275,7 @@ class UIMainWindow(QWidget):
         # Get path of labelmap and frozen inference graph
         labelmap, inference_graph = self.get_path()
 
-        for i in reversed(range(self.media.count())):
-            self.media.itemAt(i).widget().show()
+        self.loading_animation.show()
 
         if file_extension[1] == ".jpg" or file_extension[1] == ".jpeg":
             # Run inference on image and display
@@ -285,10 +284,6 @@ class UIMainWindow(QWidget):
             self.display(os.path.abspath("predicted.jpg"))
 
         if file_extension[1] in VIDEOS:
-            # Clear area so everything isn't weird
-            for i in reversed(range(self.media.count())):
-                self.media.itemAt(i).widget().deleteLater()
-
             # Run inference on video and display
             #detection.video_detection(inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4"))
             self.loading_animation.setMovie(self.movie)
@@ -332,8 +327,7 @@ class UIMainWindow(QWidget):
         self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
         self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
 
-        for i in reversed(range(self.media.count())):
-            self.media.itemAt(i).widget().show()
+        self.media_label.show()
 
         # Show stop button
         self.stop_button.setVisible(True)
@@ -352,8 +346,7 @@ class UIMainWindow(QWidget):
         self.stop_button.setVisible(False)
         self.capture_button.setEnabled(True)
         self.upload_button.setEnabled(True)
-        for i in reversed(range(self.media.count())):
-            self.media.itemAt(i).widget().hide()
+        self.media_label.hide()
 
     def exit(self):
         sys.exit()
@@ -388,7 +381,7 @@ class UIMainWindow(QWidget):
 
         if file_extension[1] == ".jpg":
             # Remove all other media
-            self.clear_screen()
+            # self.clear_screen()
 
             # Display image
             pixmap = QPixmap(media)
@@ -404,7 +397,7 @@ class UIMainWindow(QWidget):
             self.media.setAlignment(Qt.AlignCenter)
         else:
             # Remove all other media
-            self.clear_screen()
+            # self.clear_screen()
 
             # Play video
             self.video = QVideoWidget()
@@ -418,6 +411,7 @@ class UIMainWindow(QWidget):
             self.player.setPosition(0)
 
             self.media.addWidget(self.video)
+            self.video.show()
             self.player.play()
 
     def update_frame(self):
