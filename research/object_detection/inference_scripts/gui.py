@@ -290,9 +290,9 @@ class Ui_MainWindow(QWidget):
                 self.media.itemAt(i).widget().deleteLater()
 
             # Run inference on video and display
-<<<<<<< HEAD
             #detection.video_detection(inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4"))
             self.start_loading()
+
             thread = threading.Thread(target=detection.video_detection, args=(inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4")))
             thread.start()
 
@@ -304,10 +304,6 @@ class Ui_MainWindow(QWidget):
                     self.stop_loading()
                     break
 
-=======
-            detection.video_detection(
-                inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4"))         
->>>>>>> 6b146d7dae6d4daa95a3f9f71630b29da03fe5b7
             self.display(os.path.abspath("predicted.mp4"))
 
     def capture_media(self):
