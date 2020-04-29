@@ -112,7 +112,7 @@ class UIMainWindow(QWidget):
             QtCore.Qt.AlignCenter | QtCore.Qt.AlignHCenter)
         self.loading_animation.setMovie(self.movie)
         self.movie.setCacheMode(QMovie.CacheAll)
-        #self.model_layout.addWidget(self.loading_animation)
+        self.model_layout.addWidget(self.loading_animation)
 
         self.display_upload_button()
 
@@ -156,7 +156,7 @@ class UIMainWindow(QWidget):
         # self.horizontalLayout_media.setSizeConstraint(
         #     QtWidgets.QLayout.SetDefaultConstraint)
         # self.horizontalLayout_media.setObjectName("horizontalLayout_media")
-        # self.media_label = QtWidgets.QLabel(self)
+        self.media_label = QtWidgets.QLabel(self)
         # self.horizontalLayout_media.addWidget(self.media_label)
 
         self.logo_layout = QtWidgets.QHBoxLayout()
@@ -290,22 +290,22 @@ class UIMainWindow(QWidget):
                 self.media.itemAt(i).widget().deleteLater()
 
             # Run inference on video and display
-            detection.video_detection(inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4"))
-            #self.movie.start()
+            #detection.video_detection(inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4"))
+            self.movie.start()
 
-            #thread = threading.Thread(target=detection.video_detection, args=(
-            #    inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4")))
-            #thread.start()
+            thread = threading.Thread(target=detection.video_detection, args=(
+               inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4")))
+            thread.start()
 
-            # while True:
-            #     QtWidgets.qApp.processEvents()
-            #     if thread.isAlive():
-            #         self.movie.start()
-            #     else:
-            #         self.movie.stop()
-            #         self.movie.disconnect()
-            #         self.loading_animation.clear()
-            #         break
+            while True:
+                QtWidgets.qApp.processEvents()
+                if thread.isAlive():
+                    self.movie.start()
+                else:
+                    self.movie.stop()
+                    self.movie.disconnect()
+                    self.loading_animation.clear()
+                    break
 
             self.display(os.path.abspath("predicted.mp4"))
 
@@ -507,12 +507,6 @@ class UIMainWindow(QWidget):
         self.upload_button.setObjectName("upload_button")
         self.detection_info_layout.addWidget(self.upload_button)
         self.upload_button.clicked.connect(self.open_file)
-
-    def start_loading(self):
-        self.movie.start()
-
-    def stop_loading(self):
-        self.movie.stop()
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
