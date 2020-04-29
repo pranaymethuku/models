@@ -26,6 +26,8 @@ import notification
 import threading
 from object_detection.db import database
 
+VIDEOS = [".mov", ".mp4", ".flv", ".avi", ".ogg", ".wmv"]
+
 class UIMainWindow(QWidget):
     def setupUi(self, MainWindow):
         # Set up MainWindow information
@@ -282,7 +284,7 @@ class UIMainWindow(QWidget):
                 inference_graph, labelmap, tier, name, os.path.abspath("predicted.jpg"))
             self.display(os.path.abspath("predicted.jpg"))
 
-        if file_extension[1] == '.mp4':
+        if file_extension[1] in VIDEOS:
             # Clear area so everything isn't weird
             for i in reversed(range(self.media.count())):
                 self.media.itemAt(i).widget().deleteLater()
