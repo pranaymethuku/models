@@ -41,8 +41,8 @@ class UIMainWindow(QWidget):
         self.central_widget = QtWidgets.QWidget(MainWindow)
         self.central_widget.setObjectName("central_widget")
 
-        self.gridLayout_2 = QtWidgets.QGridLayout(self.central_widget)
-        self.gridLayout_2.setObjectName("gridLayout_2")
+        self.grid_layout = QtWidgets.QGridLayout(self.central_widget)
+        self.grid_layout.setObjectName("grid_layout")
 
         self.display_title()
 
@@ -125,7 +125,7 @@ class UIMainWindow(QWidget):
         self.capture_button.clicked.connect(self.capture_media)
 
         self.detection_info_layout.addWidget(self.capture_button)
-        self.gridLayout_2.addLayout(self.detection_info_layout, 1, 0, 1, 2)
+        self.grid_layout.addLayout(self.detection_info_layout, 1, 0, 1, 2)
 
         #self.model_layout = QtWidgets.QGridLayout()
         # self.model_layout.setObjectName("model_layout")
@@ -149,7 +149,7 @@ class UIMainWindow(QWidget):
         self.model_view.setObjectName("model_view")
 
         self.model_layout.addWidget(self.model_view, 0, 0, 1, 1)
-        self.gridLayout_2.addLayout(self.model_layout, 2, 0, 1, 2)
+        self.grid_layout.addLayout(self.model_layout, 2, 0, 1, 2)
 
         # self.horizontalLayout_media = QtWidgets.QHBoxLayout(
         #     self.central_widget)
@@ -185,7 +185,7 @@ class UIMainWindow(QWidget):
         self.logo.setIndent(0)
         self.logo.setObjectName("logo")
         self.logo_layout.addWidget(self.logo)
-        self.gridLayout_2.addLayout(self.logo_layout, 3, 0, 1, 1)
+        self.grid_layout.addLayout(self.logo_layout, 3, 0, 1, 1)
 
         self.exit_button_layout = QtWidgets.QHBoxLayout()
         self.exit_button_layout.setSizeConstraint(
@@ -227,7 +227,7 @@ class UIMainWindow(QWidget):
         self.exit_button.setObjectName("exit_button")
         self.exit_button_layout.addWidget(self.stop_button)
         self.exit_button_layout.addWidget(self.exit_button)
-        self.gridLayout_2.addLayout(self.exit_button_layout, 3, 1, 1, 1)
+        self.grid_layout.addLayout(self.exit_button_layout, 3, 1, 1, 1)
         self.exit_button.clicked.connect(self.exit)
 
         MainWindow.setCentralWidget(self.central_widget)
@@ -498,7 +498,7 @@ class UIMainWindow(QWidget):
         self.title.setAlignment(QtCore.Qt.AlignCenter)
         self.title.setObjectName("title")
         self.title_layout.addWidget(self.title)
-        self.gridLayout_2.addLayout(self.title_layout, 0, 0, 1, 2)
+        self.grid_layout.addLayout(self.title_layout, 0, 0, 1, 2)
 
     def display_upload_button(self):
         self.upload_button = QtWidgets.QPushButton(self.central_widget)
