@@ -123,3 +123,4 @@ research/object_detection/inference_scripts/sony-car-796x418.jpg
 research/object_detection/inference_scripts/tier_4_test
 research/object_detection/inference_scripts/*.jpg
 research/object_detection/inference_scripts/*.mp4
+research/object_detection/inference_scripts/*.jpeg
