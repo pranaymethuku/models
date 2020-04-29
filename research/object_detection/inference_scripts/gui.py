@@ -131,7 +131,6 @@ class UIMainWindow(QWidget):
         # self.model_layout.setObjectName("model_layout")
         #self.model_view = QtWidgets.QGraphicsView(self.central_widget)
         self.model_view = QtWidgets.QWidget(self.central_widget)
-        
         self.model_view.setGeometry(QtCore.QRect(10, 140, 961, 491))
         self.model_view.setStyleSheet(
             "border: 2px solid black; background-color: #e8e9eb")
@@ -152,13 +151,13 @@ class UIMainWindow(QWidget):
         self.model_layout.addWidget(self.model_view, 0, 0, 1, 1)
         self.gridLayout_2.addLayout(self.model_layout, 2, 0, 1, 2)
 
-        #self.horizontalLayout_media = QtWidgets.QHBoxLayout(
-        #    self.central_widget)
-        #self.horizontalLayout_media.setSizeConstraint(
-        #    QtWidgets.QLayout.SetDefaultConstraint)
-        #self.horizontalLayout_media.setObjectName("horizontalLayout_media")
-        #self.media_label = QtWidgets.QLabel(self)
-        #self.horizontalLayout_media.addWidget(self.media_label)
+        # self.horizontalLayout_media = QtWidgets.QHBoxLayout(
+        #     self.central_widget)
+        # self.horizontalLayout_media.setSizeConstraint(
+        #     QtWidgets.QLayout.SetDefaultConstraint)
+        # self.horizontalLayout_media.setObjectName("horizontalLayout_media")
+        self.media_label = QtWidgets.QLabel(self)
+        # self.horizontalLayout_media.addWidget(self.media_label)
 
         self.logo_layout = QtWidgets.QHBoxLayout()
         self.logo_layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
@@ -291,22 +290,22 @@ class UIMainWindow(QWidget):
                 self.media.itemAt(i).widget().deleteLater()
 
             # Run inference on video and display
-            detection.video_detection(inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4"))
-            #self.movie.start()
+            #detection.video_detection(inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4"))
+            self.movie.start()
 
-            #thread = threading.Thread(target=detection.video_detection, args=(
-            #    inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4")))
-            #thread.start()
+            thread = threading.Thread(target=detection.video_detection, args=(
+               inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4")))
+            thread.start()
 
-            # while True:
-            #     QtWidgets.qApp.processEvents()
-            #     if thread.isAlive():
-            #         self.movie.start()
-            #     else:
-            #         self.movie.stop()
-            #         self.movie.disconnect()
-            #         self.loading_animation.clear()
-            #         break
+            while True:
+                QtWidgets.qApp.processEvents()
+                if thread.isAlive():
+                    self.movie.start()
+                else:
+                    self.movie.stop()
+                    self.movie.disconnect()
+                    self.loading_animation.clear()
+                    break
 
             self.display(os.path.abspath("predicted.mp4"))
 
@@ -508,12 +507,6 @@ class UIMainWindow(QWidget):
         self.upload_button.setObjectName("upload_button")
         self.detection_info_layout.addWidget(self.upload_button)
         self.upload_button.clicked.connect(self.open_file)
-
-    def start_loading(self):
-        self.movie.start()
-
-    def stop_loading(self):
-        self.movie.stop()
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
