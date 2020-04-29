@@ -26,10 +26,7 @@ import notification
 import threading
 from object_detection.db import database
 
-VIDEOS = [".mov", ".mp4", ".flv", ".avi", ".ogg", ".wmv"]
-
-
-class Ui_MainWindow(QWidget):
+class UIMainWindow(QWidget):
     def setupUi(self, MainWindow):
         # Set up MainWindow information
         MainWindow.setObjectName("MainWindow")
@@ -109,7 +106,8 @@ class Ui_MainWindow(QWidget):
 
         self.loading_animation = QtWidgets.QLabel(self)
         self.movie = QMovie("images/loading.gif")
-        self.loading_animation.setAlignment(QtCore.Qt.AlignCenter | QtCore.Qt.AlignHCenter)
+        self.loading_animation.setAlignment(
+            QtCore.Qt.AlignCenter | QtCore.Qt.AlignHCenter)
         self.loading_animation.setMovie(self.movie)
         self.movie.setCacheMode(QMovie.CacheAll)
         self.movie.loopCount()
@@ -129,11 +127,12 @@ class Ui_MainWindow(QWidget):
         self.gridLayout_2.addLayout(self.detection_info_layout, 1, 0, 1, 2)
 
         #self.model_layout = QtWidgets.QGridLayout()
-        #self.model_layout.setObjectName("model_layout")
+        # self.model_layout.setObjectName("model_layout")
         self.model_view = QtWidgets.QGraphicsView(self.central_widget)
         #self.model_view = QtWidgets.QWidget(self.central_widget)
         self.model_view.setGeometry(QtCore.QRect(10, 140, 961, 491))
-        self.model_view.setStyleSheet("border: 2px solid black; background-color: #e8e9eb")
+        self.model_view.setStyleSheet(
+            "border: 2px solid black; background-color: #e8e9eb")
 
         self.media = QHBoxLayout(self.model_view)
         self.media.setContentsMargins(0, 0, 0, 0)
@@ -284,7 +283,7 @@ class Ui_MainWindow(QWidget):
                 inference_graph, labelmap, tier, name, os.path.abspath("predicted.jpg"))
             self.display(os.path.abspath("predicted.jpg"))
 
-        if file_extension[1] in VIDEOS:
+        if file_extension[1] == '.mp4':
             # Clear area so everything isn't weird
             for i in reversed(range(self.media.count())):
                 self.media.itemAt(i).widget().deleteLater()
@@ -293,7 +292,8 @@ class Ui_MainWindow(QWidget):
             #detection.video_detection(inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4"))
             self.start_loading()
 
-            thread = threading.Thread(target=detection.video_detection, args=(inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4")))
+            thread = threading.Thread(target=detection.video_detection, args=(
+                inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4")))
             thread.start()
 
             while True:
@@ -431,7 +431,8 @@ class Ui_MainWindow(QWidget):
         if results:
             best_frame, overall_detected_class, best_score, average_score, detection_time = results
 
-            filename = "{} {} at {}.jpeg".format(overall_detected_class, best_score, detection_time).replace(" ", "_")
+            filename = "{} {} at {}.jpeg".format(
+                overall_detected_class, best_score, detection_time).replace(" ", "_")
             cv2.imwrite(filename, best_frame)
 
             database.insert_webcam_detection(self.conn, os.path.abspath(
@@ -512,6 +513,7 @@ class Ui_MainWindow(QWidget):
         self.movie.stop()
 
 
+
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
 
@@ -520,7 +522,7 @@ if __name__ == "__main__":
     app.setStyleSheet(stylesheet)
 
     MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
+    ui = UIMainWindow()
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())
