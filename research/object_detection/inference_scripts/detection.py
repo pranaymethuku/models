@@ -336,18 +336,27 @@ def video_detection(inference_graph, labelmap, tier, input_video, output_video, 
             classification = detect_on_single_frame(
                 frame, category_index, detection_model, tflite=tflite)
             out.write(classification.Image)
-
-            classes.append(classification.Classes)
-            scores.append(classification.Scores)
+            
+            # ignore if no classification is made
+            if (len(classification.Classes) > 0):
+                classes.append(classification.Classes)
+                scores.append(classification.Scores)
 
         frame_count += 1
 
+     # Convert the lists to numpy arrays and flatten them
     classes = np.array(classes).flatten()
     scores = np.array(scores).flatten()
+    # do not save to the database if there hasn't been any classification, nothing to summarize
     if (len(classes) > 0):
+        # now classes is a list of consecutive detected classes
+        # not necessarily all the same because the model isn't perfect with all angles
+        # so we need to get the "mode", i.e most frequent class
         overall_detected_class = stats.mode(classes)[0][0]
         detected_class_indices = np.argwhere(classes == overall_detected_class)
+        # get all scores corresponding to the mode class
         detected_class_scores = scores[detected_class_indices]
+        # aggregate all scores corresponding to the mode class
         best_score = np.max(detected_class_scores)
 
         conn = database.create_connection(database.DATABASE_PATH)
