@@ -129,8 +129,8 @@ class UIMainWindow(QWidget):
 
         #self.model_layout = QtWidgets.QGridLayout()
         # self.model_layout.setObjectName("model_layout")
-        #self.model_view = QtWidgets.QGraphicsView(self.central_widget)
-        self.model_view = QtWidgets.QWidget(self.central_widget)
+        self.model_view = QtWidgets.QGraphicsView(self.central_widget)
+        #self.model_view = QtWidgets.QWidget(self.central_widget)
         self.model_view.setGeometry(QtCore.QRect(10, 140, 961, 491))
         self.model_view.setStyleSheet(
             "border: 2px solid black; background-color: #e8e9eb")
