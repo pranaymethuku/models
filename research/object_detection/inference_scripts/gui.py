@@ -421,7 +421,6 @@ class UIMainWindow(QWidget):
     def update_frame(self):
         # Get frame
         _, self.image = self.capture.read()
-        self.image = cv2.flip(self.image, 1)
 
         # Run inference on frame and display to screen
         classification = detection.detect_on_single_frame(
