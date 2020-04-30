@@ -3,7 +3,7 @@ NOTE: This Python script was originally acquired from
 https://tensorflow-object-detection-api-tutorial.readthedocs.io/en/latest/training.html#converting-from-csv-to-record
 
 Updated on Sun Apr 5 2020
-@author: pranaymethuku
+@author: Ruksana Kabealo, Pranay Methuku, Abirami Senthilvelan, Malay Shah
 
 Class: CSE 5915 - Information Systems
 Section: 6pm TR, Spring 2020

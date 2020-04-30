@@ -1,6 +1,6 @@
 """
 Created on Thu Apr 27 2020
-@author: rkabealo
+@author: Ruksana Kabealo, Pranay Methuku, Abirami Senthilvelan, Malay Shah
 
 Class: CSE 5915 - Information Systems
 Section: 6pm TR, Spring 2020
