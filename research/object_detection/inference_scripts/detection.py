@@ -309,14 +309,14 @@ def video_detection(inference_graph, labelmap, tier, input_video, output_video, 
 
     # Load video using OpenCV
     cap = cv2.VideoCapture(input_video)
-    # cap.set(cv2.CAP_PROP_POS_FRAMES, 581)
+    # cap.set(cv2.CAP_PROP_POS_FRAMES, 601)
 
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     out = cv2.VideoWriter(output_video, fourcc, 30.0, (int(
         cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))))
 
     total_frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    cap.set(cv2.CAP_PROP_POS_FRAMES, 150)
+    # cap.set(cv2.CAP_PROP_POS_FRAMES, 150)
     classes = []
     scores = []
 

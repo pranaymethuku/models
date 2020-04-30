@@ -74,9 +74,6 @@ class UIMainWindow(QWidget):
         # Creates the inference media layout
         self.create_inference_media()
 
-        self.model_layout = QtWidgets.QGridLayout()
-        self.model_layout.setObjectName("model_layout")
-
         # Displays the upload and capture buttons in the layout
         self.display_upload_button()
         self.display_capture_button()
@@ -172,8 +169,6 @@ class UIMainWindow(QWidget):
         labelmap, inference_graph = self.get_path()
         output_path = os.path.abspath("captures/{}_result{}".format(file_basename, file_extension[1]))
         #self.loading_animation.show()
-        for i in reversed(range(self.media.count())):
-            self.media.itemAt(i).widget().show()
 
         if file_extension[1] == ".jpg" or file_extension[1] == ".jpeg":
             # Run inference on image and display
@@ -185,8 +180,6 @@ class UIMainWindow(QWidget):
         if file_extension[1] in VIDEOS:
             # Run inference on video and display
             #detection.video_detection(inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4"))
-            for i in reversed(range(self.media.count())):
-                self.media.itemAt(i).widget().hide()
             self.movie.start()
 
             thread = threading.Thread(target=detection.video_detection, args=(
@@ -199,9 +192,10 @@ class UIMainWindow(QWidget):
                     self.movie.start()
                 else:
                     self.movie.stop()
-                    self.movie.disconnect()
-                    #self.loading_animation.hide()
+                    #self.movie.disconnect()
+                    self.loading_animation.hide()
                     self.loading_animation.clear()
+                    self.clear_screen()
                     break
 
             self.display(output_path)
@@ -452,6 +446,9 @@ class UIMainWindow(QWidget):
         font.setPointSize(14)
         self.step_3_label.setFont(font)
         self.step_3_label.setObjectName("step_3_label")
+
+        self.model_layout = QtWidgets.QGridLayout()
+        self.model_layout.setObjectName("model_layout")
 
     def display_upload_button(self):
         self.upload_button = QtWidgets.QPushButton(self.central_widget)
