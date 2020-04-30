@@ -244,7 +244,7 @@ class UIMainWindow(QWidget):
         self.stop_button.setVisible(False)
         self.capture_button.setEnabled(True)
         self.upload_button.setEnabled(True)
-        self.media_label.hide()
+        self.media_label.setParent(None)
 
     def exit(self):
         sys.exit()
@@ -283,6 +283,7 @@ class UIMainWindow(QWidget):
             self.media_label.setPixmap(pixmap)
             self.resize(pixmap.width(), pixmap.height())
             self.media.addWidget(self.media_label)
+            self.media_label.show()
             self.media.setAlignment(Qt.AlignCenter)
         else:
             # Remove all other media
@@ -328,7 +329,7 @@ class UIMainWindow(QWidget):
 
             # Send the notification email
             t1 = threading.Thread(target=notification.send_notification_email, args=(
-                (filename, overall_detected_class, best_score, average_score, detection_time)))
+                (output_path, overall_detected_class, best_score, average_score, detection_time)))
             t1.start()
 
         # Display the classified frame to the screen
