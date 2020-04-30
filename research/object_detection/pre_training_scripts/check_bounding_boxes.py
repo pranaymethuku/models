@@ -2,7 +2,7 @@
 NOTE: This Python script uses some code from Stack Overflow (I lost the original link)
 
 Updated on Tue Apr 8 2020
-@author: pranaymethuku
+@author: Ruksana Kabealo, Pranay Methuku, Abirami Senthilvelan, Malay Shah
 
 Class: CSE 5915 - Information Systems
 Section: 6pm TR, Spring 2020

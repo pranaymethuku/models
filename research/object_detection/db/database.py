@@ -1,3 +1,16 @@
+"""
+Created on Thu Apr 9 2020
+@author: pranaymethuku
+
+Class: CSE 5915 - Information Systems
+Section: 6pm TR, Spring 2020
+Prof: Prof. Jayanti
+
+A Python 3 script for holding utility functions to update the database
+
+Usage:
+    python3 database.py
+"""
 import sqlite3
 import os
 import numpy as np
