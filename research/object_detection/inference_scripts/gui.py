@@ -170,6 +170,9 @@ class UIMainWindow(QWidget):
         output_path = os.path.abspath("captures/{}_result{}".format(file_basename, file_extension[1]))
         #self.loading_animation.show()
 
+        if hasattr(self, 'video'):
+            self.video.hide()
+
         if file_extension[1] == ".jpg" or file_extension[1] == ".jpeg":
             # Run inference on image and display
             
