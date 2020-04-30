@@ -376,6 +376,7 @@ class Ui_MainWindow(QWidget):
             self.resize(pixmap.width(), pixmap.height())
             self.media.addWidget(self.media_label)
             self.media.setAlignment(Qt.AlignCenter)
+            self.media_label.setAlignment(Qt.AlignCenter)
         else:
             # Remove all other media
             self.clear_screen()
