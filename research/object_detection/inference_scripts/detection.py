@@ -473,14 +473,14 @@ def webcam_detection(inference_graph, labelmap, tier):
             classification, seen_classes, seen_scores, seen_frames, current_detection_window)
 
         if results:
-            best_frame, overall_detected_class, best_score, _, detection_time = results
-            cv2.imshow('Best Frame', best_frame)
+            best_frame, overall_detected_class, best_score, average_score, detection_time = results
             filename = "{} {} at {}.jpg".format(
                 overall_detected_class, best_score, detection_time).replace(" ", "_")
-            print(cv2.imwrite(filename, best_frame))
 
-            database.insert_webcam_detection(conn, os.path.abspath(
-                filename), best_score, overall_detected_class, tier, inference_graph)
+            output_path = os.path.abspath("captures/" + filename)
+            cv2.imwrite(output_path, best_frame)
+
+            database.insert_webcam_detection(conn, output_path, best_score, overall_detected_class, tier, inference_graph)
 
             # Send the notification email
             t1 = threading.Thread(target=notification.send_notification_email, args=(
