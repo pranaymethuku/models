@@ -36,6 +36,8 @@ import argparse
 from PIL import Image
 import collections
 from datetime import datetime
+import notification
+import threading
 from object_detection.db import database
 
 # Import utilites
@@ -479,6 +481,11 @@ def webcam_detection(inference_graph, labelmap, tier):
 
             database.insert_webcam_detection(conn, os.path.abspath(
                 filename), best_score, overall_detected_class, tier, inference_graph)
+
+            # Send the notification email
+            t1 = threading.Thread(target=notification.send_notification_email, args=(
+                (output_path, overall_detected_class, best_score, average_score, detection_time)))
+            t1.start()
 
         if (cv2.waitKey(1) & 0xFF == ord('q')):
             cap.release()
