@@ -74,29 +74,22 @@ class UIMainWindow(QWidget):
         # Add the detection layouts to the main central layout
         self.grid_layout.addLayout(self.detection_info_layout, 1, 0, 1, 2)
 
-        self.loading_animation = QtWidgets.QLabel(self)
-        self.movie = QMovie(os.path.abspath("images/loading.gif"))
-        self.loading_animation.setAlignment(QtCore.Qt.AlignCenter | QtCore.Qt.AlignHCenter)
-        self.loading_animation.setMovie(self.movie)
-        self.movie.setCacheMode(QMovie.CacheAll)
-        self.model_layout.addWidget(self.loading_animation)
+        # Display the loading gif when a video is inferencing
+        self.display_loading_animation()
 
         # self.model_view = QtWidgets.QGraphicsView(self.central_widget)
         self.model_view = QtWidgets.QWidget(self.central_widget)
         self.model_view.setGeometry(QtCore.QRect(10, 140, 961, 491))
-        self.model_view.setStyleSheet(
-            "border: 2px solid black; background-color: #e8e9eb")
+        self.model_view.setStyleSheet("border: 2px solid black; background-color: #e8e9eb")
 
         self.media = QHBoxLayout(self.model_view)
         self.media.setContentsMargins(0, 0, 0, 0)
         self.media.setObjectName("media")
 
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(
-            self.model_view.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(self.model_view.sizePolicy().hasHeightForWidth())
         self.model_view.setSizePolicy(sizePolicy)
         self.model_view.setObjectName("model_view")
 
@@ -111,35 +104,11 @@ class UIMainWindow(QWidget):
         self.media_label = QtWidgets.QLabel(self)
         # self.horizontalLayout_media.addWidget(self.media_label)
 
-        self.logo_layout = QtWidgets.QHBoxLayout()
-        self.logo_layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
-        self.logo_layout.setObjectName("logo_layout")
-        self.logo = QtWidgets.QLabel(self.central_widget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(
-            self.logo.sizePolicy().hasHeightForWidth())
-
-        self.logo.setSizePolicy(sizePolicy)
-        self.logo.setMinimumSize(QtCore.QSize(141, 31))
-        self.logo.setMaximumSize(QtCore.QSize(141, 31))
-        font = QtGui.QFont()
-        font.setStrikeOut(True)
-        self.logo.setFont(font)
-        self.logo.setText("")
-
-        self.logo.setPixmap(QtGui.QPixmap("images/zel_tech_logo_white.png"))
-        self.logo.setScaledContents(True)
-        self.logo.setAlignment(QtCore.Qt.AlignBottom | QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft)
-        self.logo.setIndent(0)
-        self.logo.setObjectName("logo")
-        self.logo_layout.addWidget(self.logo)
-        self.grid_layout.addLayout(self.logo_layout, 3, 0, 1, 1)
+        # Adds logo to the GUI
+        self.create_logo()
 
         self.exit_button_layout = QtWidgets.QHBoxLayout()
-        self.exit_button_layout.setSizeConstraint(
-            QtWidgets.QLayout.SetFixedSize)
+        self.exit_button_layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
         self.exit_button_layout.setContentsMargins(0, -1, -1, -1)
         self.exit_button_layout.setObjectName("exit_button_layout")
 
@@ -150,34 +119,13 @@ class UIMainWindow(QWidget):
         self.exit_button_layout.addItem(spacer_item_three)
         self.exit_button = QtWidgets.QPushButton(self.central_widget)
 
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(
-            self.exit_button.sizePolicy().hasHeightForWidth())
+        # Displays the stop button
+        self.display_stop_button()
 
-        self.stop_button = QtWidgets.QPushButton(self.central_widget)
-        font = QtGui.QFont()
-        font.setFamily("consolas")
-        font.setPointSize(13)
-        self.stop_button.setFont(font)
-        self.stop_button.setObjectName("stop_button")
-        self.stop_button.clicked.connect(self.stop_webcam)
-        self.stop_button.setVisible(False)
+        # Displays the exit button
+        self.display_exit_button()
 
-        self.exit_button.setSizePolicy(sizePolicy)
-        font = QtGui.QFont()
-        font.setFamily("consolas")
-        font.setPointSize(13)
-        self.exit_button.setFont(font)
-        self.exit_button.setIconSize(QtCore.QSize(0, 0))
-        self.exit_button.setObjectName("exit_button")
-        self.exit_button_layout.addWidget(self.stop_button)
-        self.exit_button_layout.addWidget(self.exit_button)
-        self.grid_layout.addLayout(self.exit_button_layout, 3, 1, 1, 1)
-        self.exit_button.clicked.connect(self.exit)
-
+        # Add all the features and widgets created to the MainWindow
         MainWindow.setCentralWidget(self.central_widget)
 
         self.retranslate_ui(MainWindow)
@@ -187,14 +135,10 @@ class UIMainWindow(QWidget):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("TOR", "TOR"))
         MainWindow.showMaximized()
-        self.title.setText(_translate(
-            "MainWindow", "Tiered Object Recognition"))
-        self.step_1_label.setText(_translate(
-            "MainWindow", "Step 1: Choose Tier!"))
-        self.step_2_label.setText(_translate(
-            "MainWindow", "Step 2: Choose Model!"))
-        self.step_3_label.setText(_translate(
-            "MainWindow", "Step 3: Upload or Capture!"))
+        self.title.setText(_translate("MainWindow", "Tiered Object Recognition"))
+        self.step_1_label.setText(_translate("MainWindow", "Step 1: Choose Tier!"))
+        self.step_2_label.setText(_translate("MainWindow", "Step 2: Choose Model!"))
+        self.step_3_label.setText(_translate("MainWindow", "Step 3: Upload or Capture!"))
         self.upload_button.setText(_translate("MainWindow", "Upload"))
         self.capture_button.setText(_translate("MainWindow", "Capture"))
         self.exit_button.setText(_translate("MainWindow", "Exit"))
@@ -303,15 +247,12 @@ class UIMainWindow(QWidget):
     def get_path(self):
         # Get path from the tier number
         tier = self.tier_dropdown.currentText().split(" ")[1]
-        labelmap = os.path.abspath(
-            "../tor_results/tier_{}/labelmap.pbtxt".format(tier))
+        labelmap = os.path.abspath("../tor_results/tier_{}/labelmap.pbtxt".format(tier))
         inference_graph = ""
         if self.model_dropdown.currentText() == "Faster RCNN Inception V2 Coco":
-            inference_graph = os.path.abspath(
-                "../tor_results/tier_{}/faster_rcnn_inception_v2_coco_2018_01_28.pb".format(tier))
+            inference_graph = os.path.abspath("../tor_results/tier_{}/faster_rcnn_inception_v2_coco_2018_01_28.pb".format(tier))
         elif self.model_dropdown.currentText() == "SSD Inception V2 Coco":
-            inference_graph = os.path.abspath(
-                "../tor_results/tier_{}/ssd_inception_v2_coco_2018_01_28.tflite".format(tier))
+            inference_graph = os.path.abspath("../tor_results/tier_{}/ssd_inception_v2_coco_2018_01_28.tflite".format(tier))
         return labelmap, inference_graph
 
     def display(self, media=None):
@@ -522,6 +463,69 @@ class UIMainWindow(QWidget):
         self.capture_button.setObjectName("capture_button")
         self.detection_info_layout.addWidget(self.capture_button)
         self.capture_button.clicked.connect(self.capture_media)
+
+    def display_loading_animation(self):
+        self.loading_animation = QtWidgets.QLabel(self)
+        self.movie = QMovie(os.path.abspath("images/loading.gif"))
+        self.loading_animation.setAlignment(QtCore.Qt.AlignCenter | QtCore.Qt.AlignHCenter)
+        self.loading_animation.setMovie(self.movie)
+        self.movie.setCacheMode(QMovie.CacheAll)
+        self.model_layout.addWidget(self.loading_animation)
+
+    def create_logo(self):
+        self.logo_layout = QtWidgets.QHBoxLayout()
+        self.logo_layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
+        self.logo_layout.setObjectName("logo_layout")
+        self.logo = QtWidgets.QLabel(self.central_widget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.logo.sizePolicy().hasHeightForWidth())
+
+        self.logo.setSizePolicy(sizePolicy)
+        self.logo.setMinimumSize(QtCore.QSize(141, 31))
+        self.logo.setMaximumSize(QtCore.QSize(141, 31))
+        font = QtGui.QFont()
+        font.setStrikeOut(True)
+        self.logo.setFont(font)
+        self.logo.setText("")
+
+        self.logo.setPixmap(QtGui.QPixmap("images/zel_tech_logo_white.png"))
+        self.logo.setScaledContents(True)
+        self.logo.setAlignment(QtCore.Qt.AlignBottom | QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft)
+        self.logo.setIndent(0)
+        self.logo.setObjectName("logo")
+        self.logo_layout.addWidget(self.logo)
+        self.grid_layout.addLayout(self.logo_layout, 3, 0, 1, 1)
+
+    def display_stop_button(self):
+        self.stop_button = QtWidgets.QPushButton(self.central_widget)
+        font = QtGui.QFont()
+        font.setFamily("consolas")
+        font.setPointSize(13)
+        self.stop_button.setFont(font)
+        self.stop_button.setObjectName("stop_button")
+        self.stop_button.clicked.connect(self.stop_webcam)
+        self.stop_button.setVisible(False)
+
+    def display_exit_button(self):
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.exit_button.sizePolicy().hasHeightForWidth())
+        self.exit_button.setSizePolicy(sizePolicy)
+        font = QtGui.QFont()
+        font.setFamily("consolas")
+        font.setPointSize(13)
+        self.exit_button.setFont(font)
+        self.exit_button.setIconSize(QtCore.QSize(0, 0))
+        self.exit_button.setObjectName("exit_button")
+        self.exit_button_layout.addWidget(self.stop_button)
+        self.exit_button_layout.addWidget(self.exit_button)
+        self.grid_layout.addLayout(self.exit_button_layout, 3, 1, 1, 1)
+        self.exit_button.clicked.connect(self.exit)
+
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
