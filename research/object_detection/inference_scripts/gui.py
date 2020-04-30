@@ -1,11 +1,17 @@
 #!/home/rkabealo/anaconda3/envs/tor/bin/python
-# -*- coding: utf-8 -*-
+"""
+Created on Thu Apr 9 2020
+@author: malayshah
 
-# Form implementation generated from reading ui file 'design.ui'
-#
-# Created by: PyQt5 UI code generator 5.14.2
-#
-# WARNING! All changes made in this file will be lost!
+Class: CSE 5915 - Information Systems
+Section: 6pm TR, Spring 2020
+Prof: Prof. Jayanti
+
+A Python 3 script for a GUI that allows for image and video inference as well as real-time inferencing utilizing PyQt5
+
+Usage:
+    python3 gui.py
+"""
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import *
