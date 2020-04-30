@@ -82,7 +82,7 @@ class UIMainWindow(QWidget):
         self.grid_layout.addLayout(self.detection_info_layout, 1, 0, 1, 2)
 
         # Display the loading gif when a video is inferencing
-        self.display_loading_animation()
+        #self.display_loading_animation()
 
         # self.model_view = QtWidgets.QGraphicsView(self.central_widget)
         self.model_view = QtWidgets.QWidget(self.central_widget)
@@ -182,24 +182,23 @@ class UIMainWindow(QWidget):
 
         if file_extension[1] in VIDEOS:
             # Run inference on video and display
-            #detection.video_detection(inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4"))
-            self.movie.start()
+            detection.video_detection(inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4"))
+            #self.movie.start()
 
-            thread = threading.Thread(target=detection.video_detection, args=(
-               inference_graph, labelmap, tier, name, output_path))
-            thread.start()
+            #thread = threading.Thread(target=detection.video_detection, args=(inference_graph, labelmap, tier, name, output_path))
+            #thread.start()
 
-            while True:
-                QtWidgets.qApp.processEvents()
-                if thread.isAlive():
-                    self.movie.start()
-                else:
-                    self.movie.stop()
-                    #self.movie.disconnect()
-                    self.loading_animation.hide()
-                    self.loading_animation.clear()
-                    self.clear_screen()
-                    break
+            # while True:
+            #     QtWidgets.qApp.processEvents()
+            #     if thread.isAlive():
+            #         self.movie.start()
+            #     else:
+            #         self.movie.stop()
+            #         #self.movie.disconnect()
+            #         #self.loading_animation.hide()
+            #         #self.loading_animation.clear()
+            #         self.clear_screen()
+            #         break
 
             self.display(output_path)
 
