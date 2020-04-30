@@ -1,4 +1,4 @@
-# TOR Tutorial for Model Training and Inference
+# TOR Guide for Model Training and Inference
 
 **Platform**: Linux (tested on CentOS 7 and Ubuntu 18.04)
 
@@ -27,6 +27,7 @@ conda install Cython
 conda install jupyter
 conda install matplotlib
 conda install pandas
+pip install sqlite3
 pip install opencv-python
 conda install imageio
 conda install ffmpeg
@@ -88,6 +89,8 @@ The rest of the steps will be executed from within the `models/research/object_d
 
 * `inference_scripts` - where all scripts needed to run inference will be stored.
 
+* `db` - where the database, and the scripts needed to create/update it will be stored.
+
 Essentially, the directory structure under `object_detection/` would look something like this:
 
 ```txt
@@ -128,6 +131,13 @@ Essentially, the directory structure under `object_detection/` would look someth
 ├── inference_scripts
 │   ├── detection.py
 │   ├── gui.py
+│   └── ...
+├── db
+│   ├── database.py
+│   ├── detection.db
+│   ├── populate_categories.db
+│   ├── create_database.sql
+│   ├── refresh_database.sh
 │   └── ...
 └── ...
 ```
@@ -305,19 +315,31 @@ tflite_convert --output_file=tor_models/tier_2/tier_2_ssd_inception_v2_coco_2018
 
 The above command will generate the `tflite_graph.tflite` file under the `tier_2_ssd_inception_v2_coco_2018_01_28/tflite_ssd_graph` directory.
 
+## Database Creation
+
+Before we jump into detection, let us make sure the database which stores all detections is created and working. Navigate to the `object_detection/db` folder and run the following command:
+
+```bash
+bash refresh_database.sh
+```
+
+The above command will remove the existing `database.db` file and create a completely new database.
+
 ## Inference
 
-Now in order to run inference using the trained models, navigate to `object_detection/inference_scripts`. This can be accomplished in two ways:
+Next, we will use the above generated model files to run inference on various media using the trained models, navigate to `object_detection/inference_scripts`. This can be accomplished in two ways:
 
 1) Run the command line script `detection.py` (for power users)
 
 2) Launch a user-friendly GUI using `gui.py`
 
+**NOTE**: Both of these scripts must be run from inside the `object_detection/inference_scripts` folder to function properly.
+
 ### Command Line
 
-Let's first go over usage for `detection.py`. In order to view general information, run `python detection.py -h`. This will display all the parameters and their usage.
+Let us first go over usage for `detection.py`. In order to view general information, run `python detection.py -h`. This will display all the parameters and their usage.
 
-**NOTE**: The inference graph and label map should both correspond to the same tier, which also must be specified. The same input and output media flags must be used. For example, use -ii with -oi and -iv with -ov. 
+**NOTE**: The inference graph and label map should both correspond to the same tier, which also must be specified. The same input and output media flags must be used. For example, use -ii with -oi and -iv with -ov.
 
 **For images:**
 
@@ -333,19 +355,21 @@ Run the detection.py script while specifying the inference graph, label map, and
 
 **For webcam:**
 
-Run the detection.py script while specifying the inference graph, label map, and the use of a webcam.
+Run the detection.py script while specifying the inference graph, label map, and the input webcam flag.
 
 `python detection.py -ig <path to inference graph> -l <path to labelmap> -t <tier number> -iw`
 
+For each of the above commands, you can also customize the `--min_score_threshold`, `--max_boxes_to_draw`, and the `--grace_period` parameters as well.
+
 ### GUI
 
-Either double-click the TOR icon on the computer’s desktop, or navigate to the directory of `gui.py` and run the command `python gui.py`.
+Navigate to the `inference_scripts` directory and run the command `python gui.py`.
 
-Upon launching the application, a window will open up serving as the homepage of the application. The user can select from 4 different Tiers each having their own models trained on it.
+Upon launching the script, a window will open up serving as the homepage of the application. You can select from 4 different Tiers each having their own models trained on it.
 
-After selecting a tier and model, the user can either upload an image or video that they want inferenced or launch a webcam to inference live feed. Inferenced images and videos will be saved in the same directory as the source file of `gui.py` with the name `predicted.jpg` and `predicted.mp4`, respectively.
+After selecting a tier and model, you can either upload an image or video that you want inferenced or launch a webcam to inference live feed. Inferenced images, videos, and webcam captures from `gui.py` will be saved in the `inference_scripts/captures/` directory.
 
----TODO---
+When the GUI webcam detects a consecutive detection for ~2 seconds, it will send out an email to the user emails listed in `inference_scripts/notified_users.txt`. You can also comment out user emails to skip notifications for with a "#" in front of them.
 
 ## Resources
 

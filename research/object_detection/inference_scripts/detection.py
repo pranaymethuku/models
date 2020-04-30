@@ -316,6 +316,7 @@ def video_detection(inference_graph, labelmap, tier, input_video, output_video, 
         cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))))
 
     total_frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    cap.set(cv2.CAP_PROP_POS_FRAMES, 150)
     classes = []
     scores = []
 
