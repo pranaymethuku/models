@@ -1,4 +1,4 @@
-# TOR Tutorial for Model Training and Inference
+# TOR Guide for Model Training and Inference
 
 **Platform**: Linux (tested on CentOS 7 and Ubuntu 18.04)
 

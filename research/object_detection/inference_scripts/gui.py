@@ -27,6 +27,8 @@ import threading
 from object_detection.db import database
 
 VIDEOS = [".mov", ".mp4", ".flv", ".avi", ".ogg", ".wmv"]
+FASTER_RCNN_INCEPTION_V2_COCO = 'Faster RCNN Inception V2 Coco'
+SSD_INCEPTION_V2_COCO = "SSD Inception V2 Coco"
 
 class UIMainWindow(QWidget):
     def setupUi(self, MainWindow):
@@ -148,28 +150,30 @@ class UIMainWindow(QWidget):
         # Change the models to show based on tier selected
         self.model_dropdown.clear()
         if str(self.tier_dropdown.currentText()) == 'Tier 1':
-            self.model_dropdown.addItems(['SSD Inception V2 Coco', 'Faster RCNN Inception V2 Coco'])
+            self.model_dropdown.addItems([SSD_INCEPTION_V2_COCO, FASTER_RCNN_INCEPTION_V2_COCO])
         elif str(self.tier_dropdown.currentText()) == 'Tier 2':
-            self.model_dropdown.addItems(['SSD Inception V2 Coco', 'Faster RCNN Inception V2 Coco'])
+            self.model_dropdown.addItems([SSD_INCEPTION_V2_COCO, FASTER_RCNN_INCEPTION_V2_COCO])
         elif str(self.tier_dropdown.currentText()) == 'Tier 3':
-            self.model_dropdown.addItems(['SSD Inception V2 Coco', 'Faster RCNN Inception V2 Coco'])
+            self.model_dropdown.addItems([SSD_INCEPTION_V2_COCO, FASTER_RCNN_INCEPTION_V2_COCO])
         else:
-            self.model_dropdown.addItems(['SSD Inception V2 Coco', 'Faster RCNN Inception V2 Coco'])
+            self.model_dropdown.addItems([SSD_INCEPTION_V2_COCO, FASTER_RCNN_INCEPTION_V2_COCO])
 
     def open_file(self):
         name = QFileDialog.getOpenFileName(self, 'Open File')[0]
         file_extension = os.path.splitext(name)
+        file_basename, _ = os.path.splitext(os.path.basename(name))
         tier = self.tier_dropdown.currentText().split(" ")[1]
         # Get path of labelmap and frozen inference graph
         labelmap, inference_graph = self.get_path()
-
+        output_path = os.path.abspath("captures/{}_result{}".format(file_basename, file_extension[1]))
         #self.loading_animation.show()
 
         if file_extension[1] == ".jpg" or file_extension[1] == ".jpeg":
             # Run inference on image and display
+            
             detection.image_detection(
-                inference_graph, labelmap, tier, name, os.path.abspath("predicted.jpg"))
-            self.display(os.path.abspath("predicted.jpg"))
+                inference_graph, labelmap, tier, name, output_path)
+            self.display(output_path)
 
         if file_extension[1] in VIDEOS:
             # Run inference on video and display
@@ -177,7 +181,7 @@ class UIMainWindow(QWidget):
             self.movie.start()
 
             thread = threading.Thread(target=detection.video_detection, args=(
-               inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4")))
+               inference_graph, labelmap, tier, name, output_path))
             thread.start()
 
             while True:
@@ -192,7 +196,7 @@ class UIMainWindow(QWidget):
                     self.clear_screen()
                     break
 
-            self.display(os.path.abspath("predicted.mp4"))
+            self.display(output_path)
 
     def capture_media(self):
         self.tier = self.tier_dropdown.currentText().split(" ")[1]
@@ -249,9 +253,9 @@ class UIMainWindow(QWidget):
         tier = self.tier_dropdown.currentText().split(" ")[1]
         labelmap = os.path.abspath("../tor_results/tier_{}/labelmap.pbtxt".format(tier))
         inference_graph = ""
-        if self.model_dropdown.currentText() == "Faster RCNN Inception V2 Coco":
+        if self.model_dropdown.currentText() == FASTER_RCNN_INCEPTION_V2_COCO:
             inference_graph = os.path.abspath("../tor_results/tier_{}/faster_rcnn_inception_v2_coco_2018_01_28.pb".format(tier))
-        elif self.model_dropdown.currentText() == "SSD Inception V2 Coco":
+        elif self.model_dropdown.currentText() == SSD_INCEPTION_V2_COCO:
             inference_graph = os.path.abspath("../tor_results/tier_{}/ssd_inception_v2_coco_2018_01_28.tflite".format(tier))
         return labelmap, inference_graph
 
@@ -311,10 +315,11 @@ class UIMainWindow(QWidget):
 
             filename = "{} {} at {}.jpeg".format(
                 overall_detected_class, best_score, detection_time).replace(" ", "_")
-            cv2.imwrite(filename, best_frame)
+            
+            output_path = os.path.abspath("captures/" + filename)
+            cv2.imwrite(output_path, best_frame)
 
-            database.insert_webcam_detection(self.conn, os.path.abspath(
-                filename), best_score, overall_detected_class, self.tier, self.inference_graph)
+            database.insert_webcam_detection(self.conn, output_path, best_score, overall_detected_class, self.tier, self.inference_graph)
 
             # Send the notification email
             t1 = threading.Thread(target=notification.send_notification_email, args=(
@@ -418,7 +423,7 @@ class UIMainWindow(QWidget):
         font.setPointSize(13)
         self.model_dropdown.setFont(font)
         self.model_dropdown.setObjectName("model_dropdown")
-        self.model_dropdown.addItems(['SSD Inception V2 Coco', 'Faster RCNN Inception V2 Coco'])
+        self.model_dropdown.addItems([SSD_INCEPTION_V2_COCO, FASTER_RCNN_INCEPTION_V2_COCO])
         self.detection_info_layout.addWidget(self.model_dropdown)
 
     def create_step_2_label(self):
