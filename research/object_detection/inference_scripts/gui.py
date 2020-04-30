@@ -1,16 +1,11 @@
-"""
-Created on Thu Apr 9 2020
-@author: malayshah
+#!/home/rkabealo/anaconda3/envs/tor/bin/python
+# -*- coding: utf-8 -*-
 
-Class: CSE 5915 - Information Systems
-Section: 6pm TR, Spring 2020
-Prof: Prof. Jayanti
-
-A Python 3 script for a GUI that allows for image and video inference as well as real-time inferencing utilizing PyQt5
-
-Usage:
-    python3 gui.py
-"""
+# Form implementation generated from reading ui file 'design.ui'
+#
+# Created by: PyQt5 UI code generator 5.14.2
+#
+# WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import *
@@ -32,175 +27,262 @@ import threading
 from object_detection.db import database
 
 VIDEOS = [".mov", ".mp4", ".flv", ".avi", ".ogg", ".wmv"]
-FASTER_RCNN_INCEPTION_V2_COCO = 'Faster RCNN Inception V2 Coco'
-SSD_INCEPTION_V2_COCO = "SSD Inception V2 Coco"
 
-class UIMainWindow(QWidget):
+
+class Ui_MainWindow(QWidget):
     def setupUi(self, MainWindow):
         # Set up MainWindow information
-        self.create_main_window(MainWindow)
+        MainWindow.setObjectName("MainWindow")
+        MainWindow.setMinimumSize(QtCore.QSize(982, 713))
+        MainWindow.showMaximized()
+        MainWindow.setWindowFlags(
+            Qt.WindowCloseButtonHint | Qt.WindowMinimizeButtonHint)
+        MainWindow.setWindowIcon(QtGui.QIcon("images/tor_logo.svg"))
 
-        # Creates the widget that contains all the other buttons, dropdowns, media, etc.
         self.central_widget = QtWidgets.QWidget(MainWindow)
         self.central_widget.setObjectName("central_widget")
 
-        # Allows for automatic resizing depending on screen size
-        self.grid_layout = QtWidgets.QGridLayout(self.central_widget)
-        self.grid_layout.setObjectName("grid_layout")
+        self.gridLayout_2 = QtWidgets.QGridLayout(self.central_widget)
+        self.gridLayout_2.setObjectName("gridLayout_2")
 
-        # Displays the title
         self.display_title()
 
-        # Creates the layout for model and tier customization as well as uploading and capturing
-        self.create_detection_layout()
+        self.detection_info_layout = QtWidgets.QHBoxLayout()
+        self.detection_info_layout.setSizeConstraint(
+            QtWidgets.QLayout.SetDefaultConstraint)
+        self.detection_info_layout.setObjectName("detection_info_layout")
 
-        # Creates the first user instruction - tier selection
-        self.create_tier_selection()
+        self.step_1_Label = QtWidgets.QLabel(self.central_widget)
+        font = QtGui.QFont()
+        font.setPointSize(14)
+        font.setUnderline(True)
+        self.step_1_Label.setFont(font)
+        self.step_1_Label.setObjectName("step_1_Label")
+        self.detection_info_layout.addWidget(self.step_1_Label)
+        self.tier_dropdown = QtWidgets.QComboBox(self.central_widget)
+        font = QtGui.QFont()
+        font.setPointSize(13)
+        self.tier_dropdown.setFont(font)
+        self.tier_dropdown.setObjectName("tier_dropdown")
+        self.tier_dropdown.addItems(["Tier 1", "Tier 2", "Tier 3", "Tier 4"])
+        self.detection_info_layout.addWidget(self.tier_dropdown)
 
-        # Populates the models based on what tier is selected
-        self.tier_dropdown.currentIndexChanged[str].connect(self.on_tier_current_index_changed)
+        # Based on what tier is selected, models will be placed
+        self.tier_dropdown.currentIndexChanged[str].connect(
+            self.on_tier_currentIndexChanged)
 
-        # Adjusts the spacing between tier and model selection
-        spacer_item = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.detection_info_layout.addItem(spacer_item)
+        spacerItem = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.detection_info_layout.addItem(spacerItem)
 
-        # Creates the second user instruction - model selection
-        self.create_model_selection()
+        self.step_2_label = QtWidgets.QLabel(self.central_widget)
+        font = QtGui.QFont()
+        font.setUnderline(True)
+        font.setPointSize(14)
+        self.step_2_label.setFont(font)
+        self.step_2_label.setObjectName("step_2_label")
+        self.detection_info_layout.addWidget(self.step_2_label)
 
-        # Adjusts the spacing between model and upload/capture feature
-        spacer_item_one = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.detection_info_layout.addItem(spacer_item_one)
+        self.model_dropdown = QtWidgets.QComboBox(self.central_widget)
+        font = QtGui.QFont()
+        font.setPointSize(13)
+        self.model_dropdown.setFont(font)
+        self.model_dropdown.setObjectName("model_dropdown")
+        self.model_dropdown.addItems(
+            ['SSD Inception V2 Coco', 'Faster RCNN Inception V2 Coco'])
 
-        # Creates the inference media layout
-        self.create_inference_media()
+        self.detection_info_layout.addWidget(self.model_dropdown)
+        spacerItem1 = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.detection_info_layout.addItem(spacerItem1)
 
-        # Displays the upload and capture buttons in the layout
+        self.step_3_label = QtWidgets.QLabel(self.central_widget)
+        font = QtGui.QFont()
+        font.setUnderline(True)
+        font.setPointSize(14)
+        self.step_3_label.setFont(font)
+        self.step_3_label.setObjectName("step_3_label")
+        self.detection_info_layout.addWidget(self.step_3_label)
+
         self.display_upload_button()
-        self.display_capture_button()
 
-        # Add the detection layouts to the main central layout
-        self.grid_layout.addLayout(self.detection_info_layout, 1, 0, 1, 2)
+        self.capture_button = QtWidgets.QPushButton(self.central_widget)
+        font = QtGui.QFont()
+        font.setFamily("consolas")
+        font.setPointSize(13)
+        self.capture_button.setFont(font)
+        self.capture_button.setObjectName("capture_button")
+        self.capture_button.clicked.connect(self.capture_media)
 
-        # Display the loading gif when a video is inferencing
-        #self.display_loading_animation()
+        self.detection_info_layout.addWidget(self.capture_button)
+        self.gridLayout_2.addLayout(self.detection_info_layout, 1, 0, 1, 2)
 
-        # self.model_view = QtWidgets.QGraphicsView(self.central_widget)
-        self.model_view = QtWidgets.QWidget(self.central_widget)
+        self.model_layout = QtWidgets.QGridLayout()
+        self.model_layout.setObjectName("model_layout")
+        #self.model_view = QtWidgets.QGraphicsView(self.central_widget)
+        self.model_view = QWidget(self.central_widget)
         self.model_view.setGeometry(QtCore.QRect(10, 140, 961, 491))
-        self.model_view.setStyleSheet("border: 2px solid black; background-color: #e8e9eb")
+        self.model_view.setStyleSheet(
+            "border: 2px solid black; background-color: #e8e9eb")
 
-        # Sets up the media that will display image, video, and webcam
-        self.create_media()
+        self.media = QHBoxLayout(self.model_view)
+        self.media.setContentsMargins(0, 0, 0, 0)
+        self.media.setObjectName("media")
 
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.model_view.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.model_view.sizePolicy().hasHeightForWidth())
         self.model_view.setSizePolicy(sizePolicy)
         self.model_view.setObjectName("model_view")
 
         self.model_layout.addWidget(self.model_view, 0, 0, 1, 1)
-        self.grid_layout.addLayout(self.model_layout, 2, 0, 1, 2)
+        self.gridLayout_2.addLayout(self.model_layout, 2, 0, 1, 2)
 
-        # self.horizontalLayout_media = QtWidgets.QHBoxLayout(
-        #     self.central_widget)
-        # self.horizontalLayout_media.setSizeConstraint(
-        #     QtWidgets.QLayout.SetDefaultConstraint)
-        # self.horizontalLayout_media.setObjectName("horizontalLayout_media")
+        self.horizontalLayout_media = QtWidgets.QHBoxLayout(
+            self.central_widget)
+        self.horizontalLayout_media.setSizeConstraint(
+            QtWidgets.QLayout.SetDefaultConstraint)
+        self.horizontalLayout_media.setObjectName("horizontalLayout_media")
         self.media_label = QtWidgets.QLabel(self)
-        # self.horizontalLayout_media.addWidget(self.media_label)
+        self.horizontalLayout_media.addWidget(self.media_label)
 
-        # Adds logo to the GUI
-        self.create_logo()
+        self.logo_layout = QtWidgets.QHBoxLayout()
+        self.logo_layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
+        self.logo_layout.setObjectName("logo_layout")
+        self.logo = QtWidgets.QLabel(self.central_widget)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(
+            self.logo.sizePolicy().hasHeightForWidth())
 
-        # Creates the exit layout
-        self.create_exit_layout()
+        self.logo.setSizePolicy(sizePolicy)
+        self.logo.setMinimumSize(QtCore.QSize(141, 31))
+        self.logo.setMaximumSize(QtCore.QSize(141, 31))
+        font = QtGui.QFont()
+        font.setStrikeOut(True)
+        self.logo.setFont(font)
+        self.logo.setText("")
 
-        spacer_item_two = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
-        self.exit_button_layout.addItem(spacer_item_two)
+        self.logo.setPixmap(QtGui.QPixmap("images/zel_tech_logo_white.png"))
+        self.logo.setScaledContents(True)
+        self.logo.setAlignment(QtCore.Qt.AlignBottom |
+                               QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft)
+        self.logo.setIndent(0)
+        self.logo.setObjectName("logo")
+        self.logo_layout.addWidget(self.logo)
+        self.gridLayout_2.addLayout(self.logo_layout, 3, 0, 1, 1)
 
-        spacer_item_three = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.exit_button_layout.addItem(spacer_item_three)
+        self.exit_button_layout = QtWidgets.QHBoxLayout()
+        self.exit_button_layout.setSizeConstraint(
+            QtWidgets.QLayout.SetFixedSize)
+        self.exit_button_layout.setContentsMargins(0, -1, -1, -1)
+        self.exit_button_layout.setObjectName("exit_button_layout")
+
+        spacerItem2 = QtWidgets.QSpacerItem(
+            20, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
+        self.exit_button_layout.addItem(spacerItem2)
+
+        spacerItem3 = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.exit_button_layout.addItem(spacerItem3)
         self.exit_button = QtWidgets.QPushButton(self.central_widget)
 
-        # Displays the stop button
-        self.display_stop_button()
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(
+            self.exit_button.sizePolicy().hasHeightForWidth())
 
-        # Displays the exit button
-        self.display_exit_button()
+        self.stop_button = QtWidgets.QPushButton(self.central_widget)
+        font = QtGui.QFont()
+        font.setFamily("consolas")
+        font.setPointSize(13)
+        self.stop_button.setFont(font)
+        self.stop_button.setObjectName("stop_button")
+        self.stop_button.clicked.connect(self.stop_webcam)
+        self.stop_button.setVisible(False)
 
-        # Add all the features and widgets created to the MainWindow
+        self.exit_button.setSizePolicy(sizePolicy)
+        font = QtGui.QFont()
+        font.setFamily("consolas")
+        font.setPointSize(13)
+        self.exit_button.setFont(font)
+        self.exit_button.setIconSize(QtCore.QSize(0, 0))
+        self.exit_button.setObjectName("exit_button")
+        self.exit_button_layout.addWidget(self.stop_button)
+        self.exit_button_layout.addWidget(self.exit_button)
+        self.gridLayout_2.addLayout(self.exit_button_layout, 3, 1, 1, 1)
+        self.exit_button.clicked.connect(self.exit)
+
         MainWindow.setCentralWidget(self.central_widget)
 
-        self.retranslate_ui(MainWindow)
+        self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-    def retranslate_ui(self, MainWindow):
+    def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("TOR", "TOR"))
         MainWindow.showMaximized()
-        self.title.setText(_translate("MainWindow", "Tiered Object Recognition"))
-        self.step_1_label.setText(_translate("MainWindow", "Step 1: Choose Tier!"))
-        self.step_2_label.setText(_translate("MainWindow", "Step 2: Choose Model!"))
-        self.step_3_label.setText(_translate("MainWindow", "Step 3: Upload or Capture!"))
+        self.title.setText(_translate(
+            "MainWindow", "Tiered Object Recognition"))
+        self.step_1_Label.setText(_translate(
+            "MainWindow", "Step 1: Choose Tier!"))
+        self.step_2_label.setText(_translate(
+            "MainWindow", "Step 2: Choose Model!"))
+        self.step_3_label.setText(_translate(
+            "MainWindow", "Step 3: Upload or Capture!"))
         self.upload_button.setText(_translate("MainWindow", "Upload"))
         self.capture_button.setText(_translate("MainWindow", "Capture"))
         self.exit_button.setText(_translate("MainWindow", "Exit"))
         self.stop_button.setText(_translate("MainWindow", "Stop"))
 
-    def on_tier_current_index_changed(self):
+    def on_tier_currentIndexChanged(self, index):
         # Change the models to show based on tier selected
         self.model_dropdown.clear()
         if str(self.tier_dropdown.currentText()) == 'Tier 1':
-            self.model_dropdown.addItems([SSD_INCEPTION_V2_COCO, FASTER_RCNN_INCEPTION_V2_COCO])
+            self.model_dropdown.addItems(
+                ['SSD Inception V2 Coco', 'Faster RCNN Inception V2 Coco'])
         elif str(self.tier_dropdown.currentText()) == 'Tier 2':
-            self.model_dropdown.addItems([SSD_INCEPTION_V2_COCO, FASTER_RCNN_INCEPTION_V2_COCO])
+            self.model_dropdown.addItems(
+                ['SSD Inception V2 Coco', 'Faster RCNN Inception V2 Coco'])
         elif str(self.tier_dropdown.currentText()) == 'Tier 3':
-            self.model_dropdown.addItems([SSD_INCEPTION_V2_COCO, FASTER_RCNN_INCEPTION_V2_COCO])
+            self.model_dropdown.addItems(
+                ['SSD Inception V2 Coco', 'Faster RCNN Inception V2 Coco'])
         else:
-            self.model_dropdown.addItems([SSD_INCEPTION_V2_COCO, FASTER_RCNN_INCEPTION_V2_COCO])
+            self.model_dropdown.addItems(
+                ['SSD Inception V2 Coco', 'Faster RCNN Inception V2 Coco'])
 
     def open_file(self):
         name = QFileDialog.getOpenFileName(self, 'Open File')[0]
         file_extension = os.path.splitext(name)
-        file_basename, _ = os.path.splitext(os.path.basename(name))
         tier = self.tier_dropdown.currentText().split(" ")[1]
         # Get path of labelmap and frozen inference graph
         labelmap, inference_graph = self.get_path()
-        output_path = os.path.abspath("captures/{}_result{}".format(file_basename, file_extension[1]))
 
-        #self.loading_animation.show()
-
-        if hasattr(self, 'video'):
-            self.video.hide()
+        for i in reversed(range(self.media.count())):
+            self.media.itemAt(i).widget().show()
 
         if file_extension[1] == ".jpg" or file_extension[1] == ".jpeg":
             # Run inference on image and display
-            
-            detection.image_detection(inference_graph, labelmap, tier, name, output_path)
-            self.display(output_path)
+            detection.image_detection(
+                inference_graph, labelmap, tier, name, os.path.abspath("predicted.jpg"))
+            self.display(os.path.abspath("predicted.jpg"))
 
         if file_extension[1] in VIDEOS:
+            # Clear area so everything isn't weird
+            for i in reversed(range(self.media.count())):
+                self.media.itemAt(i).widget().deleteLater()
+
             # Run inference on video and display
-            detection.video_detection(inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4"))
-            #self.movie.start()
-
-            #thread = threading.Thread(target=detection.video_detection, args=(inference_graph, labelmap, tier, name, output_path))
-            #thread.start()
-
-            # while True:
-            #     QtWidgets.qApp.processEvents()
-            #     if thread.isAlive():
-            #         self.movie.start()
-            #     else:
-            #         self.movie.stop()
-            #         #self.movie.disconnect()
-            #         #self.loading_animation.hide()
-            #         #self.loading_animation.clear()
-            #         self.clear_screen()
-            #         break
-
-            self.display(output_path)
+            detection.video_detection(
+                inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4"))         
+            self.display(os.path.abspath("predicted.mp4"))
 
     def capture_media(self):
         self.tier = self.tier_dropdown.currentText().split(" ")[1]
@@ -211,8 +293,6 @@ class UIMainWindow(QWidget):
         self.detection_model = detection.load_detection_model(
             self.inference_graph, tflite=self.tflite)
         self.category_index = detection.load_labelmap(self.labelmap)
-
-        self.media_label.hide()
 
         # Create lists which handle the notification for detections
         self.seen_classes = []
@@ -226,7 +306,8 @@ class UIMainWindow(QWidget):
         self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
         self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
 
-        self.media_label.show()
+        # for i in reversed(range(self.media.count())):
+        #     self.media.itemAt(i).widget().show()
 
         # Show stop button
         self.stop_button.setVisible(True)
@@ -245,7 +326,7 @@ class UIMainWindow(QWidget):
         self.stop_button.setVisible(False)
         self.capture_button.setEnabled(True)
         self.upload_button.setEnabled(True)
-        self.media_label.hide()
+        self.clear_screen()
 
     def exit(self):
         sys.exit()
@@ -257,12 +338,15 @@ class UIMainWindow(QWidget):
     def get_path(self):
         # Get path from the tier number
         tier = self.tier_dropdown.currentText().split(" ")[1]
-        labelmap = os.path.abspath("../tor_results/tier_{}/labelmap.pbtxt".format(tier))
+        labelmap = os.path.abspath(
+            "../tor_results/tier_{}/labelmap.pbtxt".format(tier))
         inference_graph = ""
-        if self.model_dropdown.currentText() == FASTER_RCNN_INCEPTION_V2_COCO:
-            inference_graph = os.path.abspath("../tor_results/tier_{}/faster_rcnn_inception_v2_coco_2018_01_28.pb".format(tier))
-        elif self.model_dropdown.currentText() == SSD_INCEPTION_V2_COCO:
-            inference_graph = os.path.abspath("../tor_results/tier_{}/ssd_inception_v2_coco_2018_01_28.tflite".format(tier))
+        if self.model_dropdown.currentText() == "Faster RCNN Inception V2 Coco":
+            inference_graph = os.path.abspath(
+                "../tor_results/tier_{}/faster_rcnn_inception_v2_coco_2018_01_28.pb".format(tier))
+        elif self.model_dropdown.currentText() == "SSD Inception V2 Coco":
+            inference_graph = os.path.abspath(
+                "../tor_results/tier_{}/ssd_inception_v2_coco_2018_01_28.tflite".format(tier))
         return labelmap, inference_graph
 
     def display(self, media=None):
@@ -272,22 +356,27 @@ class UIMainWindow(QWidget):
 
         file_extension = os.path.splitext(media)
 
+        #width = self.model_layout.geometry().width()
+        #height = self.model_layout.geometry().height()
+
         if file_extension[1] == ".jpg":
             # Remove all other media
-            # self.clear_screen()
+            self.clear_screen()
 
             # Display image
             pixmap = QPixmap(media)
             if pixmap.width() > 791 and pixmap.height() > 451:
                 pixmap = pixmap.scaledToWidth(960)
                 pixmap = pixmap.scaledToWidth(720)
+            #pixmap = pixmap.scaledToWidth(width)
+            #pixmap = pixmap.scaledToHeight(height)
             self.media_label.setPixmap(pixmap)
             self.resize(pixmap.width(), pixmap.height())
             self.media.addWidget(self.media_label)
             self.media.setAlignment(Qt.AlignCenter)
         else:
             # Remove all other media
-            # self.clear_screen()
+            self.clear_screen()
 
             # Play video
             self.video = QVideoWidget()
@@ -301,12 +390,12 @@ class UIMainWindow(QWidget):
             self.player.setPosition(0)
 
             self.media.addWidget(self.video)
-            self.video.show()
             self.player.play()
 
     def update_frame(self):
         # Get frame
         _, self.image = self.capture.read()
+        self.image = cv2.flip(self.image, 1)
 
         # Run inference on frame and display to screen
         classification = detection.detect_on_single_frame(
@@ -319,13 +408,11 @@ class UIMainWindow(QWidget):
         if results:
             best_frame, overall_detected_class, best_score, average_score, detection_time = results
 
-            filename = "{} {} at {}.jpeg".format(
-                overall_detected_class, best_score, detection_time).replace(" ", "_")
-            
-            output_path = os.path.abspath("captures/" + filename)
-            cv2.imwrite(output_path, best_frame)
+            filename = "{} {} at {}.jpeg".format(overall_detected_class, best_score, detection_time).replace(" ", "_")
+            cv2.imwrite(filename, best_frame)
 
-            database.insert_webcam_detection(self.conn, output_path, best_score, overall_detected_class, self.tier, self.inference_graph)
+            database.insert_webcam_detection(self.conn, os.path.abspath(
+                filename), best_score, overall_detected_class, self.tier, self.inference_graph)
 
             # Send the notification email
             t1 = threading.Thread(target=notification.send_notification_email, args=(
@@ -383,76 +470,7 @@ class UIMainWindow(QWidget):
         self.title.setAlignment(QtCore.Qt.AlignCenter)
         self.title.setObjectName("title")
         self.title_layout.addWidget(self.title)
-        self.grid_layout.addLayout(self.title_layout, 0, 0, 1, 2)
-
-    def create_main_window(self, MainWindow):
-        MainWindow.setObjectName("MainWindow")
-        MainWindow.setMinimumSize(QtCore.QSize(982, 713))
-        MainWindow.showMaximized()
-        MainWindow.setWindowFlags(Qt.WindowCloseButtonHint | Qt.WindowMinimizeButtonHint)
-        MainWindow.setWindowIcon(QtGui.QIcon("images/tor_logo.svg"))
-
-    def create_detection_layout(self):
-        # Creates the layout for model and tier customization as well as uploading and capturing
-        self.detection_info_layout = QtWidgets.QHBoxLayout()
-        self.detection_info_layout.setSizeConstraint(QtWidgets.QLayout.SetDefaultConstraint)
-        self.detection_info_layout.setObjectName("detection_info_layout")
-
-    def create_tier_selection(self):
-        # Creates the instruction for tier selection
-        self.create_step_1_label()
-        self.detection_info_layout.addWidget(self.step_1_label)
-
-        self.tier_dropdown = QtWidgets.QComboBox(self.central_widget)
-        font = QtGui.QFont()
-        font.setPointSize(13)
-        self.tier_dropdown.setFont(font)
-        self.tier_dropdown.setObjectName("tier_dropdown")
-        self.tier_dropdown.addItems(["Tier 1", "Tier 2", "Tier 3", "Tier 4"])
-        self.detection_info_layout.addWidget(self.tier_dropdown)
-
-    def create_step_1_label(self):
-        self.step_1_label = QtWidgets.QLabel(self.central_widget)
-        font = QtGui.QFont()
-        font.setPointSize(14)
-        font.setUnderline(True)
-        self.step_1_label.setFont(font)
-        self.step_1_label.setObjectName("step_1_label")
-
-    def create_model_selection(self):
-        self.create_step_2_label()
-        self.detection_info_layout.addWidget(self.step_2_label)
-
-        self.model_dropdown = QtWidgets.QComboBox(self.central_widget)
-        font = QtGui.QFont()
-        font.setPointSize(13)
-        self.model_dropdown.setFont(font)
-        self.model_dropdown.setObjectName("model_dropdown")
-        self.model_dropdown.addItems([SSD_INCEPTION_V2_COCO, FASTER_RCNN_INCEPTION_V2_COCO])
-        self.detection_info_layout.addWidget(self.model_dropdown)
-
-    def create_step_2_label(self):
-        self.step_2_label = QtWidgets.QLabel(self.central_widget)
-        font = QtGui.QFont()
-        font.setUnderline(True)
-        font.setPointSize(14)
-        self.step_2_label.setFont(font)
-        self.step_2_label.setObjectName("step_2_label")
-
-    def create_inference_media(self):
-        self.create_step_3_label()
-        self.detection_info_layout.addWidget(self.step_3_label)
-
-    def create_step_3_label(self):
-        self.step_3_label = QtWidgets.QLabel(self.central_widget)
-        font = QtGui.QFont()
-        font.setUnderline(True)
-        font.setPointSize(14)
-        self.step_3_label.setFont(font)
-        self.step_3_label.setObjectName("step_3_label")
-
-        self.model_layout = QtWidgets.QGridLayout()
-        self.model_layout.setObjectName("model_layout")
+        self.gridLayout_2.addLayout(self.title_layout, 0, 0, 1, 2)
 
     def display_upload_button(self):
         self.upload_button = QtWidgets.QPushButton(self.central_widget)
@@ -464,87 +482,6 @@ class UIMainWindow(QWidget):
         self.detection_info_layout.addWidget(self.upload_button)
         self.upload_button.clicked.connect(self.open_file)
 
-    def display_capture_button(self):
-        self.capture_button = QtWidgets.QPushButton(self.central_widget)
-        font = QtGui.QFont()
-        font.setFamily("consolas")
-        font.setPointSize(13)
-        self.capture_button.setFont(font)
-        self.capture_button.setObjectName("capture_button")
-        self.detection_info_layout.addWidget(self.capture_button)
-        self.capture_button.clicked.connect(self.capture_media)
-
-    def display_loading_animation(self):
-        self.loading_animation = QtWidgets.QLabel(self)
-        self.movie = QMovie(os.path.abspath("images/loading.gif"))
-        self.loading_animation.setAlignment(QtCore.Qt.AlignCenter | QtCore.Qt.AlignHCenter)
-        self.loading_animation.setMovie(self.movie)
-        self.movie.setCacheMode(QMovie.CacheAll)
-        self.model_layout.addWidget(self.loading_animation)
-
-    def create_media(self):
-        self.media = QHBoxLayout(self.model_view)
-        self.media.setContentsMargins(0, 0, 0, 0)
-        self.media.setObjectName("media")
-
-    def create_logo(self):
-        self.logo_layout = QtWidgets.QHBoxLayout()
-        self.logo_layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
-        self.logo_layout.setObjectName("logo_layout")
-        self.logo = QtWidgets.QLabel(self.central_widget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.logo.sizePolicy().hasHeightForWidth())
-
-        self.logo.setSizePolicy(sizePolicy)
-        self.logo.setMinimumSize(QtCore.QSize(141, 31))
-        self.logo.setMaximumSize(QtCore.QSize(141, 31))
-        font = QtGui.QFont()
-        font.setStrikeOut(True)
-        self.logo.setFont(font)
-        self.logo.setText("")
-
-        self.logo.setPixmap(QtGui.QPixmap("images/zel_tech_logo_white.png"))
-        self.logo.setScaledContents(True)
-        self.logo.setAlignment(QtCore.Qt.AlignBottom | QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft)
-        self.logo.setIndent(0)
-        self.logo.setObjectName("logo")
-        self.logo_layout.addWidget(self.logo)
-        self.grid_layout.addLayout(self.logo_layout, 3, 0, 1, 1)
-
-    def create_exit_layout(self):
-        self.exit_button_layout = QtWidgets.QHBoxLayout()
-        self.exit_button_layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
-        self.exit_button_layout.setContentsMargins(0, -1, -1, -1)
-        self.exit_button_layout.setObjectName("exit_button_layout")
-
-    def display_stop_button(self):
-        self.stop_button = QtWidgets.QPushButton(self.central_widget)
-        font = QtGui.QFont()
-        font.setFamily("consolas")
-        font.setPointSize(13)
-        self.stop_button.setFont(font)
-        self.stop_button.setObjectName("stop_button")
-        self.stop_button.clicked.connect(self.stop_webcam)
-        self.stop_button.setVisible(False)
-
-    def display_exit_button(self):
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.exit_button.sizePolicy().hasHeightForWidth())
-        self.exit_button.setSizePolicy(sizePolicy)
-        font = QtGui.QFont()
-        font.setFamily("consolas")
-        font.setPointSize(13)
-        self.exit_button.setFont(font)
-        self.exit_button.setIconSize(QtCore.QSize(0, 0))
-        self.exit_button.setObjectName("exit_button")
-        self.exit_button_layout.addWidget(self.stop_button)
-        self.exit_button_layout.addWidget(self.exit_button)
-        self.grid_layout.addLayout(self.exit_button_layout, 3, 1, 1, 1)
-        self.exit_button.clicked.connect(self.exit)
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
@@ -554,7 +491,7 @@ if __name__ == "__main__":
     app.setStyleSheet(stylesheet)
 
     MainWindow = QtWidgets.QMainWindow()
-    ui = UIMainWindow()
+    ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())
