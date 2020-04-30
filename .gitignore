@@ -125,3 +125,4 @@ research/object_detection/inference_scripts/*.jpg
 research/object_detection/inference_scripts/*.mp4
 research/object_detection/inference_scripts/*.jpeg
 research/object_detection/inference_scripts/captures/*
+research/object_detection/db/detection.db
