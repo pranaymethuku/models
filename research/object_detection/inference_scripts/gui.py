@@ -31,21 +31,20 @@ VIDEOS = [".mov", ".mp4", ".flv", ".avi", ".ogg", ".wmv"]
 class UIMainWindow(QWidget):
     def setupUi(self, MainWindow):
         # Set up MainWindow information
-        MainWindow.setObjectName("MainWindow")
-        MainWindow.setMinimumSize(QtCore.QSize(982, 713))
-        MainWindow.showMaximized()
-        MainWindow.setWindowFlags(
-            Qt.WindowCloseButtonHint | Qt.WindowMinimizeButtonHint)
-        MainWindow.setWindowIcon(QtGui.QIcon("images/tor_logo.svg"))
+        self.create_main_window(MainWindow)
 
+        # Creates the widget that contains all the other buttons, dropdowns, media, etc.
         self.central_widget = QtWidgets.QWidget(MainWindow)
         self.central_widget.setObjectName("central_widget")
 
+        # Allows for automatic resizing depending on screen size
         self.grid_layout = QtWidgets.QGridLayout(self.central_widget)
         self.grid_layout.setObjectName("grid_layout")
 
+        # Displays the title
         self.display_title()
 
+        # Creates the layout for model and tier customization as well as uploading and capturing
         self.detection_info_layout = QtWidgets.QHBoxLayout()
         self.detection_info_layout.setSizeConstraint(
             QtWidgets.QLayout.SetDefaultConstraint)
@@ -127,8 +126,6 @@ class UIMainWindow(QWidget):
         self.detection_info_layout.addWidget(self.capture_button)
         self.grid_layout.addLayout(self.detection_info_layout, 1, 0, 1, 2)
 
-        #self.model_layout = QtWidgets.QGridLayout()
-        # self.model_layout.setObjectName("model_layout")
         # self.model_view = QtWidgets.QGraphicsView(self.central_widget)
         self.model_view = QtWidgets.QWidget(self.central_widget)
         self.model_view.setGeometry(QtCore.QRect(10, 140, 961, 491))
@@ -275,7 +272,7 @@ class UIMainWindow(QWidget):
         # Get path of labelmap and frozen inference graph
         labelmap, inference_graph = self.get_path()
 
-        self.loading_animation.show()
+        #self.loading_animation.show()
 
         if file_extension[1] == ".jpg" or file_extension[1] == ".jpeg":
             # Run inference on image and display
@@ -286,7 +283,6 @@ class UIMainWindow(QWidget):
         if file_extension[1] in VIDEOS:
             # Run inference on video and display
             #detection.video_detection(inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4"))
-            self.loading_animation.setMovie(self.movie)
             self.movie.start()
 
             thread = threading.Thread(target=detection.video_detection, args=(
@@ -301,6 +297,7 @@ class UIMainWindow(QWidget):
                     self.movie.stop()
                     #self.movie.disconnect()
                     self.loading_animation.clear()
+                    self.clear_screen()
                     break
 
             self.display(os.path.abspath("predicted.mp4"))
@@ -497,6 +494,15 @@ class UIMainWindow(QWidget):
         self.upload_button.setObjectName("upload_button")
         self.detection_info_layout.addWidget(self.upload_button)
         self.upload_button.clicked.connect(self.open_file)
+
+    def create_main_window(self, MainWindow):
+        MainWindow.setObjectName("MainWindow")
+        MainWindow.setMinimumSize(QtCore.QSize(982, 713))
+        MainWindow.showMaximized()
+        MainWindow.setWindowFlags(
+            Qt.WindowCloseButtonHint | Qt.WindowMinimizeButtonHint)
+        MainWindow.setWindowIcon(QtGui.QIcon("images/tor_logo.svg"))
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
