@@ -168,6 +168,7 @@ class UIMainWindow(QWidget):
         # Get path of labelmap and frozen inference graph
         labelmap, inference_graph = self.get_path()
         output_path = os.path.abspath("captures/{}_result{}".format(file_basename, file_extension[1]))
+
         #self.loading_animation.show()
 
         if hasattr(self, 'video'):
@@ -176,8 +177,7 @@ class UIMainWindow(QWidget):
         if file_extension[1] == ".jpg" or file_extension[1] == ".jpeg":
             # Run inference on image and display
             
-            detection.image_detection(
-                inference_graph, labelmap, tier, name, output_path)
+            detection.image_detection(inference_graph, labelmap, tier, name, output_path)
             self.display(output_path)
 
         if file_extension[1] in VIDEOS:
@@ -211,6 +211,8 @@ class UIMainWindow(QWidget):
         self.detection_model = detection.load_detection_model(
             self.inference_graph, tflite=self.tflite)
         self.category_index = detection.load_labelmap(self.labelmap)
+
+        self.media_label.hide()
 
         # Create lists which handle the notification for detections
         self.seen_classes = []
