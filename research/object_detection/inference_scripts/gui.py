@@ -51,7 +51,7 @@ class UIMainWindow(QWidget):
         self.create_tier_selection()
 
         # Populates the models based on what tier is selected
-        self.tier_dropdown.currentIndexChanged[str].connect(self.on_tier_currentIndexChanged)
+        self.tier_dropdown.currentIndexChanged[str].connect(self.on_tier_current_index_changed)
 
         # Adjusts the spacing between tier and model selection
         spacer_item = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
@@ -67,26 +67,19 @@ class UIMainWindow(QWidget):
         # Creates the inference media layout
         self.create_inference_media()
 
+        # Displays the upload and capture buttons in the layout
+        self.display_upload_button()
+        self.display_capture_button()
+
+        # Add the detection layouts to the main central layout
+        self.grid_layout.addLayout(self.detection_info_layout, 1, 0, 1, 2)
+
         self.loading_animation = QtWidgets.QLabel(self)
         self.movie = QMovie(os.path.abspath("images/loading.gif"))
-        self.loading_animation.setAlignment(
-            QtCore.Qt.AlignCenter | QtCore.Qt.AlignHCenter)
+        self.loading_animation.setAlignment(QtCore.Qt.AlignCenter | QtCore.Qt.AlignHCenter)
         self.loading_animation.setMovie(self.movie)
         self.movie.setCacheMode(QMovie.CacheAll)
         self.model_layout.addWidget(self.loading_animation)
-
-        self.display_upload_button()
-
-        self.capture_button = QtWidgets.QPushButton(self.central_widget)
-        font = QtGui.QFont()
-        font.setFamily("consolas")
-        font.setPointSize(13)
-        self.capture_button.setFont(font)
-        self.capture_button.setObjectName("capture_button")
-        self.capture_button.clicked.connect(self.capture_media)
-
-        self.detection_info_layout.addWidget(self.capture_button)
-        self.grid_layout.addLayout(self.detection_info_layout, 1, 0, 1, 2)
 
         # self.model_view = QtWidgets.QGraphicsView(self.central_widget)
         self.model_view = QtWidgets.QWidget(self.central_widget)
@@ -122,8 +115,7 @@ class UIMainWindow(QWidget):
         self.logo_layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
         self.logo_layout.setObjectName("logo_layout")
         self.logo = QtWidgets.QLabel(self.central_widget)
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(
@@ -139,8 +131,7 @@ class UIMainWindow(QWidget):
 
         self.logo.setPixmap(QtGui.QPixmap("images/zel_tech_logo_white.png"))
         self.logo.setScaledContents(True)
-        self.logo.setAlignment(QtCore.Qt.AlignBottom |
-                               QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft)
+        self.logo.setAlignment(QtCore.Qt.AlignBottom | QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft)
         self.logo.setIndent(0)
         self.logo.setObjectName("logo")
         self.logo_layout.addWidget(self.logo)
@@ -152,13 +143,11 @@ class UIMainWindow(QWidget):
         self.exit_button_layout.setContentsMargins(0, -1, -1, -1)
         self.exit_button_layout.setObjectName("exit_button_layout")
 
-        spacerItem2 = QtWidgets.QSpacerItem(
-            20, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
-        self.exit_button_layout.addItem(spacerItem2)
+        spacer_item_two = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
+        self.exit_button_layout.addItem(spacer_item_two)
 
-        spacerItem3 = QtWidgets.QSpacerItem(
-            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.exit_button_layout.addItem(spacerItem3)
+        spacer_item_three = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.exit_button_layout.addItem(spacer_item_three)
         self.exit_button = QtWidgets.QPushButton(self.central_widget)
 
         sizePolicy = QtWidgets.QSizePolicy(
@@ -191,10 +180,10 @@ class UIMainWindow(QWidget):
 
         MainWindow.setCentralWidget(self.central_widget)
 
-        self.retranslateUi(MainWindow)
+        self.retranslate_ui(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-    def retranslateUi(self, MainWindow):
+    def retranslate_ui(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("TOR", "TOR"))
         MainWindow.showMaximized()
@@ -211,21 +200,17 @@ class UIMainWindow(QWidget):
         self.exit_button.setText(_translate("MainWindow", "Exit"))
         self.stop_button.setText(_translate("MainWindow", "Stop"))
 
-    def on_tier_currentIndexChanged(self, index):
+    def on_tier_current_index_changed(self):
         # Change the models to show based on tier selected
         self.model_dropdown.clear()
         if str(self.tier_dropdown.currentText()) == 'Tier 1':
-            self.model_dropdown.addItems(
-                ['SSD Inception V2 Coco', 'Faster RCNN Inception V2 Coco'])
+            self.model_dropdown.addItems(['SSD Inception V2 Coco', 'Faster RCNN Inception V2 Coco'])
         elif str(self.tier_dropdown.currentText()) == 'Tier 2':
-            self.model_dropdown.addItems(
-                ['SSD Inception V2 Coco', 'Faster RCNN Inception V2 Coco'])
+            self.model_dropdown.addItems(['SSD Inception V2 Coco', 'Faster RCNN Inception V2 Coco'])
         elif str(self.tier_dropdown.currentText()) == 'Tier 3':
-            self.model_dropdown.addItems(
-                ['SSD Inception V2 Coco', 'Faster RCNN Inception V2 Coco'])
+            self.model_dropdown.addItems(['SSD Inception V2 Coco', 'Faster RCNN Inception V2 Coco'])
         else:
-            self.model_dropdown.addItems(
-                ['SSD Inception V2 Coco', 'Faster RCNN Inception V2 Coco'])
+            self.model_dropdown.addItems(['SSD Inception V2 Coco', 'Faster RCNN Inception V2 Coco'])
 
     def open_file(self):
         name = QFileDialog.getOpenFileName(self, 'Open File')[0]
@@ -448,16 +433,6 @@ class UIMainWindow(QWidget):
         self.title_layout.addWidget(self.title)
         self.grid_layout.addLayout(self.title_layout, 0, 0, 1, 2)
 
-    def display_upload_button(self):
-        self.upload_button = QtWidgets.QPushButton(self.central_widget)
-        font = QtGui.QFont()
-        font.setFamily("consolas")
-        font.setPointSize(13)
-        self.upload_button.setFont(font)
-        self.upload_button.setObjectName("upload_button")
-        self.detection_info_layout.addWidget(self.upload_button)
-        self.upload_button.clicked.connect(self.open_file)
-
     def create_main_window(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.setMinimumSize(QtCore.QSize(982, 713))
@@ -527,6 +502,26 @@ class UIMainWindow(QWidget):
 
         self.model_layout = QtWidgets.QGridLayout()
         self.model_layout.setObjectName("model_layout")
+
+    def display_upload_button(self):
+        self.upload_button = QtWidgets.QPushButton(self.central_widget)
+        font = QtGui.QFont()
+        font.setFamily("consolas")
+        font.setPointSize(13)
+        self.upload_button.setFont(font)
+        self.upload_button.setObjectName("upload_button")
+        self.detection_info_layout.addWidget(self.upload_button)
+        self.upload_button.clicked.connect(self.open_file)
+
+    def display_capture_button(self):
+        self.capture_button = QtWidgets.QPushButton(self.central_widget)
+        font = QtGui.QFont()
+        font.setFamily("consolas")
+        font.setPointSize(13)
+        self.capture_button.setFont(font)
+        self.capture_button.setObjectName("capture_button")
+        self.detection_info_layout.addWidget(self.capture_button)
+        self.capture_button.clicked.connect(self.capture_media)
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
