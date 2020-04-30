@@ -1,11 +1,16 @@
-#!/home/rkabealo/anaconda3/envs/tor/bin/python
-# -*- coding: utf-8 -*-
+"""
+Created on Thu Apr 9 2020
+@author: malayshah
 
-# Form implementation generated from reading ui file 'design.ui'
-#
-# Created by: PyQt5 UI code generator 5.14.2
-#
-# WARNING! All changes made in this file will be lost!
+Class: CSE 5915 - Information Systems
+Section: 6pm TR, Spring 2020
+Prof: Prof. Jayanti
+
+A Python 3 script for a GUI that allows for image and video inference as well as real-time inferencing utilizing PyQt5
+
+Usage:
+    python3 gui.py
+"""
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import *
@@ -82,9 +87,8 @@ class UIMainWindow(QWidget):
         self.model_view.setGeometry(QtCore.QRect(10, 140, 961, 491))
         self.model_view.setStyleSheet("border: 2px solid black; background-color: #e8e9eb")
 
-        self.media = QHBoxLayout(self.model_view)
-        self.media.setContentsMargins(0, 0, 0, 0)
-        self.media.setObjectName("media")
+        # Sets up the media that will display image, video, and webcam
+        self.create_media()
 
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -107,10 +111,8 @@ class UIMainWindow(QWidget):
         # Adds logo to the GUI
         self.create_logo()
 
-        self.exit_button_layout = QtWidgets.QHBoxLayout()
-        self.exit_button_layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
-        self.exit_button_layout.setContentsMargins(0, -1, -1, -1)
-        self.exit_button_layout.setObjectName("exit_button_layout")
+        # Creates the exit layout
+        self.create_exit_layout()
 
         spacer_item_two = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
         self.exit_button_layout.addItem(spacer_item_two)
@@ -378,8 +380,7 @@ class UIMainWindow(QWidget):
         MainWindow.setObjectName("MainWindow")
         MainWindow.setMinimumSize(QtCore.QSize(982, 713))
         MainWindow.showMaximized()
-        MainWindow.setWindowFlags(
-            Qt.WindowCloseButtonHint | Qt.WindowMinimizeButtonHint)
+        MainWindow.setWindowFlags(Qt.WindowCloseButtonHint | Qt.WindowMinimizeButtonHint)
         MainWindow.setWindowIcon(QtGui.QIcon("images/tor_logo.svg"))
 
     def create_detection_layout(self):
@@ -472,6 +473,11 @@ class UIMainWindow(QWidget):
         self.movie.setCacheMode(QMovie.CacheAll)
         self.model_layout.addWidget(self.loading_animation)
 
+    def create_media(self):
+        self.media = QHBoxLayout(self.model_view)
+        self.media.setContentsMargins(0, 0, 0, 0)
+        self.media.setObjectName("media")
+
     def create_logo(self):
         self.logo_layout = QtWidgets.QHBoxLayout()
         self.logo_layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
@@ -497,6 +503,12 @@ class UIMainWindow(QWidget):
         self.logo.setObjectName("logo")
         self.logo_layout.addWidget(self.logo)
         self.grid_layout.addLayout(self.logo_layout, 3, 0, 1, 1)
+
+    def create_exit_layout(self):
+        self.exit_button_layout = QtWidgets.QHBoxLayout()
+        self.exit_button_layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
+        self.exit_button_layout.setContentsMargins(0, -1, -1, -1)
+        self.exit_button_layout.setObjectName("exit_button_layout")
 
     def display_stop_button(self):
         self.stop_button = QtWidgets.QPushButton(self.central_widget)
@@ -524,8 +536,6 @@ class UIMainWindow(QWidget):
         self.exit_button_layout.addWidget(self.exit_button)
         self.grid_layout.addLayout(self.exit_button_layout, 3, 1, 1, 1)
         self.exit_button.clicked.connect(self.exit)
-
-
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
