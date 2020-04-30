@@ -24,7 +24,10 @@ Examples:
 import os
 import math
 import sys
-from cv2 import cv2
+try: 
+    from cv2 import cv2
+except ImportError: 
+    import cv2
 import numpy as np
 from scipy import stats
 import tensorflow as tf

@@ -27,7 +27,10 @@ import os
 import detection
 import numpy as np
 from scipy import stats
-from cv2 import cv2
+try: 
+    from cv2 import cv2
+except ImportError: 
+    import cv2
 import notification
 import threading
 from object_detection.db import database
