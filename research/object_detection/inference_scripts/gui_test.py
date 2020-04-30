@@ -35,6 +35,7 @@ VIDEOS = [".mov", ".mp4", ".flv", ".avi", ".ogg", ".wmv"]
 FASTER_RCNN_INCEPTION_V2_COCO = 'Faster RCNN Inception V2 Coco'
 SSD_INCEPTION_V2_COCO = "SSD Inception V2 Coco"
 
+
 class UIMainWindow(QWidget):
     def setupUi(self, MainWindow):
         # Set up MainWindow information
@@ -122,7 +123,8 @@ class UIMainWindow(QWidget):
         spacer_item_two = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
         self.exit_button_layout.addItem(spacer_item_two)
 
-        spacer_item_three = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacer_item_three = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding,
+                                                  QtWidgets.QSizePolicy.Minimum)
         self.exit_button_layout.addItem(spacer_item_three)
         self.exit_button = QtWidgets.QPushButton(self.central_widget)
 
@@ -171,26 +173,34 @@ class UIMainWindow(QWidget):
         # Get path of labelmap and frozen inference graph
         labelmap, inference_graph = self.get_path()
         output_path = os.path.abspath("captures/{}_result{}".format(file_basename, file_extension[1]))
-        #self.loading_animation.show()
+        # self.loading_animation.show()
         for i in reversed(range(self.media.count())):
             self.media.itemAt(i).widget().show()
 
+        if hasattr(self, 'video'):
+            self.video.hide()
+
+        # if hasattr(self, 'media_label'):
+        #   self.media_label.hide()
+
         if file_extension[1] == ".jpg" or file_extension[1] == ".jpeg":
             # Run inference on image and display
-            
+
             detection.image_detection(
                 inference_graph, labelmap, tier, name, output_path)
             self.display(output_path)
 
         if file_extension[1] in VIDEOS:
             # Run inference on video and display
-            #detection.video_detection(inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4"))
+            # detection.video_detection(inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4"))
             for i in reversed(range(self.media.count())):
                 self.media.itemAt(i).widget().hide()
+
+            self.loading_animation.setMovie(self.movie)
             self.movie.start()
 
-            thread = threading.Thread(target=detection.video_detection, args=(
-               inference_graph, labelmap, tier, name, output_path))
+            thread = threading.Thread(target=detection.video_detection,
+                                      args=(inference_graph, labelmap, tier, name, output_path))
             thread.start()
 
             while True:
@@ -200,7 +210,7 @@ class UIMainWindow(QWidget):
                 else:
                     self.movie.stop()
                     self.movie.disconnect()
-                    #self.loading_animation.hide()
+                    # self.loading_animation.hide()
                     self.loading_animation.clear()
                     break
 
@@ -262,9 +272,11 @@ class UIMainWindow(QWidget):
         labelmap = os.path.abspath("../tor_results/tier_{}/labelmap.pbtxt".format(tier))
         inference_graph = ""
         if self.model_dropdown.currentText() == FASTER_RCNN_INCEPTION_V2_COCO:
-            inference_graph = os.path.abspath("../tor_results/tier_{}/faster_rcnn_inception_v2_coco_2018_01_28.pb".format(tier))
+            inference_graph = os.path.abspath(
+                "../tor_results/tier_{}/faster_rcnn_inception_v2_coco_2018_01_28.pb".format(tier))
         elif self.model_dropdown.currentText() == SSD_INCEPTION_V2_COCO:
-            inference_graph = os.path.abspath("../tor_results/tier_{}/ssd_inception_v2_coco_2018_01_28.tflite".format(tier))
+            inference_graph = os.path.abspath(
+                "../tor_results/tier_{}/ssd_inception_v2_coco_2018_01_28.tflite".format(tier))
         return labelmap, inference_graph
 
     def display(self, media=None):
@@ -323,11 +335,12 @@ class UIMainWindow(QWidget):
 
             filename = "{} {} at {}.jpeg".format(
                 overall_detected_class, best_score, detection_time).replace(" ", "_")
-            
+
             output_path = os.path.abspath("captures/" + filename)
             cv2.imwrite(output_path, best_frame)
 
-            database.insert_webcam_detection(self.conn, output_path, best_score, overall_detected_class, self.tier, self.inference_graph)
+            database.insert_webcam_detection(self.conn, output_path, best_score, overall_detected_class, self.tier,
+                                             self.inference_graph)
 
             # Send the notification email
             t1 = threading.Thread(target=notification.send_notification_email, args=(
@@ -544,6 +557,7 @@ class UIMainWindow(QWidget):
         self.exit_button_layout.addWidget(self.exit_button)
         self.grid_layout.addLayout(self.exit_button_layout, 3, 1, 1, 1)
         self.exit_button.clicked.connect(self.exit)
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
