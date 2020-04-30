@@ -369,6 +369,8 @@ Upon launching the script, a window will open up serving as the homepage of the 
 
 After selecting a tier and model, you can either upload an image or video that you want inferenced or launch a webcam to inference live feed. Inferenced images, videos, and webcam captures from `gui.py` will be saved in the `inference_scripts/captures/` directory.
 
+When the GUI webcam detects a consecutive detection for ~2 seconds, it will send out an email to the user emails listed in `inference_scripts/notified_users.txt`. You can also comment out user emails to skip notifications for with a "#" in front of them.
+
 ## Resources
 
 * [Custom Object Detection using TensorFlow from Scratch](https://towardsdatascience.com/custom-object-detection-using-tensorflow-from-scratch-e61da2e10087)
