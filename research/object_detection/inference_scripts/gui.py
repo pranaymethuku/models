@@ -45,65 +45,27 @@ class UIMainWindow(QWidget):
         self.display_title()
 
         # Creates the layout for model and tier customization as well as uploading and capturing
-        self.detection_info_layout = QtWidgets.QHBoxLayout()
-        self.detection_info_layout.setSizeConstraint(
-            QtWidgets.QLayout.SetDefaultConstraint)
-        self.detection_info_layout.setObjectName("detection_info_layout")
+        self.create_detection_layout()
 
-        self.step_1_Label = QtWidgets.QLabel(self.central_widget)
-        font = QtGui.QFont()
-        font.setPointSize(14)
-        font.setUnderline(True)
-        self.step_1_Label.setFont(font)
-        self.step_1_Label.setObjectName("step_1_Label")
-        self.detection_info_layout.addWidget(self.step_1_Label)
-        self.tier_dropdown = QtWidgets.QComboBox(self.central_widget)
-        font = QtGui.QFont()
-        font.setPointSize(13)
-        self.tier_dropdown.setFont(font)
-        self.tier_dropdown.setObjectName("tier_dropdown")
-        self.tier_dropdown.addItems(["Tier 1", "Tier 2", "Tier 3", "Tier 4"])
-        self.detection_info_layout.addWidget(self.tier_dropdown)
+        # Creates the first user instruction - tier selection
+        self.create_tier_selection()
 
-        # Based on what tier is selected, models will be placed
-        self.tier_dropdown.currentIndexChanged[str].connect(
-            self.on_tier_currentIndexChanged)
+        # Populates the models based on what tier is selected
+        self.tier_dropdown.currentIndexChanged[str].connect(self.on_tier_currentIndexChanged)
 
-        spacerItem = QtWidgets.QSpacerItem(
-            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.detection_info_layout.addItem(spacerItem)
+        # Adjusts the spacing between tier and model selection
+        spacer_item = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.detection_info_layout.addItem(spacer_item)
 
-        self.step_2_label = QtWidgets.QLabel(self.central_widget)
-        font = QtGui.QFont()
-        font.setUnderline(True)
-        font.setPointSize(14)
-        self.step_2_label.setFont(font)
-        self.step_2_label.setObjectName("step_2_label")
-        self.detection_info_layout.addWidget(self.step_2_label)
+        # Creates the second user instruction - model selection
+        self.create_model_selection()
 
-        self.model_dropdown = QtWidgets.QComboBox(self.central_widget)
-        font = QtGui.QFont()
-        font.setPointSize(13)
-        self.model_dropdown.setFont(font)
-        self.model_dropdown.setObjectName("model_dropdown")
-        self.model_dropdown.addItems(
-            ['SSD Inception V2 Coco', 'Faster RCNN Inception V2 Coco'])
+        # Adjusts the spacing between model and upload/capture feature
+        spacer_item_one = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.detection_info_layout.addItem(spacer_item_one)
 
-        self.detection_info_layout.addWidget(self.model_dropdown)
-        spacerItem1 = QtWidgets.QSpacerItem(
-            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.detection_info_layout.addItem(spacerItem1)
-
-        self.step_3_label = QtWidgets.QLabel(self.central_widget)
-        font = QtGui.QFont()
-        font.setUnderline(True)
-        font.setPointSize(14)
-        self.step_3_label.setFont(font)
-        self.step_3_label.setObjectName("step_3_label")
-        self.detection_info_layout.addWidget(self.step_3_label)
-
-        self.model_layout = QtWidgets.QGridLayout()
-        self.model_layout.setObjectName("model_layout")
+        # Creates the inference media layout
+        self.create_inference_media()
 
         self.loading_animation = QtWidgets.QLabel(self)
         self.movie = QMovie(os.path.abspath("images/loading.gif"))
@@ -238,7 +200,7 @@ class UIMainWindow(QWidget):
         MainWindow.showMaximized()
         self.title.setText(_translate(
             "MainWindow", "Tiered Object Recognition"))
-        self.step_1_Label.setText(_translate(
+        self.step_1_label.setText(_translate(
             "MainWindow", "Step 1: Choose Tier!"))
         self.step_2_label.setText(_translate(
             "MainWindow", "Step 2: Choose Model!"))
@@ -296,6 +258,7 @@ class UIMainWindow(QWidget):
                 else:
                     self.movie.stop()
                     #self.movie.disconnect()
+                    self.loading_animation.hide()
                     self.loading_animation.clear()
                     self.clear_screen()
                     break
@@ -503,6 +466,67 @@ class UIMainWindow(QWidget):
             Qt.WindowCloseButtonHint | Qt.WindowMinimizeButtonHint)
         MainWindow.setWindowIcon(QtGui.QIcon("images/tor_logo.svg"))
 
+    def create_detection_layout(self):
+        # Creates the layout for model and tier customization as well as uploading and capturing
+        self.detection_info_layout = QtWidgets.QHBoxLayout()
+        self.detection_info_layout.setSizeConstraint(QtWidgets.QLayout.SetDefaultConstraint)
+        self.detection_info_layout.setObjectName("detection_info_layout")
+
+    def create_tier_selection(self):
+        # Creates the instruction for tier selection
+        self.create_step_1_label()
+        self.detection_info_layout.addWidget(self.step_1_label)
+
+        self.tier_dropdown = QtWidgets.QComboBox(self.central_widget)
+        font = QtGui.QFont()
+        font.setPointSize(13)
+        self.tier_dropdown.setFont(font)
+        self.tier_dropdown.setObjectName("tier_dropdown")
+        self.tier_dropdown.addItems(["Tier 1", "Tier 2", "Tier 3", "Tier 4"])
+        self.detection_info_layout.addWidget(self.tier_dropdown)
+
+    def create_step_1_label(self):
+        self.step_1_label = QtWidgets.QLabel(self.central_widget)
+        font = QtGui.QFont()
+        font.setPointSize(14)
+        font.setUnderline(True)
+        self.step_1_label.setFont(font)
+        self.step_1_label.setObjectName("step_1_label")
+
+    def create_model_selection(self):
+        self.create_step_2_label()
+        self.detection_info_layout.addWidget(self.step_2_label)
+
+        self.model_dropdown = QtWidgets.QComboBox(self.central_widget)
+        font = QtGui.QFont()
+        font.setPointSize(13)
+        self.model_dropdown.setFont(font)
+        self.model_dropdown.setObjectName("model_dropdown")
+        self.model_dropdown.addItems(['SSD Inception V2 Coco', 'Faster RCNN Inception V2 Coco'])
+        self.detection_info_layout.addWidget(self.model_dropdown)
+
+    def create_step_2_label(self):
+        self.step_2_label = QtWidgets.QLabel(self.central_widget)
+        font = QtGui.QFont()
+        font.setUnderline(True)
+        font.setPointSize(14)
+        self.step_2_label.setFont(font)
+        self.step_2_label.setObjectName("step_2_label")
+
+    def create_inference_media(self):
+        self.create_step_3_label()
+        self.detection_info_layout.addWidget(self.step_3_label)
+
+    def create_step_3_label(self):
+        self.step_3_label = QtWidgets.QLabel(self.central_widget)
+        font = QtGui.QFont()
+        font.setUnderline(True)
+        font.setPointSize(14)
+        self.step_3_label.setFont(font)
+        self.step_3_label.setObjectName("step_3_label")
+
+        self.model_layout = QtWidgets.QGridLayout()
+        self.model_layout.setObjectName("model_layout")
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
