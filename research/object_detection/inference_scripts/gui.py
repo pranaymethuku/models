@@ -261,9 +261,11 @@ class Ui_MainWindow(QWidget):
     def open_file(self):
         name = QFileDialog.getOpenFileName(self, 'Open File')[0]
         file_extension = os.path.splitext(name)
+        file_basename, _ = os.path.splitext(os.path.basename(name))
         tier = self.tier_dropdown.currentText().split(" ")[1]
         # Get path of labelmap and frozen inference graph
         labelmap, inference_graph = self.get_path()
+        output_path = os.path.abspath("captures/{}_result{}".format(file_basename, file_extension[1]))
 
         for i in reversed(range(self.media.count())):
             self.media.itemAt(i).widget().show()
@@ -271,8 +273,8 @@ class Ui_MainWindow(QWidget):
         if file_extension[1] == ".jpg" or file_extension[1] == ".jpeg":
             # Run inference on image and display
             detection.image_detection(
-                inference_graph, labelmap, tier, name, os.path.abspath("predicted.jpg"))
-            self.display(os.path.abspath("predicted.jpg"))
+                inference_graph, labelmap, tier, name, output_path)
+            self.display(output_path)
 
         if file_extension[1] in VIDEOS:
             # Clear area so everything isn't weird
@@ -281,8 +283,8 @@ class Ui_MainWindow(QWidget):
 
             # Run inference on video and display
             detection.video_detection(
-                inference_graph, labelmap, tier, name, os.path.abspath("predicted.mp4"))         
-            self.display(os.path.abspath("predicted.mp4"))
+                inference_graph, labelmap, tier, name, output_path)         
+            self.display(output_path)
 
     def capture_media(self):
         self.tier = self.tier_dropdown.currentText().split(" ")[1]
@@ -395,7 +397,6 @@ class Ui_MainWindow(QWidget):
     def update_frame(self):
         # Get frame
         _, self.image = self.capture.read()
-        self.image = cv2.flip(self.image, 1)
 
         # Run inference on frame and display to screen
         classification = detection.detect_on_single_frame(
@@ -408,15 +409,17 @@ class Ui_MainWindow(QWidget):
         if results:
             best_frame, overall_detected_class, best_score, average_score, detection_time = results
 
-            filename = "{} {} at {}.jpeg".format(overall_detected_class, best_score, detection_time).replace(" ", "_")
-            cv2.imwrite(filename, best_frame)
+            filename = "{} {} at {}.jpeg".format(
+                overall_detected_class, best_score, detection_time).replace(" ", "_")
+            
+            output_path = os.path.abspath("captures/" + filename)
+            cv2.imwrite(output_path, best_frame)
 
-            database.insert_webcam_detection(self.conn, os.path.abspath(
-                filename), best_score, overall_detected_class, self.tier, self.inference_graph)
+            database.insert_webcam_detection(self.conn, output_path, best_score, overall_detected_class, self.tier, self.inference_graph)
 
             # Send the notification email
             t1 = threading.Thread(target=notification.send_notification_email, args=(
-                (filename, overall_detected_class, best_score, average_score, detection_time)))
+                (output_path, overall_detected_class, best_score, average_score, detection_time)))
             t1.start()
 
         # Display the classified frame to the screen
